@@ -14,6 +14,7 @@ func main() {
   vols, _ := client.ListVolumes(docker.ListVolumesOptions{})
   for _, vol := range vols {
     // TODO: filter out unnamed volumes (name has 64 characters?)
+    // TODO: detect if it's a Database volume (PostgreSQL, MySQL, OpenLDAP...) and launch DUPLICITY_PRECOMMAND instead of backuping the volume
     fmt.Println("ID: ", vol.Name)
     fmt.Println("Driver: ", vol.Driver)
     fmt.Println("Mountpoint: ", vol.Mountpoint)
@@ -40,7 +41,7 @@ func main() {
             "SWIFT_AUTHVERSION=2",
           },
           Image: "camptocamp/duplicity",
-          // TODO: mount volume in /var/backups
+          Volumes: map[string]struct{}{/* What should I put here? */},
         },
       },
     )
