@@ -15,6 +15,14 @@ func main() {
     fmt.Println("ID: ", vol.Name)
     fmt.Println("Driver: ", vol.Driver)
     fmt.Println("Mountpoint: ", vol.Mountpoint)
+    fmt.Println("Creating duplicity container...")
+    client.CreateContainer(
+      docker.CreateContainerOptions{
+        Config: &docker.Config{
+         Image: "camptocamp/duplicity",
+        },
+      },
+    )
   }
 
   fmt.Println("End backup...")
