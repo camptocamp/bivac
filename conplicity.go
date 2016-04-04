@@ -4,6 +4,7 @@ import (
   "fmt"
   "os"
   "github.com/fsouza/go-dockerclient"
+  "github.com/fgrehm/go-dockerpty"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
     fmt.Println("Driver: ", vol.Driver)
     fmt.Println("Mountpoint: ", vol.Mountpoint)
     fmt.Println("Creating duplicity container...")
-    client.CreateContainer(
+    container, err := client.CreateContainer(
       docker.CreateContainerOptions{
         Config: &docker.Config{
           Cmd: []string{
@@ -41,10 +42,40 @@ func main() {
             "SWIFT_AUTHVERSION=2",
           },
           Image: "camptocamp/duplicity",
-          Volumes: map[string]struct{}{/* What should I put here? */},
+          OpenStdin:    true,
+          StdinOnce:    true,
+          AttachStdin:  true,
+          AttachStdout: true,
+          AttachStderr: true,
+          Tty:          true,
         },
       },
     )
+
+    if err != nil {
+      fmt.Println(err)
+      os.Exit(1)
+    }
+
+    defer func() {
+      client.RemoveContainer(docker.RemoveContainerOptions{
+        ID: container.ID,
+        Force: true,
+      })
+    }()
+
+    binds := []string{
+      vol.Mountpoint,
+    }
+
+    err = dockerpty.Start(client, container, &docker.HostConfig{
+      Binds: binds,
+    })
+
+    if err != nil {
+      fmt.Println(err)
+      os.Exit(1)
+    }
   }
 
   fmt.Println("End backup...")
