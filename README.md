@@ -19,6 +19,17 @@ $ DUPLICITY_TARGET_URL=s3://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
     conplicity
 ```
 
+
+### Using docker
+
+```shell
+$ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
+   -e DUPLICITY_TARGET_URL=s3://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
+   -e AWS_ACCESS_KEY_ID=<my_key_id> \
+   -e AWS_SECRET_ACCESS_KEY=<my_secret_key> \
+     camptocamp/conplicity
+```
+
 ## Environment variables
 
 ### DUPLICITY_TARGET_URL
