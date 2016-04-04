@@ -3,6 +3,7 @@ package main
 import (
   "fmt"
   "os"
+  "unicode/utf8"
   "github.com/fsouza/go-dockerclient"
   "github.com/fgrehm/go-dockerpty"
 )
@@ -14,7 +15,11 @@ func main() {
   client, _ := docker.NewClient(endpoint)
   vols, _ := client.ListVolumes(docker.ListVolumesOptions{})
   for _, vol := range vols {
-    // TODO: filter out unnamed volumes (name has 64 characters?)
+    if utf8.RuneCountInString(vol.Name) == 64 {
+      fmt.Println("Ignoring volume ", vol.Name)
+      continue
+    }
+
     // TODO: detect if it's a Database volume (PostgreSQL, MySQL, OpenLDAP...) and launch DUPLICITY_PRECOMMAND instead of backuping the volume
     fmt.Println("ID: ", vol.Name)
     fmt.Println("Driver: ", vol.Driver)
