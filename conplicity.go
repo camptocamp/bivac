@@ -34,7 +34,7 @@ func main() {
             "--no-encryption",
             "--allow-source-mismatch",
             "/var/backups",
-            os.Getenv("DUPLICITY_TARGET_URL"),
+            os.Getenv("DUPLICITY_TARGET_URL")+"/"+vol.Name,
           },
           Env: []string{
             "AWS_ACCESS_KEY_ID="+os.Getenv("AWS_ACCESS_KEY_ID"),
