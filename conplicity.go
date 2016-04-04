@@ -65,9 +65,10 @@ func main() {
     }()
 
     binds := []string{
-      vol.Mountpoint,
+      vol.Mountpoint+":/var/backups:ro",
     }
 
+    fmt.Println("Starting duplicity container...")
     err = dockerpty.Start(client, container, &docker.HostConfig{
       Binds: binds,
     })
