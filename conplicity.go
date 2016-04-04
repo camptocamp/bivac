@@ -11,6 +11,8 @@ import (
 func main() {
   fmt.Println("Starting backup...")
 
+  hostname, _ := os.Hostname()
+
   endpoint := "unix:///var/run/docker.sock"
   client, _ := docker.NewClient(endpoint)
   vols, _ := client.ListVolumes(docker.ListVolumesOptions{})
@@ -34,7 +36,7 @@ func main() {
             "--no-encryption",
             "--allow-source-mismatch",
             "/var/backups",
-            os.Getenv("DUPLICITY_TARGET_URL")+"/"+vol.Name,
+            os.Getenv("DUPLICITY_TARGET_URL")+"/"+hostname+"/"+vol.Name,
           },
           Env: []string{
             "AWS_ACCESS_KEY_ID="+os.Getenv("AWS_ACCESS_KEY_ID"),
