@@ -41,14 +41,14 @@ func main() {
 
 func (c *Conplicity) backupVolume(vol docker.Volume) (err error) {
     if utf8.RuneCountInString(vol.Name) == 64 {
-      log.Infof("Ignoring volume ", vol.Name)
+      log.Infof("Ignoring volume "+vol.Name)
       return
     }
 
     // TODO: detect if it's a Database volume (PostgreSQL, MySQL, OpenLDAP...) and launch DUPLICITY_PRECOMMAND instead of backuping the volume
-    log.Infof("ID: ", vol.Name)
-    log.Infof("Driver: ", vol.Driver)
-    log.Infof("Mountpoint: ", vol.Mountpoint)
+    log.Infof("ID: "+vol.Name)
+    log.Infof("Driver: "+vol.Driver)
+    log.Infof("Mountpoint: "+vol.Mountpoint)
     log.Infof("Creating duplicity container...")
     container, err := c.Client.CreateContainer(
       docker.CreateContainerOptions{
