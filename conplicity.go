@@ -10,7 +10,7 @@ import (
 
 type Conplicity struct {
   Hostname string
-  Client   *docker.Client
+  *docker.Client
 }
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
   c.Client, err = docker.NewClient(endpoint)
   checkErr(err, "Failed to create Docker client: %v", 1)
 
-  vols, err := c.Client.ListVolumes(docker.ListVolumesOptions{})
+  vols, err := c.ListVolumes(docker.ListVolumesOptions{})
   checkErr(err, "Failed to list Docker volumes: %v", 1)
 
   for _, vol := range vols {
@@ -50,7 +50,7 @@ func (c *Conplicity) backupVolume(vol docker.Volume) (err error) {
     log.Infof("Driver: "+vol.Driver)
     log.Infof("Mountpoint: "+vol.Mountpoint)
     log.Infof("Creating duplicity container...")
-    container, err := c.Client.CreateContainer(
+    container, err := c.CreateContainer(
       docker.CreateContainerOptions{
         Config: &docker.Config{
           Cmd: []string{
@@ -85,7 +85,7 @@ func (c *Conplicity) backupVolume(vol docker.Volume) (err error) {
     checkErr(err, "Failed to create container for volume "+vol.Name+": %v", 1)
 
     defer func() {
-      c.Client.RemoveContainer(docker.RemoveContainerOptions{
+      c.RemoveContainer(docker.RemoveContainerOptions{
         ID: container.ID,
         Force: true,
       })
