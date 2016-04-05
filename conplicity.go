@@ -9,8 +9,9 @@ import (
 )
 
 type Conplicity struct {
+           *docker.Client
   Hostname string
-  *docker.Client
+  Image    string
 }
 
 func main() {
@@ -30,6 +31,12 @@ func main() {
   vols, err := c.ListVolumes(docker.ListVolumesOptions{})
   checkErr(err, "Failed to list Docker volumes: %v", 1)
 
+  // TODO: Make it variable
+  c.Image = "camptocamp/duplicity"
+
+  err = c.pullImage()
+  checkErr(err, "Failed to pull image: %v", 1)
+
   for _, vol := range vols {
     err = c.backupVolume(vol)
     checkErr(err, "Failed to process volume "+vol.Name+": %v", -1)
@@ -37,7 +44,6 @@ func main() {
 
   log.Infof("End backup...")
 }
-
 
 func (c *Conplicity) backupVolume(vol docker.Volume) (err error) {
     if utf8.RuneCountInString(vol.Name) == 64 {
@@ -71,7 +77,7 @@ func (c *Conplicity) backupVolume(vol docker.Volume) (err error) {
             "SWIFT_REGIONNAME="+os.Getenv("SWIFT_REGIONNAME"),
             "SWIFT_AUTHVERSION=2",
           },
-          Image: "camptocamp/duplicity",
+          Image: c.Image,
           OpenStdin:    true,
           StdinOnce:    true,
           AttachStdin:  true,
@@ -100,6 +106,16 @@ func (c *Conplicity) backupVolume(vol docker.Volume) (err error) {
     })
     checkErr(err, "Failed to start container for volume "+vol.Name+": %v", -1)
     return
+}
+
+func (c *Conplicity) pullImage() (err error) {
+  // TODO: output pull to logs
+  log.Infof("Pulling image %v", c.Image)
+  err = c.PullImage(docker.PullImageOptions{
+    Repository: c.Image,
+  }, docker.AuthConfiguration{})
+
+  return err
 }
 
 func checkErr(err error, msg string, exit int) {
