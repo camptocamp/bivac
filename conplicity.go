@@ -9,6 +9,7 @@ import (
 )
 
 type Environment struct {
+  Image              string
   DuplicityTargetURL string
   AWSAccessKeyID     string
   AWSSecretAccessKey string
@@ -23,7 +24,6 @@ type Conplicity struct {
            *docker.Client
            *Environment
   Hostname string
-  Image    string
 }
 
 func main() {
@@ -46,9 +46,6 @@ func main() {
   vols, err := c.ListVolumes(docker.ListVolumesOptions{})
   checkErr(err, "Failed to list Docker volumes: %v", 1)
 
-  // TODO: Make it variable
-  c.Image = "camptocamp/duplicity:latest"
-
   err = c.pullImage()
   checkErr(err, "Failed to pull image: %v", 1)
 
@@ -62,6 +59,7 @@ func main() {
 
 func (c *Conplicity) getEnv() (err error) {
   c.Environment = &Environment{
+    Image: os.Getenv("DUPLICITY_DOCKER_IMAGE"),
     DuplicityTargetURL: os.Getenv("DUPLICITY_TARGET_URL"),
     AWSAccessKeyID: os.Getenv("AWS_ACCESS_KEY_ID"),
     AWSSecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
@@ -70,6 +68,10 @@ func (c *Conplicity) getEnv() (err error) {
     SwiftAuthURL: os.Getenv("SWIFT_AUTHURL"),
     SwiftTenantName: os.Getenv("SWIFT_TENANTNAME"),
     SwiftRegionName: os.Getenv("SWIFT_REGIONNAME"),
+  }
+
+  if c.Image == "" {
+    c.Image = "camptocamp/duplicity:latest"
   }
 
   return

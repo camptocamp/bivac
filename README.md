@@ -32,6 +32,10 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
 
 ## Environment variables
 
+### DUPLICITY_DOCKER_IMAGE
+
+The image to use to launch duplicity. Default is `camptocamp/duplicity:latest`.
+
 ### DUPLICITY_TARGET_URL
 
 Target URL passed to duplicity.
