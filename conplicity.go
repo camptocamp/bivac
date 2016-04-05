@@ -8,7 +8,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-type Environment struct {
+type environment struct {
   Image              string
   DuplicityTargetURL string
   AWSAccessKeyID     string
@@ -20,9 +20,9 @@ type Environment struct {
   SwiftRegionName    string
 }
 
-type Conplicity struct {
+type conplicity struct {
            *docker.Client
-           *Environment
+           *environment
   Hostname string
 }
 
@@ -31,7 +31,7 @@ func main() {
 
   var err error
 
-  c := &Conplicity{}
+  c := &conplicity{}
 
   c.getEnv()
 
@@ -57,8 +57,8 @@ func main() {
   log.Infof("End backup...")
 }
 
-func (c *Conplicity) getEnv() (err error) {
-  c.Environment = &Environment{
+func (c *conplicity) getEnv() (err error) {
+  c.environment = &environment{
     Image: os.Getenv("DUPLICITY_DOCKER_IMAGE"),
     DuplicityTargetURL: os.Getenv("DUPLICITY_TARGET_URL"),
     AWSAccessKeyID: os.Getenv("AWS_ACCESS_KEY_ID"),
@@ -77,7 +77,7 @@ func (c *Conplicity) getEnv() (err error) {
   return
 }
 
-func (c *Conplicity) backupVolume(vol docker.Volume) (err error) {
+func (c *conplicity) backupVolume(vol docker.Volume) (err error) {
     if utf8.RuneCountInString(vol.Name) == 64 {
       log.Infof("Ignoring volume "+vol.Name)
       return
@@ -140,7 +140,7 @@ func (c *Conplicity) backupVolume(vol docker.Volume) (err error) {
     return
 }
 
-func (c *Conplicity) pullImage() (err error) {
+func (c *conplicity) pullImage() (err error) {
   // TODO: output pull to logs
   log.Infof("Pulling image %v", c.Image)
   err = c.PullImage(docker.PullImageOptions{
