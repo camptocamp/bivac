@@ -8,8 +8,20 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+type Environment struct {
+  DuplicityTargetURL string
+  AWSAccessKeyID     string
+  AWSSecretAccessKey string
+  SwiftUsername      string
+  SwiftPassword      string
+  SwiftAuthURL       string
+  SwiftTenantName    string
+  SwiftRegionName    string
+}
+
 type Conplicity struct {
            *docker.Client
+           *Environment
   Hostname string
   Image    string
 }
@@ -20,6 +32,9 @@ func main() {
   var err error
 
   c := &Conplicity{}
+
+  c.getEnv()
+
   c.Hostname, err = os.Hostname()
   checkErr(err, "Failed to get hostname: %v", 1)
 
@@ -32,7 +47,7 @@ func main() {
   checkErr(err, "Failed to list Docker volumes: %v", 1)
 
   // TODO: Make it variable
-  c.Image = "camptocamp/duplicity"
+  c.Image = "camptocamp/duplicity:latest"
 
   err = c.pullImage()
   checkErr(err, "Failed to pull image: %v", 1)
@@ -43,6 +58,21 @@ func main() {
   }
 
   log.Infof("End backup...")
+}
+
+func (c *Conplicity) getEnv() (err error) {
+  c.Environment = &Environment{
+    DuplicityTargetURL: os.Getenv("DUPLICITY_TARGET_URL"),
+    AWSAccessKeyID: os.Getenv("AWS_ACCESS_KEY_ID"),
+    AWSSecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
+    SwiftUsername: os.Getenv("SWIFT_USERNAME"),
+    SwiftPassword: os.Getenv("SWIFT_PASSWORD"),
+    SwiftAuthURL: os.Getenv("SWIFT_AUTHURL"),
+    SwiftTenantName: os.Getenv("SWIFT_TENANTNAME"),
+    SwiftRegionName: os.Getenv("SWIFT_REGIONNAME"),
+  }
+
+  return
 }
 
 func (c *Conplicity) backupVolume(vol docker.Volume) (err error) {
@@ -65,16 +95,16 @@ func (c *Conplicity) backupVolume(vol docker.Volume) (err error) {
             "--no-encryption",
             "--allow-source-mismatch",
             "/var/backups",
-            os.Getenv("DUPLICITY_TARGET_URL")+"/"+c.Hostname+"/"+vol.Name,
+            c.DuplicityTargetURL+"/"+c.Hostname+"/"+vol.Name,
           },
           Env: []string{
-            "AWS_ACCESS_KEY_ID="+os.Getenv("AWS_ACCESS_KEY_ID"),
-            "AWS_SECRET_ACCESS_KEY="+os.Getenv("AWS_SECRET_ACCESS_KEY"),
-            "SWIFT_USERNAME="+os.Getenv("SWIFT_USERNAME"),
-            "SWIFT_PASSWORD="+os.Getenv("SWIFT_PASSWORD"),
-            "SWIFT_AUTHURL="+os.Getenv("SWIFT_AUTHURL"),
-            "SWIFT_TENANTNAME="+os.Getenv("SWIFT_TENANTNAME"),
-            "SWIFT_REGIONNAME="+os.Getenv("SWIFT_REGIONNAME"),
+            "AWS_ACCESS_KEY_ID="+c.AWSAccessKeyID,
+            "AWS_SECRET_ACCESS_KEY="+c.AWSSecretAccessKey,
+            "SWIFT_USERNAME="+c.SwiftUsername,
+            "SWIFT_PASSWORD="+c.SwiftPassword,
+            "SWIFT_AUTHURL="+c.SwiftAuthURL,
+            "SWIFT_TENANTNAME="+c.SwiftTenantName,
+            "SWIFT_REGIONNAME="+c.SwiftRegionName,
             "SWIFT_AUTHVERSION=2",
           },
           Image: c.Image,
