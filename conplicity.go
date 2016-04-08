@@ -142,11 +142,13 @@ func (c *conplicity) backupVolume(vol docker.Volume) (err error) {
 }
 
 func (c *conplicity) pullImage() (err error) {
-	// TODO: output pull to logs
-	log.Infof("Pulling image %v", c.Image)
-	err = c.PullImage(docker.PullImageOptions{
-		Repository: c.Image,
-	}, docker.AuthConfiguration{})
+  if _, err = c.InspectImage(c.Image); err != nil {
+    // TODO: output pull to logs
+    log.Infof("Pulling image %v", c.Image)
+    err = c.PullImage(docker.PullImageOptions{
+      Repository: c.Image,
+    }, docker.AuthConfiguration{})
+  }
 
 	return err
 }
