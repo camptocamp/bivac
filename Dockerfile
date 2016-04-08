@@ -1,3 +1,2 @@
-FROM scratch
-ADD conplicity /
-CMD ["/conplicity"]
+FROM blacklabelops/jobber:latest
+ADD conplicity /usr/bin/
