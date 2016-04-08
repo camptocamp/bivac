@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 openssl aes-256-cbc -K $encrypted_e21420eaa4fd_key -iv $encrypted_e21420eaa4fd_iv -in .dockercfg.enc -out ~/.dockercfg -d
 
