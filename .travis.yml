@@ -4,6 +4,5 @@ sudo: required
 services: docker
 go:
   - 1.6
-  - tip
 after_success:
   - ./.travis/build.sh && ./.travis/publish.sh
