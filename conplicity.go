@@ -53,9 +53,8 @@ func main() {
 	err = c.pullImage()
 	checkErr(err, "Failed to pull image: %v", 1)
 
-
 	for _, vol := range vols {
-    voll, _ := c.InspectVolume(vol.Name)
+		voll, _ := c.InspectVolume(vol.Name)
 		checkErr(err, "Failed to inspect volume "+vol.Name+": %v", -1)
 		err = c.backupVolume(*voll)
 		checkErr(err, "Failed to process volume "+vol.Name+": %v", -1)
@@ -77,12 +76,12 @@ func (c *conplicity) backupVolume(vol docker.Volume) (err error) {
 		return
 	}
 
-  volLabelPrefix := labelPrefix + "." + vol.Name
+	volLabelPrefix := labelPrefix + "." + vol.Name
 
-  if vol.Labels[volLabelPrefix + ".ignore"] == "true" {
-    log.Infof("Ignoring blacklisted volume " + vol.Name)
-    return
-  }
+	if vol.Labels[volLabelPrefix+".ignore"] == "true" {
+		log.Infof("Ignoring blacklisted volume " + vol.Name)
+		return
+	}
 
 	// TODO: detect if it's a Database volume (PostgreSQL, MySQL, OpenLDAP...) and launch DUPLICITY_PRECOMMAND instead of backuping the volume
 	log.Infof("ID: " + vol.Name)
