@@ -5,21 +5,21 @@ import (
 	"unicode/utf8"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/caarlos0/env"
 	"github.com/fgrehm/go-dockerpty"
 	"github.com/fsouza/go-dockerclient"
-  "github.com/caarlos0/env"
 )
 
 type environment struct {
-  Image              string `env:"DUPLICITY_DOCKER_IMAGE" envDefault:"camptocamp/duplicity:latest"`
-  DuplicityTargetURL string `env:"DUPLICITY_TARGET_URL"`
-  AWSAccessKeyID     string `env:"AWS_ACCESS_KEY_ID"`
-  AWSSecretAccessKey string `env:"AWS_SECRET_ACCESS_KEY"`
-  SwiftUsername      string `env:"SWIFT_USERNAME"`
-  SwiftPassword      string `env:"SWIFT_PASSWORD"`
-  SwiftAuthURL       string `env:"SWIFT_AUTHURL"`
-  SwiftTenantName    string `env:"SWIFT_TENANTNAME"`
-  SwiftRegionName    string `env:"SWIFT_REGIONNAME"`
+	Image              string `env:"DUPLICITY_DOCKER_IMAGE" envDefault:"camptocamp/duplicity:latest"`
+	DuplicityTargetURL string `env:"DUPLICITY_TARGET_URL"`
+	AWSAccessKeyID     string `env:"AWS_ACCESS_KEY_ID"`
+	AWSSecretAccessKey string `env:"AWS_SECRET_ACCESS_KEY"`
+	SwiftUsername      string `env:"SWIFT_USERNAME"`
+	SwiftPassword      string `env:"SWIFT_PASSWORD"`
+	SwiftAuthURL       string `env:"SWIFT_AUTHURL"`
+	SwiftTenantName    string `env:"SWIFT_TENANTNAME"`
+	SwiftRegionName    string `env:"SWIFT_REGIONNAME"`
 }
 
 type conplicity struct {
@@ -61,7 +61,7 @@ func main() {
 
 func (c *conplicity) getEnv() (err error) {
 	c.environment = &environment{}
-  env.Parse(c.environment)
+	env.Parse(c.environment)
 
 	return
 }
@@ -130,13 +130,13 @@ func (c *conplicity) backupVolume(vol docker.Volume) (err error) {
 }
 
 func (c *conplicity) pullImage() (err error) {
-  if _, err = c.InspectImage(c.Image); err != nil {
-    // TODO: output pull to logs
-    log.Infof("Pulling image %v", c.Image)
-    err = c.PullImage(docker.PullImageOptions{
-      Repository: c.Image,
-    }, docker.AuthConfiguration{})
-  }
+	if _, err = c.InspectImage(c.Image); err != nil {
+		// TODO: output pull to logs
+		log.Infof("Pulling image %v", c.Image)
+		err = c.PullImage(docker.PullImageOptions{
+			Repository: c.Image,
+		}, docker.AuthConfiguration{})
+	}
 
 	return err
 }
