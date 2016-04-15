@@ -87,7 +87,7 @@ func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 	log.Infof("Mountpoint: " + vol.Mountpoint)
 	log.Infof("Creating duplicity container...")
 
-	fullIfOlderThan := getVolumeLabel(vol, ".full_if_old_than")
+	fullIfOlderThan := getVolumeLabel(vol, ".full_if_older_than")
 	if fullIfOlderThan == "" {
 		fullIfOlderThan = "15D"
 	}

@@ -55,3 +55,11 @@ are added to the path as directory levels.
 - SWIFT_AUTHURL
 - SWIFT_TENANTNAME
 - SWIFT_REGIONNAME
+
+
+## Controlling backup parameters
+
+The parameters used to backup each volume can be fine-tuned using volume labels (requires Docker 1.11.0 or greater):
+
+- `io.conplicity.ignore=true` ignores the volume
+- `io.conplicity.full_if_older_than=<value>` sets the time period after which a full backup is performed. Default is `15D`
