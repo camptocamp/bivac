@@ -10,6 +10,8 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+const labelPrefix string = "io.conplicity"
+
 type environment struct {
 	Image              string `env:"DUPLICITY_DOCKER_IMAGE" envDefault:"camptocamp/duplicity:latest"`
 	DuplicityTargetURL string `env:"DUPLICITY_TARGET_URL"`
@@ -52,7 +54,9 @@ func main() {
 	checkErr(err, "Failed to pull image: %v", 1)
 
 	for _, vol := range vols {
-		err = c.backupVolume(vol)
+		voll, _ := c.InspectVolume(vol.Name)
+		checkErr(err, "Failed to inspect volume "+vol.Name+": %v", -1)
+		err = c.backupVolume(*voll)
 		checkErr(err, "Failed to process volume "+vol.Name+": %v", -1)
 	}
 
@@ -68,7 +72,12 @@ func (c *conplicity) getEnv() (err error) {
 
 func (c *conplicity) backupVolume(vol docker.Volume) (err error) {
 	if utf8.RuneCountInString(vol.Name) == 64 {
-		log.Infof("Ignoring volume " + vol.Name)
+		log.Infof("Ignoring unnamed volume " + vol.Name)
+		return
+	}
+
+	if vol.Labels[labelPrefix+".ignore"] == "true" {
+		log.Infof("Ignoring blacklisted volume " + vol.Name)
 		return
 	}
 
