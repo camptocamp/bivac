@@ -22,6 +22,7 @@ type environment struct {
 	SwiftAuthURL       string `env:"SWIFT_AUTHURL"`
 	SwiftTenantName    string `env:"SWIFT_TENANTNAME"`
 	SwiftRegionName    string `env:"SWIFT_REGIONNAME"`
+	FullIfOlderThan    string `env:"FULL_IF_OLDER_THAN" envDefault:"15D"`
 }
 
 type conplicity struct {
@@ -89,7 +90,7 @@ func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 
 	fullIfOlderThan := getVolumeLabel(vol, ".full_if_older_than")
 	if fullIfOlderThan == "" {
-		fullIfOlderThan = "15D"
+		fullIfOlderThan = c.FullIfOlderThan
 	}
 
 	container, err := c.CreateContainer(
