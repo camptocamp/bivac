@@ -22,6 +22,7 @@ type environment struct {
 	SwiftAuthURL       string `env:"SWIFT_AUTHURL"`
 	SwiftTenantName    string `env:"SWIFT_TENANTNAME"`
 	SwiftRegionName    string `env:"SWIFT_REGIONNAME"`
+	FullIfOlderThan    string `env:"FULL_IF_OLDER_THAN" envDefault:"15D"`
 }
 
 type conplicity struct {
@@ -56,7 +57,7 @@ func main() {
 	for _, vol := range vols {
 		voll, _ := c.InspectVolume(vol.Name)
 		checkErr(err, "Failed to inspect volume "+vol.Name+": %v", -1)
-		err = c.backupVolume(*voll)
+		err = c.backupVolume(voll)
 		checkErr(err, "Failed to process volume "+vol.Name+": %v", -1)
 	}
 
@@ -70,15 +71,13 @@ func (c *conplicity) getEnv() (err error) {
 	return
 }
 
-func (c *conplicity) backupVolume(vol docker.Volume) (err error) {
+func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 	if utf8.RuneCountInString(vol.Name) == 64 {
 		log.Infof("Ignoring unnamed volume " + vol.Name)
 		return
 	}
 
-	volLabelPrefix := labelPrefix + "." + vol.Name
-
-	if vol.Labels[volLabelPrefix+".ignore"] == "true" {
+	if getVolumeLabel(vol, ".ignore") == "true" {
 		log.Infof("Ignoring blacklisted volume " + vol.Name)
 		return
 	}
@@ -88,11 +87,17 @@ func (c *conplicity) backupVolume(vol docker.Volume) (err error) {
 	log.Infof("Driver: " + vol.Driver)
 	log.Infof("Mountpoint: " + vol.Mountpoint)
 	log.Infof("Creating duplicity container...")
+
+	fullIfOlderThan := getVolumeLabel(vol, ".full_if_older_than")
+	if fullIfOlderThan == "" {
+		fullIfOlderThan = c.FullIfOlderThan
+	}
+
 	container, err := c.CreateContainer(
 		docker.CreateContainerOptions{
 			Config: &docker.Config{
 				Cmd: []string{
-					"--full-if-older-than", "15D",
+					"--full-if-older-than", fullIfOlderThan,
 					"--s3-use-new-style",
 					"--no-encryption",
 					"--allow-source-mismatch",
@@ -150,6 +155,11 @@ func (c *conplicity) pullImage() (err error) {
 	}
 
 	return err
+}
+
+func getVolumeLabel(vol *docker.Volume, key string) (value string) {
+	value = vol.Labels[labelPrefix+key]
+	return
 }
 
 func checkErr(err error, msg string, exit int) {

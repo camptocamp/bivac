@@ -55,3 +55,14 @@ are added to the path as directory levels.
 - SWIFT_AUTHURL
 - SWIFT_TENANTNAME
 - SWIFT_REGIONNAME
+
+### Backup parameter defaults
+
+- FULL_IF_OLDER_THAN, defaults to 15D
+
+## Controlling backup parameters
+
+The parameters used to backup each volume can be fine-tuned using volume labels (requires Docker 1.11.0 or greater):
+
+- `io.conplicity.ignore=true` ignores the volume
+- `io.conplicity.full_if_older_than=<value>` sets the time period after which a full backup is performed. Defaults to the `FULL_IF_OLDER_THAN` environment variable value
