@@ -7,18 +7,19 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/fgrehm/go-dockerpty"
 	"github.com/fsouza/go-dockerclient"
+  "github.com/caarlos0/env"
 )
 
 type environment struct {
-	Image              string
-	DuplicityTargetURL string
-	AWSAccessKeyID     string
-	AWSSecretAccessKey string
-	SwiftUsername      string
-	SwiftPassword      string
-	SwiftAuthURL       string
-	SwiftTenantName    string
-	SwiftRegionName    string
+  Image              string `env:"DUPLICITY_DOCKER_IMAGE" envDefault:"camptocamp/duplicity:latest"`
+  DuplicityTargetURL string `env:"DUPLICITY_TARGET_URL"`
+  AWSAccessKeyID     string `env:"AWS_ACCESS_KEY_ID"`
+  AWSSecretAccessKey string `env:"AWS_SECRET_ACCESS_KEY"`
+  SwiftUsername      string `env:"SWIFT_USERNAME"`
+  SwiftPassword      string `env:"SWIFT_PASSWORD"`
+  SwiftAuthURL       string `env:"SWIFT_AUTHURL"`
+  SwiftTenantName    string `env:"SWIFT_TENANTNAME"`
+  SwiftRegionName    string `env:"SWIFT_REGIONNAME"`
 }
 
 type conplicity struct {
@@ -59,21 +60,8 @@ func main() {
 }
 
 func (c *conplicity) getEnv() (err error) {
-	c.environment = &environment{
-		Image:              os.Getenv("DUPLICITY_DOCKER_IMAGE"),
-		DuplicityTargetURL: os.Getenv("DUPLICITY_TARGET_URL"),
-		AWSAccessKeyID:     os.Getenv("AWS_ACCESS_KEY_ID"),
-		AWSSecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
-		SwiftUsername:      os.Getenv("SWIFT_USERNAME"),
-		SwiftPassword:      os.Getenv("SWIFT_PASSWORD"),
-		SwiftAuthURL:       os.Getenv("SWIFT_AUTHURL"),
-		SwiftTenantName:    os.Getenv("SWIFT_TENANTNAME"),
-		SwiftRegionName:    os.Getenv("SWIFT_REGIONNAME"),
-	}
-
-	if c.Image == "" {
-		c.Image = "camptocamp/duplicity:latest"
-	}
+	c.environment = &environment{}
+  env.Parse(c.environment)
 
 	return
 }
