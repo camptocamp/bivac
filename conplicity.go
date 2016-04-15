@@ -86,11 +86,17 @@ func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 	log.Infof("Driver: " + vol.Driver)
 	log.Infof("Mountpoint: " + vol.Mountpoint)
 	log.Infof("Creating duplicity container...")
+
+	fullIfOlderThan := getVolumeLabel(vol, ".full_if_old_than")
+	if fullIfOlderThan == "" {
+		fullIfOlderThan = "15D"
+	}
+
 	container, err := c.CreateContainer(
 		docker.CreateContainerOptions{
 			Config: &docker.Config{
 				Cmd: []string{
-					"--full-if-older-than", "15D",
+					"--full-if-older-than", fullIfOlderThan,
 					"--s3-use-new-style",
 					"--no-encryption",
 					"--allow-source-mismatch",
@@ -151,8 +157,8 @@ func (c *conplicity) pullImage() (err error) {
 }
 
 func getVolumeLabel(vol *docker.Volume, key string) (value string) {
-  value = vol.Labels[labelPrefix + key]
-  return
+	value = vol.Labels[labelPrefix+key]
+	return
 }
 
 func checkErr(err error, msg string, exit int) {
