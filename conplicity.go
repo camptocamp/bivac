@@ -56,7 +56,7 @@ func main() {
 	for _, vol := range vols {
 		voll, _ := c.InspectVolume(vol.Name)
 		checkErr(err, "Failed to inspect volume "+vol.Name+": %v", -1)
-		err = c.backupVolume(*voll)
+		err = c.backupVolume(voll)
 		checkErr(err, "Failed to process volume "+vol.Name+": %v", -1)
 	}
 
@@ -70,7 +70,7 @@ func (c *conplicity) getEnv() (err error) {
 	return
 }
 
-func (c *conplicity) backupVolume(vol docker.Volume) (err error) {
+func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 	if utf8.RuneCountInString(vol.Name) == 64 {
 		log.Infof("Ignoring unnamed volume " + vol.Name)
 		return
