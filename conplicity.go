@@ -76,7 +76,7 @@ func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 		return
 	}
 
-	if vol.Labels[labelPrefix+".ignore"] == "true" {
+	if getVolumeLabel(vol, ".ignore") == "true" {
 		log.Infof("Ignoring blacklisted volume " + vol.Name)
 		return
 	}
@@ -148,6 +148,11 @@ func (c *conplicity) pullImage() (err error) {
 	}
 
 	return err
+}
+
+func getVolumeLabel(vol *docker.Volume, key string) (value string) {
+  value = vol.Labels[labelPrefix + key]
+  return
 }
 
 func checkErr(err error, msg string, exit int) {
