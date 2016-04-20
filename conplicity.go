@@ -135,7 +135,7 @@ func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 	}()
 
 	binds := []string{
-		vol.Mountpoint + ":" + vol.Mountpoint + ":ro",
+		vol.Name + ":" + vol.Mountpoint + ":ro",
 	}
 
 	err = dockerpty.Start(c.Client, container, &docker.HostConfig{
