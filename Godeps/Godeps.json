@@ -1,10 +1,21 @@
 {
 	"ImportPath": "github.com/camptocamp/conplicity",
 	"GoVersion": "go1.5",
-	"Packages": [
-		"github.com/fsouza/go-dockerclient"
-	],
 	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.7",
+			"Rev": "418b41d23a1bf978c06faea5313ba194650ac088"
+		},
+		{
+			"ImportPath": "github.com/caarlos0/env",
+			"Comment": "v2.0-6-g636ad28",
+			"Rev": "636ad281b72c8e300e7eb9b1a213a9fdc5b4c0b1"
+		},
+		{
+			"ImportPath": "github.com/fgrehm/go-dockerpty",
+			"Rev": "9932a06dbe657616cf819adea2468666316a9e55"
+		},
 		{
 			"ImportPath": "github.com/fsouza/go-dockerclient",
 			"Rev": "22ab4e60f51f84a4c42fbb6fbd3bbd52a49604b4"
