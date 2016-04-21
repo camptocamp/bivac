@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 	"unicode/utf8"
 
 	log "github.com/Sirupsen/logrus"
@@ -93,6 +94,12 @@ func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 		fullIfOlderThan = c.FullIfOlderThan
 	}
 
+	pathSeparator := "/"
+	if strings.HasPrefix(c.DuplicityTargetURL, "swift://") {
+		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity
+		pathSeparator = "_"
+	}
+
 	container, err := c.CreateContainer(
 		docker.CreateContainerOptions{
 			Config: &docker.Config{
@@ -102,7 +109,7 @@ func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 					"--no-encryption",
 					"--allow-source-mismatch",
 					vol.Mountpoint,
-					c.DuplicityTargetURL + "/" + c.Hostname + "/" + vol.Name,
+					c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
 				},
 				Env: []string{
 					"AWS_ACCESS_KEY_ID=" + c.AWSAccessKeyID,
