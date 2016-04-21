@@ -25,9 +25,6 @@ func main() {
 	vols, err := c.ListVolumes(docker.ListVolumesOptions{})
 	checkErr(err, "Failed to list Docker volumes: %v", 1)
 
-	err = c.PullImage()
-	checkErr(err, "Failed to pull image: %v", 1)
-
 	for _, vol := range vols {
 		voll, err := c.InspectVolume(vol.Name)
 		checkErr(err, "Failed to inspect volume "+vol.Name+": %v", -1)

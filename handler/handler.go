@@ -38,6 +38,9 @@ func (c *Conplicity) Setup() (err error) {
 	c.Client, err = docker.NewClient(endpoint)
 	checkErr(err, "Failed to create Docker client: %v", 1)
 
+	err = c.PullImage()
+	checkErr(err, "Failed to pull image: %v", 1)
+
 	return
 }
 
