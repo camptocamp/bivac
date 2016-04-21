@@ -6,6 +6,8 @@ import (
 
 const labelPrefix string = "io.conplicity"
 
+// DefaultProvider implements a BaseProvider struct
+// for simple filesystem backups
 type DefaultProvider struct {
 	*BaseProvider
 }

@@ -5,6 +5,8 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+// PostgreSQLProvider implements a BaseProvider struct
+// for PostgreSQL backups
 type PostgreSQLProvider struct {
 	*BaseProvider
 }

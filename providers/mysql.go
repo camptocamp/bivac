@@ -9,6 +9,8 @@ type MySQLProvider struct {
 	*BaseProvider
 }
 
+// MySQLProvider implements a BaseProvider struct
+// for MySQL backups
 func (*MySQLProvider) GetName() string {
 	return "MySQL"
 }

@@ -147,10 +147,12 @@ func getVolumeLabel(vol *docker.Volume, key string) (value string) {
 	return
 }
 
+// GetHandler returns the handler associated with the provider
 func (p *BaseProvider) GetHandler() *handler.Conplicity {
 	return p.handler
 }
 
+// GetBackupDir returns the backup directory used by the provider
 func (p *BaseProvider) GetBackupDir() string {
 	return p.backupDir
 }

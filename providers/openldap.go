@@ -5,6 +5,8 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+// OpenLDAPProvider implements a BaseProvider struct
+// for OpenLDAP backups
 type OpenLDAPProvider struct {
 	*BaseProvider
 }
