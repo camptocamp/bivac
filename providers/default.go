@@ -3,7 +3,6 @@ package providers
 import (
 	"os"
 	"strings"
-	"unicode/utf8"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
@@ -19,21 +18,13 @@ type DefaultProvider struct {
 }
 
 func (*DefaultProvider) PrepareBackup() error {
+	log.Infof("Nothing to do to prepare backup for default provider")
 	return nil
 }
 
 func (p *DefaultProvider) BackupVolume() (err error) {
 	vol := p.vol
 	c := p.handler
-	if utf8.RuneCountInString(vol.Name) == 64 {
-		log.Infof("Ignoring unnamed volume " + vol.Name)
-		return
-	}
-
-	if getVolumeLabel(vol, ".ignore") == "true" {
-		log.Infof("Ignoring blacklisted volume " + vol.Name)
-		return
-	}
 
 	// TODO: detect if it's a Database volume (PostgreSQL, MySQL, OpenLDAP...) and launch DUPLICITY_PRECOMMAND instead of backuping the volume
 	log.Infof("ID: " + vol.Name)
@@ -109,11 +100,6 @@ func (p *DefaultProvider) BackupVolume() (err error) {
 	return nil
 }
 
-func getVolumeLabel(vol *docker.Volume, key string) (value string) {
-	value = vol.Labels[labelPrefix+key]
-	return
-}
-
 func checkErr(err error, msg string, exit int) {
 	if err != nil {
 		log.Errorf(msg, err)
@@ -122,4 +108,9 @@ func checkErr(err error, msg string, exit int) {
 			os.Exit(exit)
 		}
 	}
+}
+
+func getVolumeLabel(vol *docker.Volume, key string) (value string) {
+	value = vol.Labels[labelPrefix+key]
+	return
 }
