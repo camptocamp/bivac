@@ -69,6 +69,7 @@ func backupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
 	}
 
 	p := providers.GetProvider(c, vol)
+	log.Infof("Using provider %v to backup %v", p.GetName(), vol.Name)
 	err = p.PrepareBackup()
 	checkErr(err, "Failed to prepare backup for volume "+vol.Name+": %v", -1)
 	err = p.BackupVolume()

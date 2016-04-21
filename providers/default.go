@@ -17,6 +17,10 @@ type DefaultProvider struct {
 	vol     *docker.Volume
 }
 
+func (*DefaultProvider) GetName() string {
+	return "Default"
+}
+
 func (*DefaultProvider) PrepareBackup() error {
 	log.Infof("Nothing to do to prepare backup for default provider")
 	return nil

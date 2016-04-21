@@ -12,6 +12,10 @@ type MySQLProvider struct {
 	backupDir string
 }
 
+func (*MySQLProvider) GetName() string {
+	return "MySQL"
+}
+
 func (p *MySQLProvider) PrepareBackup() (err error) {
 	log.Infof("mysql directory found, this should be MySQL datadir")
 	log.Infof("Searching mysql container using this volume...")

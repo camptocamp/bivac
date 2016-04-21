@@ -9,6 +9,7 @@ import (
 )
 
 type Provider interface {
+	GetName() string
 	PrepareBackup() error
 	BackupVolume() error
 }

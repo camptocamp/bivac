@@ -12,6 +12,10 @@ type PostgreSQLProvider struct {
 	backupDir string
 }
 
+func (p *PostgreSQLProvider) GetName() string {
+	return "PostgreSQL"
+}
+
 func (p *PostgreSQLProvider) PrepareBackup() (err error) {
 	log.Infof("PG_VERSION file found, this should be a PostgreSQL datadir")
 	log.Infof("Searching postgres container using this volume...")
