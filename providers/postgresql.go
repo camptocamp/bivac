@@ -30,7 +30,6 @@ func (p *PostgreSQLProvider) PrepareBackup() (err error) {
 	log.Infof("Looking for a postgres container using this volume...")
 	containers, err := c.ListContainers(docker.ListContainersOptions{})
 	checkErr(err, "Failed to list containers: %v", -1)
-	log.Infof("%v", containers)
 	for _, container := range containers {
 		log.Infof("Considering container %v", container.ID)
 		for _, mount := range container.Mounts {
