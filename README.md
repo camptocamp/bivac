@@ -66,3 +66,15 @@ The parameters used to backup each volume can be fine-tuned using volume labels 
 
 - `io.conplicity.ignore=true` ignores the volume
 - `io.conplicity.full_if_older_than=<value>` sets the time period after which a full backup is performed. Defaults to the `FULL_IF_OLDER_THAN` environment variable value
+
+
+## Providers
+
+
+Conplicity detects automatically the kind of data that is stored on a volume and adapts its backup strategy to it. The current providers and associated strategies are currently supported:
+
+* PostgreSQL: Run `pg_dumpall` before backup
+* MySQL: Run `mysqldump` before backup
+* OpenLDAP: Run `slapcat` before backup
+* Default: Backup volume data as is
+
