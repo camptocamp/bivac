@@ -30,6 +30,8 @@ func (p *OpenLDAPProvider) PrepareBackup() (err error) {
 	log.Infof("Looking for an OpenLDAP container using this volume...")
 	containers, _ := c.ListContainers(docker.ListContainersOptions{})
 	for _, container := range containers {
+		container, err := c.InspectContainer(container.ID)
+		checkErr(err, "Failed to inspect container "+container.ID+": %v", -1)
 		for _, mount := range container.Mounts {
 			if mount.Name == vol.Name {
 				log.Infof("Volume %v is used by container %v", vol.Name, container.ID)
