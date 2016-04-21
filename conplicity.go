@@ -101,7 +101,7 @@ func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 					"--s3-use-new-style",
 					"--no-encryption",
 					"--allow-source-mismatch",
-					"/var/backups",
+					vol.Mountpoint,
 					c.DuplicityTargetURL + "/" + c.Hostname + "/" + vol.Name,
 				},
 				Env: []string{
@@ -135,7 +135,7 @@ func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 	}()
 
 	binds := []string{
-		vol.Mountpoint + ":/var/backups:ro",
+		vol.Mountpoint + ":" + vol.Mountpoint + ":ro",
 	}
 
 	err = dockerpty.Start(c.Client, container, &docker.HostConfig{
