@@ -56,7 +56,7 @@ func main() {
 	checkErr(err, "Failed to pull image: %v", 1)
 
 	for _, vol := range vols {
-		voll, _ := c.InspectVolume(vol.Name)
+		voll, err := c.InspectVolume(vol.Name)
 		checkErr(err, "Failed to inspect volume "+vol.Name+": %v", -1)
 		err = c.backupVolume(voll)
 		checkErr(err, "Failed to process volume "+vol.Name+": %v", -1)
