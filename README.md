@@ -43,6 +43,10 @@ Target URL passed to duplicity.
 The hostname and the name of the volume to backup
 are added to the path as directory levels.
 
+### FULL_IF_OLDER_THAN
+
+When to perform a full backup defaults to 15D
+
 ### S3 credentials
 
 - AWS_ACCESS_KEY_ID
@@ -55,10 +59,6 @@ are added to the path as directory levels.
 - SWIFT_AUTHURL
 - SWIFT_TENANTNAME
 - SWIFT_REGIONNAME
-
-### Backup parameter defaults
-
-- FULL_IF_OLDER_THAN, defaults to 15D
 
 ## Controlling backup parameters
 
