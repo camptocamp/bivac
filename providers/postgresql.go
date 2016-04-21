@@ -2,19 +2,16 @@ package providers
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/handler"
 	"github.com/fsouza/go-dockerclient"
 )
 
-type PostgreSQLProvider BaseProvider
+type PostgreSQLProvider struct {
+	*BaseProvider
+}
 
 // GetName returns the provider name
 func (p *PostgreSQLProvider) GetName() string {
 	return "PostgreSQL"
-}
-
-func (p *PostgreSQLProvider) GetHandler() *handler.Conplicity {
-	return p.handler
 }
 
 func (p *PostgreSQLProvider) GetBackupDir() string {

@@ -2,18 +2,15 @@ package providers
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/handler"
 	"github.com/fsouza/go-dockerclient"
 )
 
-type OpenLDAPProvider BaseProvider
+type OpenLDAPProvider struct {
+	*BaseProvider
+}
 
 func (p *OpenLDAPProvider) GetName() string {
 	return "OpenLDAP"
-}
-
-func (p *OpenLDAPProvider) GetHandler() *handler.Conplicity {
-	return p.handler
 }
 
 func (p *OpenLDAPProvider) GetBackupDir() string {

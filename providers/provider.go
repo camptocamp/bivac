@@ -28,29 +28,29 @@ type BaseProvider struct {
 // GetProvider detects which provider suits the passed volume and returns it
 func GetProvider(c *handler.Conplicity, v *docker.Volume) Provider {
 	log.Infof("Detecting provider for volume %v", v.Name)
+	p := &BaseProvider{
+		handler: c,
+		vol:     v,
+	}
 	if f, err := os.Stat(v.Mountpoint + "/PG_VERSION"); err == nil && f.Mode().IsRegular() {
 		log.Infof("PG_VERSION file found, this should be a PostgreSQL datadir")
 		return &PostgreSQLProvider{
-			handler: c,
-			vol:     v,
+			BaseProvider: p,
 		}
 	} else if f, err := os.Stat(v.Mountpoint + "/mysql"); err == nil && f.Mode().IsDir() {
 		log.Infof("mysql directory found, this should be MySQL datadir")
 		return &MySQLProvider{
-			handler: c,
-			vol:     v,
+			BaseProvider: p,
 		}
 	} else if f, err := os.Stat(v.Mountpoint + "/DB_CONFIG"); err == nil && f.Mode().IsRegular() {
 		log.Infof("DB_CONFIG file found, this should be and OpenLDAP datadir")
 		return &OpenLDAPProvider{
-			handler: c,
-			vol:     v,
+			BaseProvider: p,
 		}
 	}
 
 	return &DefaultProvider{
-		handler: c,
-		vol:     v,
+		BaseProvider: p,
 	}
 }
 
@@ -145,4 +145,12 @@ func checkErr(err error, msg string, exit int) {
 func getVolumeLabel(vol *docker.Volume, key string) (value string) {
 	value = vol.Labels[labelPrefix+key]
 	return
+}
+
+func (p *BaseProvider) GetHandler() *handler.Conplicity {
+	return p.handler
+}
+
+func (p *BaseProvider) GetBackupDir() string {
+	return p.backupDir
 }

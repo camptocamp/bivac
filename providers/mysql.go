@@ -2,18 +2,15 @@ package providers
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/handler"
 	"github.com/fsouza/go-dockerclient"
 )
 
-type MySQLProvider BaseProvider
+type MySQLProvider struct {
+	*BaseProvider
+}
 
 func (*MySQLProvider) GetName() string {
 	return "MySQL"
-}
-
-func (p *MySQLProvider) GetHandler() *handler.Conplicity {
-	return p.handler
 }
 
 func (p *MySQLProvider) GetBackupDir() string {
