@@ -43,4 +43,3 @@ func (c *Conplicity) PullImage() (err error) {
 
 	return err
 }
-

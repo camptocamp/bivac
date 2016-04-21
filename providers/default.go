@@ -4,26 +4,27 @@ import (
 	"os"
 	"strings"
 	"unicode/utf8"
+
 	log "github.com/Sirupsen/logrus"
-	"github.com/fsouza/go-dockerclient"
+	"github.com/camptocamp/conplicity/handler"
 	"github.com/fgrehm/go-dockerpty"
-  "github.com/camptocamp/conplicity/handler"
+	"github.com/fsouza/go-dockerclient"
 )
 
 const labelPrefix string = "io.conplicity"
 
 type DefaultProvider struct {
-  handler *handler.Conplicity
-  vol *docker.Volume
+	handler *handler.Conplicity
+	vol     *docker.Volume
 }
 
 func (*DefaultProvider) PrepareBackup() error {
-  return nil
+	return nil
 }
 
 func (p *DefaultProvider) BackupVolume() (err error) {
-  vol := p.vol
-  c := p.handler
+	vol := p.vol
+	c := p.handler
 	if utf8.RuneCountInString(vol.Name) == 64 {
 		log.Infof("Ignoring unnamed volume " + vol.Name)
 		return
@@ -40,7 +41,7 @@ func (p *DefaultProvider) BackupVolume() (err error) {
 	log.Infof("Mountpoint: " + vol.Mountpoint)
 
 	backupDir := ""
-  // p.backupDir?
+	// p.backupDir?
 
 	log.Infof("Creating duplicity container...")
 
@@ -105,9 +106,8 @@ func (p *DefaultProvider) BackupVolume() (err error) {
 	})
 	checkErr(err, "Failed to start container for volume "+vol.Name+": %v", -1)
 	return
-  return nil
+	return nil
 }
-
 
 func getVolumeLabel(vol *docker.Volume, key string) (value string) {
 	value = vol.Labels[labelPrefix+key]
