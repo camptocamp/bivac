@@ -87,6 +87,115 @@ func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 	log.Infof("ID: " + vol.Name)
 	log.Infof("Driver: " + vol.Driver)
 	log.Infof("Mountpoint: " + vol.Mountpoint)
+
+	backupDir := ""
+	log.Infof("Detect volume content...")
+	// TODO: Needs refactoring to avoid code duplication
+	// FIXME: this will only work will local volume driver and root access,
+	// we need to use something like "docker run -v vol.Name:/foo busybox test -f /foo/PG_VERSION"
+	if f, err := os.Stat(vol.Mountpoint + "/PG_VERSION"); err == nil && f.Mode().IsRegular() {
+		log.Infof("PG_VERSION file found, this should be a PostgreSQL datadir")
+		log.Infof("Searching postgres container using this volume...")
+		containers, _ := c.ListContainers(docker.ListContainersOptions{})
+		for _, container := range containers {
+			for _, mount := range container.Mounts {
+				if mount.Name == vol.Name {
+					log.Infof("Volume %v is used by container %v", vol.Name, container.ID)
+					log.Infof("Launch pg_dumpall in container %v...", container.ID)
+					exec, err := c.CreateExec(
+						docker.CreateExecOptions{
+							Container: container.ID,
+							Cmd: []string{
+								"sh",
+								"-c",
+								"mkdir -p " + mount.Destination + "/backups && pg_dumpall -Upostgres > " + mount.Destination + "/backups/all.sql",
+							},
+						},
+					)
+
+					checkErr(err, "Failed to create exec", 1)
+
+					err = c.StartExec(
+						exec.ID,
+						docker.StartExecOptions{},
+					)
+
+					checkErr(err, "Failed to create exec", 1)
+
+					backupDir = "backups"
+				}
+			}
+		}
+	} else if f, err := os.Stat(vol.Mountpoint + "/mysql"); err == nil && f.Mode().IsDir() {
+		log.Infof("mysql directory found, this should be MySQL datadir")
+		log.Infof("Searching mysql container using this volume...")
+		containers, _ := c.ListContainers(docker.ListContainersOptions{})
+		for _, container := range containers {
+			for _, mount := range container.Mounts {
+				if mount.Name == vol.Name {
+					log.Infof("Volume %v is used by container %v", vol.Name, container.ID)
+					log.Infof("Launch mysqldump in container %v...", container.ID)
+					exec, err := c.CreateExec(
+						docker.CreateExecOptions{
+							Container: container.ID,
+							Cmd: []string{
+								"sh",
+								"-c",
+								"mkdir -p " + mount.Destination + "/backups && mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD > " + mount.Destination + "/backups/all.sql",
+							},
+						},
+					)
+
+					checkErr(err, "Failed to create exec", 1)
+
+					err = c.StartExec(
+						exec.ID,
+						docker.StartExecOptions{},
+					)
+
+					checkErr(err, "Failed to create exec", 1)
+
+					backupDir = "backups"
+				}
+			}
+		}
+	} else if f, err := os.Stat(vol.Mountpoint + "/DB_CONFIG"); err == nil && f.Mode().IsRegular() {
+		log.Infof("DB_CONFIG file found, this should be and OpenLDAP datadir")
+		log.Infof("Searching OpenLDAP container using this volume...")
+		containers, _ := c.ListContainers(docker.ListContainersOptions{})
+		for _, container := range containers {
+			for _, mount := range container.Mounts {
+				if mount.Name == vol.Name {
+					log.Infof("Volume %v is used by container %v", vol.Name, container.ID)
+					log.Infof("Launch slapcat in container %v...", container.ID)
+					exec, err := c.CreateExec(
+						docker.CreateExecOptions{
+							Container: container.ID,
+							Cmd: []string{
+								"sh",
+								"-c",
+								"mkdir -p " + mount.Destination + "/backups && slapcat > " + mount.Destination + "/backups/all.ldif",
+							},
+						},
+					)
+
+					checkErr(err, "Failed to create exec", 1)
+
+					err = c.StartExec(
+						exec.ID,
+						docker.StartExecOptions{},
+					)
+
+					checkErr(err, "Failed to create exec", 1)
+
+					backupDir = "backups"
+				}
+			}
+		}
+	} else {
+		log.Infof("Unknown content")
+	}
+
 	log.Infof("Creating duplicity container...")
 
 	fullIfOlderThan := getVolumeLabel(vol, ".full_if_older_than")
@@ -108,7 +217,7 @@ func (c *conplicity) backupVolume(vol *docker.Volume) (err error) {
 					"--s3-use-new-style",
 					"--no-encryption",
 					"--allow-source-mismatch",
-					vol.Mountpoint,
+					vol.Mountpoint + "/" + backupDir,
 					c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
 				},
 				Env: []string{
