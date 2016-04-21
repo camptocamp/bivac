@@ -14,10 +14,6 @@ func (p *PostgreSQLProvider) GetName() string {
 	return "PostgreSQL"
 }
 
-func (p *PostgreSQLProvider) GetBackupDir() string {
-	return p.backupDir
-}
-
 func (p *PostgreSQLProvider) PrepareBackup() (err error) {
 	c := p.handler
 	vol := p.vol

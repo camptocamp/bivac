@@ -13,10 +13,6 @@ func (*MySQLProvider) GetName() string {
 	return "MySQL"
 }
 
-func (p *MySQLProvider) GetBackupDir() string {
-	return p.backupDir
-}
-
 func (p *MySQLProvider) PrepareBackup() (err error) {
 	c := p.handler.Client
 	vol := p.vol

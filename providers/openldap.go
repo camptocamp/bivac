@@ -13,10 +13,6 @@ func (p *OpenLDAPProvider) GetName() string {
 	return "OpenLDAP"
 }
 
-func (p *OpenLDAPProvider) GetBackupDir() string {
-	return p.backupDir
-}
-
 func (p *OpenLDAPProvider) PrepareBackup() (err error) {
 	c := p.handler.Client
 	vol := p.vol
