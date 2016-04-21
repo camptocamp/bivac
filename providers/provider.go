@@ -11,6 +11,8 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+const labelPrefix string = "io.conplicity"
+
 // A Provider is an interface for providers
 type Provider interface {
 	GetName() string
