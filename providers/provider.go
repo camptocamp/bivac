@@ -105,6 +105,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 	checkErr(err, "Failed to create container for volume "+vol.Name+": %v", 1)
 
 	defer func() {
+		log.Infof("Removing container %v...", container.ID)
 		c.RemoveContainer(docker.RemoveContainerOptions{
 			ID:    container.ID,
 			Force: true,
