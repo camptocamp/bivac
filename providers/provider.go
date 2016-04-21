@@ -6,6 +6,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
+	"github.com/camptocamp/conplicity/util"
 	"github.com/fgrehm/go-dockerpty"
 	"github.com/fsouza/go-dockerclient"
 )
@@ -109,7 +110,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 		},
 	)
 
-	checkErr(err, "Failed to create container for volume "+vol.Name+": %v", 1)
+	util.CheckErr(err, "Failed to create container for volume "+vol.Name+": %v", 1)
 
 	defer func() {
 		log.Infof("Removing container %v...", container.ID)
@@ -127,19 +128,9 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 	err = dockerpty.Start(c.Client, container, &docker.HostConfig{
 		Binds: binds,
 	})
-	checkErr(err, "Failed to start container for volume "+vol.Name+": %v", -1)
+	util.CheckErr(err, "Failed to start container for volume "+vol.Name+": %v", -1)
 	return
 	return nil
-}
-
-func checkErr(err error, msg string, exit int) {
-	if err != nil {
-		log.Errorf(msg, err)
-
-		if exit != -1 {
-			os.Exit(exit)
-		}
-	}
 }
 
 func getVolumeLabel(vol *docker.Volume, key string) (value string) {

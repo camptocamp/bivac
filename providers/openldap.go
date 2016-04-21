@@ -2,6 +2,7 @@ package providers
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/camptocamp/conplicity/util"
 	"github.com/fsouza/go-dockerclient"
 )
 
@@ -24,7 +25,7 @@ func (p *OpenLDAPProvider) PrepareBackup() (err error) {
 	containers, _ := c.ListContainers(docker.ListContainersOptions{})
 	for _, container := range containers {
 		container, err := c.InspectContainer(container.ID)
-		checkErr(err, "Failed to inspect container "+container.ID+": %v", -1)
+		util.CheckErr(err, "Failed to inspect container "+container.ID+": %v", -1)
 		for _, mount := range container.Mounts {
 			if mount.Name == vol.Name {
 				log.Infof("Volume %v is used by container %v", vol.Name, container.ID)
@@ -40,14 +41,14 @@ func (p *OpenLDAPProvider) PrepareBackup() (err error) {
 					},
 				)
 
-				checkErr(err, "Failed to create exec", 1)
+				util.CheckErr(err, "Failed to create exec", 1)
 
 				err = c.StartExec(
 					exec.ID,
 					docker.StartExecOptions{},
 				)
 
-				checkErr(err, "Failed to create exec", 1)
+				util.CheckErr(err, "Failed to create exec", 1)
 
 				p.backupDir = "backups"
 			}

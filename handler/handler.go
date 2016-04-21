@@ -5,6 +5,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/caarlos0/env"
+	"github.com/camptocamp/conplicity/util"
 	"github.com/fsouza/go-dockerclient"
 )
 
@@ -33,15 +34,15 @@ func (c *Conplicity) Setup() (err error) {
 	c.getEnv()
 
 	c.Hostname, err = os.Hostname()
-	checkErr(err, "Failed to get hostname: %v", 1)
+	util.CheckErr(err, "Failed to get hostname: %v", 1)
 
 	endpoint := "unix:///var/run/docker.sock"
 
 	c.Client, err = docker.NewClient(endpoint)
-	checkErr(err, "Failed to create Docker client: %v", 1)
+	util.CheckErr(err, "Failed to create Docker client: %v", 1)
 
 	err = c.pullImage()
-	checkErr(err, "Failed to pull image: %v", 1)
+	util.CheckErr(err, "Failed to pull image: %v", 1)
 
 	return
 }
@@ -63,14 +64,4 @@ func (c *Conplicity) pullImage() (err error) {
 	}
 
 	return err
-}
-
-func checkErr(err error, msg string, exit int) {
-	if err != nil {
-		log.Errorf(msg, err)
-
-		if exit != -1 {
-			os.Exit(exit)
-		}
-	}
 }
