@@ -16,6 +16,7 @@ func (p *PostgreSQLProvider) GetName() string {
 	return "PostgreSQL"
 }
 
+// PrepareBackup sets up the PostgreSQL data before backup
 func (p *PostgreSQLProvider) PrepareBackup() (err error) {
 	c := p.handler
 	vol := p.vol

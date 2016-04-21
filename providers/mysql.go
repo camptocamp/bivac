@@ -5,16 +5,18 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+// MySQLProvider implements a BaseProvider struct
+// for MySQL backups
 type MySQLProvider struct {
 	*BaseProvider
 }
 
-// MySQLProvider implements a BaseProvider struct
-// for MySQL backups
+// GetName returns the provider name
 func (*MySQLProvider) GetName() string {
 	return "MySQL"
 }
 
+// PrepareBackup sets up MySQL data before backup
 func (p *MySQLProvider) PrepareBackup() (err error) {
 	c := p.handler.Client
 	vol := p.vol

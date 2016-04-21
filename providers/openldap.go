@@ -11,10 +11,12 @@ type OpenLDAPProvider struct {
 	*BaseProvider
 }
 
+// GetName returns the provider name
 func (p *OpenLDAPProvider) GetName() string {
 	return "OpenLDAP"
 }
 
+// PrepareBackup sets up the OpenLDAP data before backup
 func (p *OpenLDAPProvider) PrepareBackup() (err error) {
 	c := p.handler.Client
 	vol := p.vol
