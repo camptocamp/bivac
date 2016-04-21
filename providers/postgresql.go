@@ -25,10 +25,9 @@ func (p *PostgreSQLProvider) GetBackupDir() string {
 }
 
 func (p *PostgreSQLProvider) PrepareBackup() (err error) {
-	log.Infof("PG_VERSION file found, this should be a PostgreSQL datadir")
-	log.Infof("Searching postgres container using this volume...")
 	c := p.handler.Client
 	vol := p.vol
+	log.Infof("Looking for a postgres container using this volume...")
 	containers, _ := c.ListContainers(docker.ListContainersOptions{})
 	for _, container := range containers {
 		for _, mount := range container.Mounts {

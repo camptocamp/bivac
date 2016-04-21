@@ -20,16 +20,19 @@ type Provider interface {
 func GetProvider(c *handler.Conplicity, v *docker.Volume) Provider {
 	log.Infof("Detecting provider for volume %v", v.Name)
 	if f, err := os.Stat(v.Mountpoint + "/PG_VERSION"); err == nil && f.Mode().IsRegular() {
+		log.Infof("PG_VERSION file found, this should be a PostgreSQL datadir")
 		return &PostgreSQLProvider{
 			handler: c,
 			vol:     v,
 		}
 	} else if f, err := os.Stat(v.Mountpoint + "/mysql"); err == nil && f.Mode().IsDir() {
+		log.Infof("mysql directory found, this should be MySQL datadir")
 		return &MySQLProvider{
 			handler: c,
 			vol:     v,
 		}
 	} else if f, err := os.Stat(v.Mountpoint + "/DB_CONFIG"); err == nil && f.Mode().IsRegular() {
+		log.Infof("DB_CONFIG file found, this should be and OpenLDAP datadir")
 		return &OpenLDAPProvider{
 			handler: c,
 			vol:     v,

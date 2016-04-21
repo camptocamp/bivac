@@ -25,10 +25,9 @@ func (p *MySQLProvider) GetBackupDir() string {
 }
 
 func (p *MySQLProvider) PrepareBackup() (err error) {
-	log.Infof("mysql directory found, this should be MySQL datadir")
-	log.Infof("Searching mysql container using this volume...")
 	c := p.handler.Client
 	vol := p.vol
+	log.Infof("Looking for a mysql container using this volume...")
 	containers, _ := c.ListContainers(docker.ListContainersOptions{})
 	for _, container := range containers {
 		for _, mount := range container.Mounts {
