@@ -25,15 +25,18 @@ func (p *PostgreSQLProvider) GetBackupDir() string {
 }
 
 func (p *PostgreSQLProvider) PrepareBackup() (err error) {
-	c := p.handler.Client
+	c := p.handler
 	vol := p.vol
 	log.Infof("Looking for a postgres container using this volume...")
-	containers, _ := c.ListContainers(docker.ListContainersOptions{})
+	containers, err := c.ListContainers(docker.ListContainersOptions{})
+	checkErr(err, "Failed to list containers: %v", -1)
+	log.Infof("%v", containers)
 	for _, container := range containers {
+		log.Infof("Considering container %v", container.ID)
 		for _, mount := range container.Mounts {
 			if mount.Name == vol.Name {
 				log.Infof("Volume %v is used by container %v", vol.Name, container.ID)
-				log.Infof("Launch pg_dumpall in container %v...", container.ID)
+				log.Infof("Launching pg_dumpall in container %v...", container.ID)
 				exec, err := c.CreateExec(
 					docker.CreateExecOptions{
 						Container: container.ID,
