@@ -20,6 +20,10 @@ func (p *OpenLDAPProvider) GetHandler() *handler.Conplicity {
 	return p.handler
 }
 
+func (p *OpenLDAPProvider) GetBackupDir() string {
+	return p.backupDir
+}
+
 func (p *OpenLDAPProvider) PrepareBackup() (err error) {
 	log.Infof("DB_CONFIG file found, this should be and OpenLDAP datadir")
 	log.Infof("Searching OpenLDAP container using this volume...")

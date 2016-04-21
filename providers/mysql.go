@@ -20,6 +20,10 @@ func (p *MySQLProvider) GetHandler() *handler.Conplicity {
 	return p.handler
 }
 
+func (p *MySQLProvider) GetBackupDir() string {
+	return p.backupDir
+}
+
 func (p *MySQLProvider) PrepareBackup() (err error) {
 	log.Infof("mysql directory found, this should be MySQL datadir")
 	log.Infof("Searching mysql container using this volume...")

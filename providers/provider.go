@@ -13,6 +13,7 @@ import (
 type Provider interface {
 	GetName() string
 	GetHandler() *handler.Conplicity
+	GetBackupDir() string
 	PrepareBackup() error
 }
 
@@ -46,9 +47,6 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 	log.Infof("Driver: " + vol.Driver)
 	log.Infof("Mountpoint: " + vol.Mountpoint)
 
-	backupDir := ""
-	// p.backupDir?
-
 	log.Infof("Creating duplicity container...")
 
 	c := p.GetHandler()
@@ -63,6 +61,8 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity
 		pathSeparator = "_"
 	}
+
+	backupDir := p.GetBackupDir()
 
 	container, err := c.CreateContainer(
 		docker.CreateContainerOptions{

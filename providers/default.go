@@ -21,6 +21,10 @@ func (p *DefaultProvider) GetHandler() *handler.Conplicity {
 	return p.handler
 }
 
+func (p *DefaultProvider) GetBackupDir() string {
+	return ""
+}
+
 func (*DefaultProvider) PrepareBackup() error {
 	log.Infof("Nothing to do to prepare backup for default provider")
 	return nil
