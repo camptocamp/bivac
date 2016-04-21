@@ -18,6 +18,13 @@ type Provider interface {
 	PrepareBackup() error
 }
 
+// BaseProvider is a struct implementing the Provider interface
+type BaseProvider struct {
+	handler   *handler.Conplicity
+	vol       *docker.Volume
+	backupDir string
+}
+
 // GetProvider detects which provider suits the passed volume and returns it
 func GetProvider(c *handler.Conplicity, v *docker.Volume) Provider {
 	log.Infof("Detecting provider for volume %v", v.Name)

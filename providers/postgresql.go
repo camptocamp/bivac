@@ -6,13 +6,7 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
-// PostgreSQLProvider is an instance of a Provider interface
-// for PostgreSQL backups
-type PostgreSQLProvider struct {
-	handler   *handler.Conplicity
-	vol       *docker.Volume
-	backupDir string
-}
+type PostgreSQLProvider BaseProvider
 
 // GetName returns the provider name
 func (p *PostgreSQLProvider) GetName() string {

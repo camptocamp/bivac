@@ -6,11 +6,7 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
-type OpenLDAPProvider struct {
-	handler   *handler.Conplicity
-	vol       *docker.Volume
-	backupDir string
-}
+type OpenLDAPProvider BaseProvider
 
 func (p *OpenLDAPProvider) GetName() string {
 	return "OpenLDAP"

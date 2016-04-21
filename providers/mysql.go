@@ -6,11 +6,7 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
-type MySQLProvider struct {
-	handler   *handler.Conplicity
-	vol       *docker.Volume
-	backupDir string
-}
+type MySQLProvider BaseProvider
 
 func (*MySQLProvider) GetName() string {
 	return "MySQL"
