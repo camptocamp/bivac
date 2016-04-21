@@ -13,12 +13,10 @@ type OpenLDAPProvider struct {
 }
 
 func (p *OpenLDAPProvider) PrepareBackup() (err error) {
-	log.Infof("PG_VERSION file found, this should be a OpenLDAP datadir")
-	log.Infof("Searching postgres container using this volume...")
-	c := p.handler.Client
-	vol := p.vol
 	log.Infof("DB_CONFIG file found, this should be and OpenLDAP datadir")
 	log.Infof("Searching OpenLDAP container using this volume...")
+	c := p.handler.Client
+	vol := p.vol
 	containers, _ := c.ListContainers(docker.ListContainersOptions{})
 	for _, container := range containers {
 		for _, mount := range container.Mounts {

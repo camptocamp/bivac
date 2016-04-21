@@ -13,12 +13,10 @@ type MySQLProvider struct {
 }
 
 func (p *MySQLProvider) PrepareBackup() (err error) {
-	log.Infof("PG_VERSION file found, this should be a MySQL datadir")
-	log.Infof("Searching postgres container using this volume...")
-	c := p.handler.Client
-	vol := p.vol
 	log.Infof("mysql directory found, this should be MySQL datadir")
 	log.Infof("Searching mysql container using this volume...")
+	c := p.handler.Client
+	vol := p.vol
 	containers, _ := c.ListContainers(docker.ListContainersOptions{})
 	for _, container := range containers {
 		for _, mount := range container.Mounts {
