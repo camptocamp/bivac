@@ -71,7 +71,7 @@ The parameters used to backup each volume can be fine-tuned using volume labels 
 ## Providers
 
 
-Conplicity detects automatically the kind of data that is stored on a volume and adapts its backup strategy to it. The current providers and associated strategies are currently supported:
+Conplicity detects automatically the kind of data that is stored on a volume and adapts its backup strategy to it. The following providers and associated strategies are currently supported:
 
 * PostgreSQL: Run `pg_dumpall` before backup
 * MySQL: Run `mysqldump` before backup
