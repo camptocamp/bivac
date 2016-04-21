@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"os"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/caarlos0/env"
 	"github.com/fsouza/go-dockerclient"
@@ -25,6 +27,20 @@ type Conplicity struct {
 	Hostname string
 }
 
+func (c *Conplicity) Setup() (err error) {
+	c.GetEnv()
+
+	c.Hostname, err = os.Hostname()
+	checkErr(err, "Failed to get hostname: %v", 1)
+
+	endpoint := "unix:///var/run/docker.sock"
+
+	c.Client, err = docker.NewClient(endpoint)
+	checkErr(err, "Failed to create Docker client: %v", 1)
+
+	return
+}
+
 func (c *Conplicity) GetEnv() (err error) {
 	c.Environment = &Environment{}
 	env.Parse(c.Environment)
@@ -42,4 +58,14 @@ func (c *Conplicity) PullImage() (err error) {
 	}
 
 	return err
+}
+
+func checkErr(err error, msg string, exit int) {
+	if err != nil {
+		log.Errorf(msg, err)
+
+		if exit != -1 {
+			os.Exit(exit)
+		}
+	}
 }

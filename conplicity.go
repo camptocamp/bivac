@@ -19,16 +19,8 @@ func main() {
 	var err error
 
 	c := &handler.Conplicity{}
-
-	c.GetEnv()
-
-	c.Hostname, err = os.Hostname()
-	checkErr(err, "Failed to get hostname: %v", 1)
-
-	endpoint := "unix:///var/run/docker.sock"
-
-	c.Client, err = docker.NewClient(endpoint)
-	checkErr(err, "Failed to create Docker client: %v", 1)
+	err = c.Setup()
+	checkErr(err, "Failed to setup Conplicity handler: %v", 1)
 
 	vols, err := c.ListVolumes(docker.ListVolumesOptions{})
 	checkErr(err, "Failed to list Docker volumes: %v", 1)
@@ -45,16 +37,6 @@ func main() {
 	}
 
 	log.Infof("End backup...")
-}
-
-func checkErr(err error, msg string, exit int) {
-	if err != nil {
-		log.Errorf(msg, err)
-
-		if exit != -1 {
-			os.Exit(exit)
-		}
-	}
 }
 
 func backupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
@@ -80,4 +62,14 @@ func backupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
 func getVolumeLabel(vol *docker.Volume, key string) (value string) {
 	value = vol.Labels[labelPrefix+key]
 	return
+}
+
+func checkErr(err error, msg string, exit int) {
+	if err != nil {
+		log.Errorf(msg, err)
+
+		if exit != -1 {
+			os.Exit(exit)
+		}
+	}
 }
