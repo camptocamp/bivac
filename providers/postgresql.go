@@ -16,6 +16,10 @@ func (p *PostgreSQLProvider) GetName() string {
 	return "PostgreSQL"
 }
 
+func (p *PostgreSQLProvider) GetHandler() *handler.Conplicity {
+	return p.handler
+}
+
 func (p *PostgreSQLProvider) PrepareBackup() (err error) {
 	log.Infof("PG_VERSION file found, this should be a PostgreSQL datadir")
 	log.Infof("Searching postgres container using this volume...")

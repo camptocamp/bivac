@@ -12,6 +12,7 @@ import (
 
 type Provider interface {
 	GetName() string
+	GetHandler() *handler.Conplicity
 	PrepareBackup() error
 }
 
@@ -40,7 +41,7 @@ func GetProvider(c *handler.Conplicity, v *docker.Volume) Provider {
 	}
 }
 
-func BackupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
+func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 	log.Infof("ID: " + vol.Name)
 	log.Infof("Driver: " + vol.Driver)
 	log.Infof("Mountpoint: " + vol.Mountpoint)
@@ -49,6 +50,8 @@ func BackupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
 	// p.backupDir?
 
 	log.Infof("Creating duplicity container...")
+
+	c := p.GetHandler()
 
 	fullIfOlderThan := getVolumeLabel(vol, ".full_if_older_than")
 	if fullIfOlderThan == "" {
