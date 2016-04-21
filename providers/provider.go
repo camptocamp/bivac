@@ -41,10 +41,10 @@ func GetProvider(c *handler.Conplicity, v *docker.Volume) Provider {
 		}
 	}
 
-  return &DefaultProvider{
-    handler: c,
-    vol:     v,
-  }
+	return &DefaultProvider{
+		handler: c,
+		vol:     v,
+	}
 }
 
 // BackupVolume performs the backup of the passed volume
