@@ -53,7 +53,3 @@ func (p *PostgreSQLProvider) PrepareBackup() (err error) {
 	}
 	return
 }
-
-func (p *PostgreSQLProvider) BackupVolume() (err error) {
-	return
-}

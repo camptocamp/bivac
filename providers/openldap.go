@@ -53,7 +53,3 @@ func (p *OpenLDAPProvider) PrepareBackup() (err error) {
 	}
 	return
 }
-
-func (p *OpenLDAPProvider) BackupVolume() (err error) {
-	return
-}

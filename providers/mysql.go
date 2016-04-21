@@ -53,7 +53,3 @@ func (p *MySQLProvider) PrepareBackup() (err error) {
 	}
 	return
 }
-
-func (p *MySQLProvider) BackupVolume() (err error) {
-	return
-}

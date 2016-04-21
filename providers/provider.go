@@ -41,7 +41,6 @@ func GetProvider(c *handler.Conplicity, v *docker.Volume) Provider {
 }
 
 func BackupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
-	// TODO: detect if it's a Database volume (PostgreSQL, MySQL, OpenLDAP...) and launch DUPLICITY_PRECOMMAND instead of backuping the volume
 	log.Infof("ID: " + vol.Name)
 	log.Infof("Driver: " + vol.Driver)
 	log.Infof("Mountpoint: " + vol.Mountpoint)
