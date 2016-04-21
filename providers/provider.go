@@ -10,6 +10,7 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+// A Provider is an interface for providers
 type Provider interface {
 	GetName() string
 	GetHandler() *handler.Conplicity
@@ -17,6 +18,7 @@ type Provider interface {
 	PrepareBackup() error
 }
 
+// GetProvider detects which provider suits the passed volume and returns it
 func GetProvider(c *handler.Conplicity, v *docker.Volume) Provider {
 	log.Infof("Detecting provider for volume %v", v.Name)
 	if f, err := os.Stat(v.Mountpoint + "/PG_VERSION"); err == nil && f.Mode().IsRegular() {
@@ -37,14 +39,15 @@ func GetProvider(c *handler.Conplicity, v *docker.Volume) Provider {
 			handler: c,
 			vol:     v,
 		}
-	} else {
-		return &DefaultProvider{
-			handler: c,
-			vol:     v,
-		}
 	}
+
+  return &DefaultProvider{
+    handler: c,
+    vol:     v,
+  }
 }
 
+// BackupVolume performs the backup of the passed volume
 func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 	log.Infof("ID: " + vol.Name)
 	log.Infof("Driver: " + vol.Driver)
