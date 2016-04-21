@@ -10,8 +10,6 @@ import (
 	"github.com/camptocamp/conplicity/providers"
 )
 
-const labelPrefix string = "io.conplicity"
-
 func main() {
 	log.Infof("Starting backup...")
 
