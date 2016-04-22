@@ -20,6 +20,7 @@ type environment struct {
 	SwiftTenantName    string `env:"SWIFT_TENANTNAME"`
 	SwiftRegionName    string `env:"SWIFT_REGIONNAME"`
 	FullIfOlderThan    string `env:"FULL_IF_OLDER_THAN" envDefault:"15D"`
+	RemoveOlderThan    string `env:"REMOVE_OLDER_THAN" envDefault:"30D"`
 }
 
 // Conplicity is the main handler struct
