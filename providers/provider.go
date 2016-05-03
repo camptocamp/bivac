@@ -125,6 +125,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 
 	binds := []string{
 		vol.Name + ":" + vol.Mountpoint + ":ro",
+		"duplicity_cache:/root/.cache/duplicity",
 	}
 
 	err = dockerpty.Start(c.Client, container, &docker.HostConfig{
