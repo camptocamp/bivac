@@ -37,7 +37,7 @@ func main() {
 }
 
 func backupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
-	if utf8.RuneCountInString(vol.Name) == 64 {
+	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" {
 		log.Infof("Ignoring unnamed volume " + vol.Name)
 		return
 	}
