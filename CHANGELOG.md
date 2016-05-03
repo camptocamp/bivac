@@ -1,4 +1,4 @@
-0.7.0 (2016-05-XX)
+# [[0.7.0](https://github.com/camptocamp/conplicity/releases/tag/0.7.0)](https://github.com/camptocamp/conplicity/releases/tag/[0.7.0](https://github.com/camptocamp/conplicity/releases/tag/0.7.0)) (2016-05-XX)
 
 * Features:
 
@@ -15,13 +15,13 @@
   - Refactor launching duplicity container into handler (fixes #26)
 
 
-0.6.2 (2016-05-03)
+# [0.6.2](https://github.com/camptocamp/conplicity/releases/tag/0.6.2) (2016-05-03)
 
 * Bugfix:
 
   - Revert persist duplicity cache
 
-0.6.1 (2016-04-21)
+# [0.6.1](https://github.com/camptocamp/conplicity/releases/tag/0.6.1) (2016-04-21)
 
 * Bugfix:
 
@@ -29,7 +29,7 @@
   - Code refactoring
   - Persist duplicity cache
 
-0.6.0 (2016-04-21)
+# [0.6.0](https://github.com/camptocamp/conplicity/releases/tag/0.6.0) (2016-04-21)
 
 * Features:
 
@@ -37,7 +37,7 @@
   - Refactor code
   - Update github.com/fsouza/go-dockerclient
 
-0.5.0 (2016-04-15)
+# [0.5.0](https://github.com/camptocamp/conplicity/releases/tag/0.5.0) (2016-04-15)
 
 * Features
 
@@ -50,7 +50,7 @@
   - Update github.com/fsouza/go-dockerclient
 
 
-0.4.0 (2016-04-08)
+# [0.4.0](https://github.com/camptocamp/conplicity/releases/tag/0.4.0) (2016-04-08)
 
 * Features
 
@@ -65,13 +65,13 @@
 
   - Reduce docker image size by using scratch
 
-0.3.1 (2016-04-06)
+# [0.3.1](https://github.com/camptocamp/conplicity/releases/tag/0.3.1) (2016-04-06)
 
 * Internals: 
 
   - Lint with `golint` and `goimports`
 
-0.3.0 (2016-04-05)
+# [0.3.0](https://github.com/camptocamp/conplicity/releases/tag/0.3.0) (2016-04-05)
 
 * Features:
 
@@ -81,7 +81,7 @@
 
   - Improve code organization
 
-0.2.0 (2016-04-05)
+# [0.2.0](https://github.com/camptocamp/conplicity/releases/tag/0.2.0) (2016-04-05)
 
 * Features:
 
@@ -91,6 +91,6 @@
 
   - Use implicit composition for `*docker.Client` in `Conplicity` struct
 
-0.1.0 (2016-04-04)
+# [0.1.0](https://github.com/camptocamp/conplicity/releases/tag/0.1.0) (2016-04-04)
 
 * Initial release
