@@ -33,6 +33,14 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
 
 ## Environment variables
 
+### CONPLICITY_FULL_IF_OLDER_THAN
+
+Perform a full backup if an incremental backup is requested, but the latest full backup in the collection is older than the given time.
+
+### CONPLICITY_REMOVE_OLDER_THAN
+
+Delete all backup sets older than the given time.
+
 ### CONPLICITY_VOLUMES_BLACKLIST
 
 Comma separated list of named volumes to blacklist.
@@ -69,7 +77,7 @@ When to perform a full backup defaults to 15D
 The parameters used to backup each volume can be fine-tuned using volume labels (requires Docker 1.11.0 or greater):
 
 - `io.conplicity.ignore=true` ignores the volume
-- `io.conplicity.full_if_older_than=<value>` sets the time period after which a full backup is performed. Defaults to the `FULL_IF_OLDER_THAN` environment variable value
+- `io.conplicity.full_if_older_than=<value>` sets the time period after which a full backup is performed. Defaults to the `CONPLICITY_FULL_IF_OLDER_THAN` environment variable value
 
 
 ## Providers
