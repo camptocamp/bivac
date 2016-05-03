@@ -197,8 +197,3 @@ func (p *BaseProvider) GetVolume() *docker.Volume {
 func (p *BaseProvider) GetBackupDir() string {
 	return p.backupDir
 }
-
-// GetPrepareCommand returns the command to be executed before backup
-func (p *BaseProvider) GetPrepareCommand(mount *docker.Mount) []string {
-	return nil
-}

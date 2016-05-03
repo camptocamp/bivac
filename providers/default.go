@@ -2,6 +2,7 @@ package providers
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/fsouza/go-dockerclient"
 )
 
 // DefaultProvider implements a BaseProvider struct
@@ -18,5 +19,10 @@ func (*DefaultProvider) GetName() string {
 // PrepareBackup sets up the data before backup
 func (p *DefaultProvider) PrepareBackup() error {
 	log.Infof("Provider %v does not implement a prepare method", p.GetName())
+	return nil
+}
+
+// GetPrepareCommand returns the command to be executed before backup
+func (p *DefaultProvider) GetPrepareCommand(mount *docker.Mount) []string {
 	return nil
 }
