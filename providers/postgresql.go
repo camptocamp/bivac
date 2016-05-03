@@ -1,8 +1,6 @@
 package providers
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/util"
 	"github.com/fsouza/go-dockerclient"
 )
 
@@ -17,43 +15,16 @@ func (p *PostgreSQLProvider) GetName() string {
 	return "PostgreSQL"
 }
 
-// PrepareBackup sets up the PostgreSQL data before backup
-func (p *PostgreSQLProvider) PrepareBackup() (err error) {
-	c := p.handler
-	vol := p.vol
-	log.Infof("Looking for a postgres container using this volume...")
-	containers, err := c.ListContainers(docker.ListContainersOptions{})
-	util.CheckErr(err, "Failed to list containers: %v", -1)
-	for _, container := range containers {
-		container, err := c.InspectContainer(container.ID)
-		util.CheckErr(err, "Failed to inspect container "+container.ID+": %v", -1)
-		for _, mount := range container.Mounts {
-			if mount.Name == vol.Name {
-				log.Infof("Volume %v is used by container %v", vol.Name, container.ID)
-				log.Infof("Launching pg_dumpall in container %v...", container.ID)
-				exec, err := c.CreateExec(
-					docker.CreateExecOptions{
-						Container: container.ID,
-						Cmd: []string{
-							"sh",
-							"-c",
-							"mkdir -p " + mount.Destination + "/backups && pg_dumpall -Upostgres > " + mount.Destination + "/backups/all.sql",
-						},
-					},
-				)
-
-				util.CheckErr(err, "Failed to create exec", 1)
-
-				err = c.StartExec(
-					exec.ID,
-					docker.StartExecOptions{},
-				)
-
-				util.CheckErr(err, "Failed to create exec", 1)
-
-				p.backupDir = "backups"
-			}
-		}
+// GetPrepareCommand returns the command to be executed before backup
+func (p *PostgreSQLProvider) GetPrepareCommand(mount *docker.Mount) []string {
+	return []string{
+		"sh",
+		"-c",
+		"mkdir -p " + mount.Destination + "/backups && pg_dumpall -Upostgres > " + mount.Destination + "/backups/all.sql",
 	}
-	return
+}
+
+// GetBackupDir returns the backup directory used by the provider
+func (p *PostgreSQLProvider) GetBackupDir() string {
+	return "backups"
 }
