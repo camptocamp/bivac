@@ -1,5 +1,10 @@
 # [0.7.0](https://github.com/camptocamp/conplicity/releases/tag/0.7.0) (2016-05-XX)
 
+* Breaking changes:
+
+  - environment variable `FULL_IF_OLDER_THAN` renamed to `CONPLICITY_FULL_IF_OLDER_THAN` (fixes [#28](https://github.com/camptocamp/conplicity/issues/28))
+  - environment variable `REMOVE_OLDER_THAN` renamed to `CONPLICITY_REMOVE_OLDER_THAN` (fixes [#28](https://github.com/camptocamp/conplicity/issues/28))
+
 * Features:
 
   - Persist duplicity cache again (fixes [#12](https://github.com/camptocamp/conplicity/issues/12))
