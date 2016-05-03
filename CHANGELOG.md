@@ -1,3 +1,9 @@
+0.6.2 (2016-05-03)
+
+* Bugfix:
+
+  - Revert persist duplicity cache
+
 0.6.1 (2016-04-21)
 
 * Bugfix:
