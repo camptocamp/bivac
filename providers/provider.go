@@ -88,6 +88,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 					"--s3-use-new-style",
 					"--no-encryption",
 					"--allow-source-mismatch",
+					"--name", vol.Name,
 					vol.Mountpoint + "/" + backupDir,
 					c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
 				},
