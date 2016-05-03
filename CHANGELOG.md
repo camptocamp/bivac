@@ -1,4 +1,4 @@
-# [0.7.0](https://github.com/camptocamp/conplicity/releases/tag/0.7.0) (2016-05-XX)
+# [0.7.0](https://github.com/camptocamp/conplicity/releases/tag/0.7.0) (2016-05-03)
 
 * Breaking changes:
 
