@@ -35,11 +35,11 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
 
 ### CONPLICITY_FULL_IF_OLDER_THAN
 
-Perform a full backup if an incremental backup is requested, but the latest full backup in the collection is older than the given time.
+Perform a full backup if an incremental backup is requested, but the latest full backup in the collection is older than the given time. Defaults to 15D.
 
 ### CONPLICITY_REMOVE_OLDER_THAN
 
-Delete all backup sets older than the given time.
+Delete all backup sets older than the given time. Defaults to 30D.
 
 ### CONPLICITY_VOLUMES_BLACKLIST
 
@@ -54,10 +54,6 @@ The image to use to launch duplicity. Default is `camptocamp/duplicity:latest`.
 Target URL passed to duplicity.
 The hostname and the name of the volume to backup
 are added to the path as directory levels.
-
-### FULL_IF_OLDER_THAN
-
-When to perform a full backup defaults to 15D
 
 ### S3 credentials
 
