@@ -22,8 +22,8 @@ type environment struct {
 	SwiftAuthURL       string   `env:"SWIFT_AUTHURL"`
 	SwiftTenantName    string   `env:"SWIFT_TENANTNAME"`
 	SwiftRegionName    string   `env:"SWIFT_REGIONNAME"`
-	FullIfOlderThan    string   `env:"FULL_IF_OLDER_THAN" envDefault:"15D"`
-	RemoveOlderThan    string   `env:"REMOVE_OLDER_THAN" envDefault:"30D"`
+	FullIfOlderThan    string   `env:"CONPLICITY_FULL_IF_OLDER_THAN" envDefault:"15D"`
+	RemoveOlderThan    string   `env:"CONPLICITY_REMOVE_OLDER_THAN" envDefault:"30D"`
 	VolumesBlacklist   []string `env:"CONPLICITY_VOLUMES_BLACKLIST"`
 }
 
