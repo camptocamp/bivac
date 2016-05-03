@@ -33,6 +33,10 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
 
 ## Environment variables
 
+### CONPLICITY_VOLUMES_BLACKLIST
+
+Comma separated list of named volumes to blacklist.
+
 ### DUPLICITY_DOCKER_IMAGE
 
 The image to use to launch duplicity. Default is `camptocamp/duplicity:latest`.

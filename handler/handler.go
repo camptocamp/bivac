@@ -2,6 +2,7 @@ package handler
 
 import (
 	"os"
+	"sort"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -12,17 +13,18 @@ import (
 )
 
 type environment struct {
-	Image              string `env:"DUPLICITY_DOCKER_IMAGE" envDefault:"camptocamp/duplicity:latest"`
-	DuplicityTargetURL string `env:"DUPLICITY_TARGET_URL"`
-	AWSAccessKeyID     string `env:"AWS_ACCESS_KEY_ID"`
-	AWSSecretAccessKey string `env:"AWS_SECRET_ACCESS_KEY"`
-	SwiftUsername      string `env:"SWIFT_USERNAME"`
-	SwiftPassword      string `env:"SWIFT_PASSWORD"`
-	SwiftAuthURL       string `env:"SWIFT_AUTHURL"`
-	SwiftTenantName    string `env:"SWIFT_TENANTNAME"`
-	SwiftRegionName    string `env:"SWIFT_REGIONNAME"`
-	FullIfOlderThan    string `env:"FULL_IF_OLDER_THAN" envDefault:"15D"`
-	RemoveOlderThan    string `env:"REMOVE_OLDER_THAN" envDefault:"30D"`
+	Image              string   `env:"DUPLICITY_DOCKER_IMAGE" envDefault:"camptocamp/duplicity:latest"`
+	DuplicityTargetURL string   `env:"DUPLICITY_TARGET_URL"`
+	AWSAccessKeyID     string   `env:"AWS_ACCESS_KEY_ID"`
+	AWSSecretAccessKey string   `env:"AWS_SECRET_ACCESS_KEY"`
+	SwiftUsername      string   `env:"SWIFT_USERNAME"`
+	SwiftPassword      string   `env:"SWIFT_PASSWORD"`
+	SwiftAuthURL       string   `env:"SWIFT_AUTHURL"`
+	SwiftTenantName    string   `env:"SWIFT_TENANTNAME"`
+	SwiftRegionName    string   `env:"SWIFT_REGIONNAME"`
+	FullIfOlderThan    string   `env:"FULL_IF_OLDER_THAN" envDefault:"15D"`
+	RemoveOlderThan    string   `env:"REMOVE_OLDER_THAN" envDefault:"30D"`
+	VolumesBlacklist   []string `env:"CONPLICITY_VOLUMES_BLACKLIST"`
 }
 
 // Conplicity is the main handler struct
@@ -53,7 +55,7 @@ func (c *Conplicity) Setup() (err error) {
 func (c *Conplicity) getEnv() (err error) {
 	c.environment = &environment{}
 	env.Parse(c.environment)
-
+	sort.Strings(c.VolumesBlacklist)
 	return
 }
 

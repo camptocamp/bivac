@@ -1,6 +1,7 @@
 package main
 
 import (
+	"sort"
 	"unicode/utf8"
 
 	log "github.com/Sirupsen/logrus"
@@ -39,6 +40,13 @@ func main() {
 func backupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" {
 		log.Infof("Ignoring unnamed volume " + vol.Name)
+		return
+	}
+
+	list := c.VolumesBlacklist
+	i := sort.SearchStrings(list, vol.Name)
+	if i < len(list) && list[i] == vol.Name {
+		log.Infof("Ignoring blacklisted volume " + vol.Name)
 		return
 	}
 
