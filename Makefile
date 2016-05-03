@@ -1,5 +1,5 @@
-conplicity:
-	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o $@ .
+conplicity: conplicity.go
+	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o $@ $<
 	strip $@
 
 lint:
@@ -10,10 +10,10 @@ lint:
 	done; \
 	exit $${status:-0}
 
-vet:
-	go vet conplicity.go
+vet: conplicity.go
+	go vet $<
 
-imports:
-	goimports -d conplicity.go
+imports: conplicity.go
+	goimports -d $<
 
 test: lint vet imports
