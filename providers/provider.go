@@ -158,6 +158,23 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 	)
 	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", -1)
 
+	// Cleanup
+	err = c.LaunchDuplicity(
+		[]string{
+			"cleanup",
+			"--s3-use-new-style",
+			"--no-encryption",
+			"--force",
+			"--extra-clean",
+			"--name", vol.Name,
+			c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
+		},
+		[]string{
+			"duplicity_cache:/root/.cache/duplicity",
+		},
+	)
+	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", -1)
+
 	return
 }
 
