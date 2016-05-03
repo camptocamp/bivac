@@ -16,9 +16,10 @@ const labelPrefix string = "io.conplicity"
 // A Provider is an interface for providers
 type Provider interface {
 	GetName() string
+	GetPrepareCommand(*docker.Mount) []string
 	GetHandler() *handler.Conplicity
+	GetVolume() *docker.Volume
 	GetBackupDir() string
-	PrepareBackup() error
 }
 
 // BaseProvider is a struct implementing the Provider interface
@@ -55,6 +56,46 @@ func GetProvider(c *handler.Conplicity, v *docker.Volume) Provider {
 	return &DefaultProvider{
 		BaseProvider: p,
 	}
+}
+
+// PrepareBackup sets up the data before backup
+func PrepareBackup(p Provider) (err error) {
+	c := p.GetHandler()
+	vol := p.GetVolume()
+	containers, err := c.ListContainers(docker.ListContainersOptions{})
+	util.CheckErr(err, "Failed to list containers: %v", -1)
+	for _, container := range containers {
+		container, err := c.InspectContainer(container.ID)
+		util.CheckErr(err, "Failed to inspect container "+container.ID+": %v", -1)
+		for _, mount := range container.Mounts {
+			if mount.Name == vol.Name {
+				log.Infof("Volume %v is used by container %v", vol.Name, container.ID)
+
+				cmd := p.GetPrepareCommand(&mount)
+				if cmd != nil {
+
+					exec, err := c.CreateExec(
+						docker.CreateExecOptions{
+							Container: container.ID,
+							Cmd:       p.GetPrepareCommand(&mount),
+						},
+					)
+
+					util.CheckErr(err, "Failed to create exec", 1)
+
+					err = c.StartExec(
+						exec.ID,
+						docker.StartExecOptions{},
+					)
+
+					util.CheckErr(err, "Failed to create exec", 1)
+				} else {
+					log.Infof("Not executing command for volume %v in container %v", vol.Name, container.ID)
+				}
+			}
+		}
+	}
+	return
 }
 
 // BackupVolume performs the backup of the passed volume
@@ -145,6 +186,11 @@ func getVolumeLabel(vol *docker.Volume, key string) (value string) {
 // GetHandler returns the handler associated with the provider
 func (p *BaseProvider) GetHandler() *handler.Conplicity {
 	return p.handler
+}
+
+// GetVolume returns the volume associated with the provider
+func (p *BaseProvider) GetVolume() *docker.Volume {
+	return p.vol
 }
 
 // GetBackupDir returns the backup directory used by the provider
