@@ -1,3 +1,20 @@
+0.7.0 (2016-05-XX)
+
+* Features:
+
+  - Persist duplicity cache again (fixes #12)
+  - Do not backup duplicity cache (fixes #16)
+  - Remove temporary volumes (fixes #23)
+  - Add support for removing old backups (fixes #4)
+  - Launch duplicity cleanup after backup (fixes #19)
+
+* Internals:
+
+  - Pass `--name vol.Name` to duplicity (fixes #17)
+  - Refactor provider code with a `PrepareBackup()` interface method (fixes #24)
+  - Refactor launching duplicity container into handler (fixes #26)
+
+
 0.6.2 (2016-05-03)
 
 * Bugfix:
