@@ -1,4 +1,4 @@
-# [[0.7.0](https://github.com/camptocamp/conplicity/releases/tag/0.7.0)](https://github.com/camptocamp/conplicity/releases/tag/[0.7.0](https://github.com/camptocamp/conplicity/releases/tag/0.7.0)) (2016-05-XX)
+# [0.7.0](https://github.com/camptocamp/conplicity/releases/tag/0.7.0) (2016-05-XX)
 
 * Features:
 
@@ -7,6 +7,7 @@
   - Remove temporary volumes (fixes [#23](https://github.com/camptocamp/conplicity/issues/23))
   - Add support for removing old backups (fixes [#4](https://github.com/camptocamp/conplicity/issues/4))
   - Launch duplicity cleanup after backup (fixes [#19](https://github.com/camptocamp/conplicity/issues/19))
+  - Add support for volumes blacklisting with environment (fixes [#21](https://github.com/camptocamp/conplicity/issues/21))
 
 * Internals:
 
