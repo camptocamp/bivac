@@ -2,10 +2,12 @@ package handler
 
 import (
 	"os"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/caarlos0/env"
 	"github.com/camptocamp/conplicity/util"
+	"github.com/fgrehm/go-dockerpty"
 	"github.com/fsouza/go-dockerclient"
 )
 
@@ -65,4 +67,52 @@ func (c *Conplicity) pullImage() (err error) {
 	}
 
 	return err
+}
+
+// LaunchDuplicity starts a duplicity container with given command and binds
+func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (err error) {
+	env := []string{
+		"AWS_ACCESS_KEY_ID=" + c.AWSAccessKeyID,
+		"AWS_SECRET_ACCESS_KEY=" + c.AWSSecretAccessKey,
+		"SWIFT_USERNAME=" + c.SwiftUsername,
+		"SWIFT_PASSWORD=" + c.SwiftPassword,
+		"SWIFT_AUTHURL=" + c.SwiftAuthURL,
+		"SWIFT_TENANTNAME=" + c.SwiftTenantName,
+		"SWIFT_REGIONNAME=" + c.SwiftRegionName,
+		"SWIFT_AUTHVERSION=2",
+	}
+
+	container, err := c.CreateContainer(
+		docker.CreateContainerOptions{
+			Config: &docker.Config{
+				Cmd:          cmd,
+				Env:          env,
+				Image:        c.Image,
+				OpenStdin:    true,
+				StdinOnce:    true,
+				AttachStdin:  true,
+				AttachStdout: true,
+				AttachStderr: true,
+				Tty:          true,
+			},
+		},
+	)
+	util.CheckErr(err, "Failed to create container: %v", 1)
+	defer c.removeContainer(container)
+
+	log.Infof("Launching 'duplicity %v'...", strings.Join(cmd, " "))
+	err = dockerpty.Start(c.Client, container, &docker.HostConfig{
+		Binds: binds,
+	})
+	util.CheckErr(err, "Failed to start container: %v", -1)
+	return
+}
+
+func (c *Conplicity) removeContainer(cont *docker.Container) {
+	log.Infof("Removing container %v...", cont.ID)
+	c.RemoveContainer(docker.RemoveContainerOptions{
+		ID:            cont.ID,
+		Force:         true,
+		RemoveVolumes: true,
+	})
 }
