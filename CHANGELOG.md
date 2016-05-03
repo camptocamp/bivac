@@ -2,17 +2,17 @@
 
 * Features:
 
-  - Persist duplicity cache again (fixes #12)
-  - Do not backup duplicity cache (fixes #16)
-  - Remove temporary volumes (fixes #23)
-  - Add support for removing old backups (fixes #4)
-  - Launch duplicity cleanup after backup (fixes #19)
+  - Persist duplicity cache again (fixes [#12](https://github.com/camptocamp/conplicity/issues/12))
+  - Do not backup duplicity cache (fixes [#16](https://github.com/camptocamp/conplicity/issues/16))
+  - Remove temporary volumes (fixes [#23](https://github.com/camptocamp/conplicity/issues/23))
+  - Add support for removing old backups (fixes [#4](https://github.com/camptocamp/conplicity/issues/4))
+  - Launch duplicity cleanup after backup (fixes [#19](https://github.com/camptocamp/conplicity/issues/19))
 
 * Internals:
 
-  - Pass `--name vol.Name` to duplicity (fixes #17)
-  - Refactor provider code with a `PrepareBackup()` interface method (fixes #24)
-  - Refactor launching duplicity container into handler (fixes #26)
+  - Pass `--name vol.Name` to duplicity (fixes [#17](https://github.com/camptocamp/conplicity/issues/17))
+  - Refactor provider code with a `PrepareBackup()` interface method (fixes [#24](https://github.com/camptocamp/conplicity/issues/24))
+  - Refactor launching duplicity container into handler (fixes [#26](https://github.com/camptocamp/conplicity/issues/26))
 
 
 # [0.6.2](https://github.com/camptocamp/conplicity/releases/tag/0.6.2) (2016-05-03)
