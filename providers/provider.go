@@ -121,61 +121,45 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 
 	backupDir := p.GetBackupDir()
 
-	container, err := c.CreateContainer(
-		docker.CreateContainerOptions{
-			Config: &docker.Config{
-				Cmd: []string{
-					"--full-if-older-than", fullIfOlderThan,
-					"--s3-use-new-style",
-					"--no-encryption",
-					"--allow-source-mismatch",
-					"--name", vol.Name,
-					vol.Mountpoint + "/" + backupDir,
-					c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
-				},
-				Env: []string{
-					"AWS_ACCESS_KEY_ID=" + c.AWSAccessKeyID,
-					"AWS_SECRET_ACCESS_KEY=" + c.AWSSecretAccessKey,
-					"SWIFT_USERNAME=" + c.SwiftUsername,
-					"SWIFT_PASSWORD=" + c.SwiftPassword,
-					"SWIFT_AUTHURL=" + c.SwiftAuthURL,
-					"SWIFT_TENANTNAME=" + c.SwiftTenantName,
-					"SWIFT_REGIONNAME=" + c.SwiftRegionName,
-					"SWIFT_AUTHVERSION=2",
-				},
-				Image:        c.Image,
-				OpenStdin:    true,
-				StdinOnce:    true,
-				AttachStdin:  true,
-				AttachStdout: true,
-				AttachStderr: true,
-				Tty:          true,
-			},
+	err = launchDuplicity(c,
+		[]string{
+			"--full-if-older-than", fullIfOlderThan,
+			"--s3-use-new-style",
+			"--no-encryption",
+			"--allow-source-mismatch",
+			"--name", vol.Name,
+			vol.Mountpoint + "/" + backupDir,
+			c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
+		},
+		[]string{
+			vol.Name + ":" + vol.Mountpoint + ":ro",
+			"duplicity_cache:/root/.cache/duplicity",
 		},
 	)
+	util.CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", -1)
 
-	util.CheckErr(err, "Failed to create container for volume "+vol.Name+": %v", 1)
-
-	defer func() {
-		log.Infof("Removing container %v...", container.ID)
-		c.RemoveContainer(docker.RemoveContainerOptions{
-			ID:            container.ID,
-			Force:         true,
-			RemoveVolumes: true,
-		})
-	}()
-
-	binds := []string{
-		vol.Name + ":" + vol.Mountpoint + ":ro",
-		"duplicity_cache:/root/.cache/duplicity",
+	// Remove old backups
+	removeOlderThan := getVolumeLabel(vol, ".remove_older_than")
+	if removeOlderThan == "" {
+		removeOlderThan = c.RemoveOlderThan
 	}
 
-	err = dockerpty.Start(c.Client, container, &docker.HostConfig{
-		Binds: binds,
-	})
-	util.CheckErr(err, "Failed to start container for volume "+vol.Name+": %v", -1)
+	err = launchDuplicity(c,
+		[]string{
+			"remove-older-than", removeOlderThan,
+			"--s3-use-new-style",
+			"--no-encryption",
+			"--force",
+			"--name", vol.Name,
+			c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
+		},
+		[]string{
+			"duplicity_cache:/root/.cache/duplicity",
+		},
+	)
+	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", -1)
+
 	return
-	return nil
 }
 
 func getVolumeLabel(vol *docker.Volume, key string) (value string) {
@@ -196,4 +180,51 @@ func (p *BaseProvider) GetVolume() *docker.Volume {
 // GetBackupDir returns the backup directory used by the provider
 func (p *BaseProvider) GetBackupDir() string {
 	return p.backupDir
+}
+
+func launchDuplicity(c *handler.Conplicity, cmd []string, binds []string) (err error) {
+	env := []string{
+		"AWS_ACCESS_KEY_ID=" + c.AWSAccessKeyID,
+		"AWS_SECRET_ACCESS_KEY=" + c.AWSSecretAccessKey,
+		"SWIFT_USERNAME=" + c.SwiftUsername,
+		"SWIFT_PASSWORD=" + c.SwiftPassword,
+		"SWIFT_AUTHURL=" + c.SwiftAuthURL,
+		"SWIFT_TENANTNAME=" + c.SwiftTenantName,
+		"SWIFT_REGIONNAME=" + c.SwiftRegionName,
+		"SWIFT_AUTHVERSION=2",
+	}
+
+	container, err := c.CreateContainer(
+		docker.CreateContainerOptions{
+			Config: &docker.Config{
+				Cmd:          cmd,
+				Env:          env,
+				Image:        c.Image,
+				OpenStdin:    true,
+				StdinOnce:    true,
+				AttachStdin:  true,
+				AttachStdout: true,
+				AttachStderr: true,
+				Tty:          true,
+			},
+		},
+	)
+	util.CheckErr(err, "Failed to create container: %v", 1)
+	defer removeContainer(c.Client, container)
+
+	log.Infof("Launching 'duplicity %v'...", strings.Join(cmd, " "))
+	err = dockerpty.Start(c.Client, container, &docker.HostConfig{
+		Binds: binds,
+	})
+	util.CheckErr(err, "Failed to start container: %v", -1)
+	return
+}
+
+func removeContainer(c *docker.Client, cont *docker.Container) {
+	log.Infof("Removing container %v...", cont.ID)
+	c.RemoveContainer(docker.RemoveContainerOptions{
+		ID:            cont.ID,
+		Force:         true,
+		RemoveVolumes: true,
+	})
 }
