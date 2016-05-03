@@ -7,7 +7,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/util"
-	"github.com/fgrehm/go-dockerpty"
 	"github.com/fsouza/go-dockerclient"
 )
 
@@ -121,7 +120,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 
 	backupDir := p.GetBackupDir()
 
-	err = launchDuplicity(c,
+	err = c.LaunchDuplicity(
 		[]string{
 			"--full-if-older-than", fullIfOlderThan,
 			"--s3-use-new-style",
@@ -144,7 +143,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 		removeOlderThan = c.RemoveOlderThan
 	}
 
-	err = launchDuplicity(c,
+	err = c.LaunchDuplicity(
 		[]string{
 			"remove-older-than", removeOlderThan,
 			"--s3-use-new-style",
@@ -180,51 +179,4 @@ func (p *BaseProvider) GetVolume() *docker.Volume {
 // GetBackupDir returns the backup directory used by the provider
 func (p *BaseProvider) GetBackupDir() string {
 	return p.backupDir
-}
-
-func launchDuplicity(c *handler.Conplicity, cmd []string, binds []string) (err error) {
-	env := []string{
-		"AWS_ACCESS_KEY_ID=" + c.AWSAccessKeyID,
-		"AWS_SECRET_ACCESS_KEY=" + c.AWSSecretAccessKey,
-		"SWIFT_USERNAME=" + c.SwiftUsername,
-		"SWIFT_PASSWORD=" + c.SwiftPassword,
-		"SWIFT_AUTHURL=" + c.SwiftAuthURL,
-		"SWIFT_TENANTNAME=" + c.SwiftTenantName,
-		"SWIFT_REGIONNAME=" + c.SwiftRegionName,
-		"SWIFT_AUTHVERSION=2",
-	}
-
-	container, err := c.CreateContainer(
-		docker.CreateContainerOptions{
-			Config: &docker.Config{
-				Cmd:          cmd,
-				Env:          env,
-				Image:        c.Image,
-				OpenStdin:    true,
-				StdinOnce:    true,
-				AttachStdin:  true,
-				AttachStdout: true,
-				AttachStderr: true,
-				Tty:          true,
-			},
-		},
-	)
-	util.CheckErr(err, "Failed to create container: %v", 1)
-	defer removeContainer(c.Client, container)
-
-	log.Infof("Launching 'duplicity %v'...", strings.Join(cmd, " "))
-	err = dockerpty.Start(c.Client, container, &docker.HostConfig{
-		Binds: binds,
-	})
-	util.CheckErr(err, "Failed to start container: %v", -1)
-	return
-}
-
-func removeContainer(c *docker.Client, cont *docker.Container) {
-	log.Infof("Removing container %v...", cont.ID)
-	c.RemoveContainer(docker.RemoveContainerOptions{
-		ID:            cont.ID,
-		Force:         true,
-		RemoveVolumes: true,
-	})
 }
