@@ -124,6 +124,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 		[]string{
 			"--full-if-older-than", fullIfOlderThan,
 			"--s3-use-new-style",
+			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",
 			"--allow-source-mismatch",
 			"--name", vol.Name,
@@ -147,6 +148,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 		[]string{
 			"remove-older-than", removeOlderThan,
 			"--s3-use-new-style",
+			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",
 			"--force",
 			"--name", vol.Name,
@@ -163,6 +165,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 		[]string{
 			"cleanup",
 			"--s3-use-new-style",
+			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",
 			"--force",
 			"--extra-clean",
