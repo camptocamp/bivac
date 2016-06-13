@@ -120,7 +120,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 
 	backupDir := p.GetBackupDir()
 
-	err = c.LaunchDuplicity(
+	_, err = c.LaunchDuplicity(
 		[]string{
 			"--full-if-older-than", fullIfOlderThan,
 			"--s3-use-new-style",
@@ -144,7 +144,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 		removeOlderThan = c.RemoveOlderThan
 	}
 
-	err = c.LaunchDuplicity(
+	_, err = c.LaunchDuplicity(
 		[]string{
 			"remove-older-than", removeOlderThan,
 			"--s3-use-new-style",
@@ -161,7 +161,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", -1)
 
 	// Cleanup
-	err = c.LaunchDuplicity(
+	_, err = c.LaunchDuplicity(
 		[]string{
 			"cleanup",
 			"--s3-use-new-style",
