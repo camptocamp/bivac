@@ -55,6 +55,10 @@ Target URL passed to duplicity.
 The hostname and the name of the volume to backup
 are added to the path as directory levels.
 
+### PUSHGATEWAY_URL
+
+The Url of a Prometheus pushgateway to push metrics to.
+
 ### S3 credentials
 
 - AWS_ACCESS_KEY_ID
