@@ -39,23 +39,28 @@ func main() {
 		metrics = append(metrics, _metrics...)
 	}
 	if c.PushgatewayURL != "" {
-		data := strings.Join(metrics, "\n") + "\n"
-		log.Infof("Sending metrics to Prometheus Pushgateway: %v", data)
-
 		url := c.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
-		log.Infof("URL=%v", url)
-
-		req, err := http.NewRequest("PUT", url, bytes.NewBufferString(data))
-		req.Header.Set("Content-Type", "text/plain; version=0.0.4")
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
-
-		log.Infof("resp = %v", resp)
+		data := strings.Join(metrics, "\n") + "\n"
+		err = pushToPrometheus(url, data)
 		util.CheckErr(err, "Failed post data to Prometheus Pushgateway: %v", 1)
 	}
 
 	log.Infof("End backup...")
+}
+
+func pushToPrometheus(url, data string) error {
+	log.Infof("Sending metrics to Prometheus Pushgateway: %v", data)
+	log.Infof("URL=%v", url)
+
+	req, err := http.NewRequest("PUT", url, bytes.NewBufferString(data))
+	req.Header.Set("Content-Type", "text/plain; version=0.0.4")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	log.Infof("resp = %v", resp)
+
+	return err
 }
 
 func backupVolume(c *handler.Conplicity, vol *docker.Volume) (metrics []string, err error) {
