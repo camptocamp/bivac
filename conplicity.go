@@ -26,18 +26,20 @@ func main() {
 	vols, err := c.ListVolumes(docker.ListVolumesOptions{})
 	util.CheckErr(err, "Failed to list Docker volumes: %v", 1)
 
+	var metrics []string
 	for _, vol := range vols {
 		voll, err := c.InspectVolume(vol.Name)
 		util.CheckErr(err, "Failed to inspect volume "+vol.Name+": %v", -1)
 
-		err = backupVolume(c, voll)
+		_metrics, err := backupVolume(c, voll)
 		util.CheckErr(err, "Failed to process volume "+vol.Name+": %v", -1)
+		metrics = append(metrics, _metrics...)
 	}
 
 	log.Infof("End backup...")
 }
 
-func backupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
+func backupVolume(c *handler.Conplicity, vol *docker.Volume) (metrics []string, err error) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" {
 		log.Infof("Ignoring unnamed volume " + vol.Name)
 		return
@@ -59,7 +61,7 @@ func backupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
 	log.Infof("Using provider %v to backup %v", p.GetName(), vol.Name)
 	err = providers.PrepareBackup(p)
 	util.CheckErr(err, "Failed to prepare backup for volume "+vol.Name+": %v", -1)
-	err = providers.BackupVolume(p, vol)
+	metrics, err = providers.BackupVolume(p, vol)
 	util.CheckErr(err, "Failed to backup volume "+vol.Name+": %v", -1)
 	return
 }

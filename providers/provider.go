@@ -98,7 +98,7 @@ func PrepareBackup(p Provider) (err error) {
 }
 
 // BackupVolume performs the backup of the passed volume
-func BackupVolume(p Provider, vol *docker.Volume) (err error) {
+func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) {
 	log.Infof("ID: " + vol.Name)
 	log.Infof("Driver: " + vol.Driver)
 	log.Infof("Mountpoint: " + vol.Mountpoint)
