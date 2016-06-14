@@ -1,15 +1,13 @@
 package providers
 
 import (
-	"fmt"
 	"os"
-	"regexp"
 	"strings"
-	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/util"
+	"github.com/camptocamp/conplicity/volume"
 	"github.com/fsouza/go-dockerclient"
 )
 
@@ -115,6 +113,11 @@ func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) 
 		fullIfOlderThan = c.FullIfOlderThan
 	}
 
+	removeOlderThan := getVolumeLabel(vol, ".remove_older_than")
+	if removeOlderThan == "" {
+		removeOlderThan = c.RemoveOlderThan
+	}
+
 	pathSeparator := "/"
 	if strings.HasPrefix(c.DuplicityTargetURL, "swift://") {
 		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity
@@ -122,124 +125,38 @@ func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) 
 	}
 
 	backupDir := p.GetBackupDir()
+	fullTarget := c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name
+	fullBackupDir := vol.Mountpoint + "/" + backupDir
+	roMount := vol.Name + ":" + vol.Mountpoint + ":ro"
 
-	_, _, err = c.LaunchDuplicity(
-		[]string{
-			"--full-if-older-than", fullIfOlderThan,
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
-			"--allow-source-mismatch",
-			"--name", vol.Name,
-			vol.Mountpoint + "/" + backupDir,
-			c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
-		},
-		[]string{
-			vol.Name + ":" + vol.Mountpoint + ":ro",
-			"duplicity_cache:/root/.cache/duplicity",
-		},
-	)
-	util.CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", -1)
-
-	// Remove old backups
-	removeOlderThan := getVolumeLabel(vol, ".remove_older_than")
-	if removeOlderThan == "" {
-		removeOlderThan = c.RemoveOlderThan
+	volume := &conplicity.Volume{
+		Name:            vol.Name,
+		Target:          fullTarget,
+		BackupDir:       fullBackupDir,
+		Mount:           roMount,
+		FullIfOlderThan: fullIfOlderThan,
+		RemoveOlderThan: removeOlderThan,
+		Client:          c,
 	}
 
-	_, _, err = c.LaunchDuplicity(
-		[]string{
-			"remove-older-than", removeOlderThan,
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
-			"--force",
-			"--name", vol.Name,
-			c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
-		},
-		[]string{
-			"duplicity_cache:/root/.cache/duplicity",
-		},
-	)
+	var newMetrics []string
+
+	_, err = volume.Backup()
+	util.CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", -1)
+
+	_, err = volume.RemoveOld()
 	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", -1)
 
-	// Cleanup
-	_, _, err = c.LaunchDuplicity(
-		[]string{
-			"cleanup",
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
-			"--force",
-			"--extra-clean",
-			"--name", vol.Name,
-			c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
-		},
-		[]string{
-			"duplicity_cache:/root/.cache/duplicity",
-		},
-	)
+	_, err = volume.Cleanup()
 	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", -1)
 
-	// Verify
-	state, _, err := c.LaunchDuplicity(
-		[]string{
-			"verify",
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
-			"--allow-source-mismatch",
-			"--name", vol.Name,
-			c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
-			vol.Mountpoint + "/" + backupDir,
-		},
-		[]string{
-			vol.Name + ":" + vol.Mountpoint + ":ro",
-			"duplicity_cache:/root/.cache/duplicity",
-		},
-	)
+	newMetrics, err = volume.Verify()
 	util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", -1)
+	metrics = append(metrics, newMetrics...)
 
-	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"verifyExitCode\"} %v", vol.Name, state.ExitCode)
-	log.Infof("ExitCode metric: %v", metric)
-	metrics = append(metrics, metric)
-
-	// Collection status
-	_, stdout, err := c.LaunchDuplicity(
-		[]string{
-			"collection-status",
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
-			"--name", vol.Name,
-			c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
-		},
-		[]string{
-			vol.Name + ":" + vol.Mountpoint + ":ro",
-			"duplicity_cache:/root/.cache/duplicity",
-		},
-	)
+	newMetrics, err = volume.Status()
 	util.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", -1)
-
-	fullBackupRx := regexp.MustCompile("Last full backup date: (.+)")
-	chainEndTimeRx := regexp.MustCompile("Chain end time: (.+)")
-
-	const timeFormat = "Mon Jan 2 15:04:05 2006"
-
-	fullBackup := fullBackupRx.FindStringSubmatch(stdout)
-	fullBackupDate, err := time.Parse(timeFormat, strings.TrimSpace(fullBackup[1]))
-	util.CheckErr(err, "Failed to parse full backup date: %v", -1)
-	chainEndTime := chainEndTimeRx.FindStringSubmatch(stdout)
-	chainEndTimeDate, err := time.Parse(timeFormat, strings.TrimSpace(chainEndTime[1]))
-	util.CheckErr(err, "Failed to parse chain end time date: %v", -1)
-
-	metric = fmt.Sprintf("conplicity{volume=\"%v\",what=\"lastBackup\"} %v", vol.Name, chainEndTimeDate.Unix())
-	log.Infof("Last backup metric: %v", metric)
-	metrics = append(metrics, metric)
-
-	metric = fmt.Sprintf("conplicity{volume=\"%v\",what=\"lastFullBackup\"} %v", vol.Name, fullBackupDate.Unix())
-	log.Infof("Last full backup metric: %v", metric)
-	metrics = append(metrics, metric)
+	metrics = append(metrics, newMetrics...)
 
 	return
 }
