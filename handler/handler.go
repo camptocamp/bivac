@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"os"
 	"sort"
 	"strings"
@@ -73,7 +74,7 @@ func (c *Conplicity) pullImage() (err error) {
 }
 
 // LaunchDuplicity starts a duplicity container with given command and binds
-func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker.State, err error) {
+func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker.State, stdout string, err error) {
 	env := []string{
 		"AWS_ACCESS_KEY_ID=" + c.AWSAccessKeyID,
 		"AWS_SECRET_ACCESS_KEY=" + c.AWSSecretAccessKey,
@@ -109,7 +110,18 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker
 	})
 	util.CheckErr(err, "Failed to start container: %v", -1)
 
+	var stdoutBuffer bytes.Buffer
+	opts := docker.LogsOptions{
+		Container:    container.ID,
+		OutputStream: &stdoutBuffer,
+		Stdout:       true,
+		RawTerminal:  true,
+	}
+	err = c.Logs(opts)
+	util.CheckErr(err, "Failed to retrieve logs: %v", -1)
+
 	state = container.State
+	stdout = stdoutBuffer.String()
 
 	return
 }

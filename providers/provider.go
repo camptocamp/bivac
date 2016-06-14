@@ -121,7 +121,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) 
 
 	backupDir := p.GetBackupDir()
 
-	_, err = c.LaunchDuplicity(
+	_, _, err = c.LaunchDuplicity(
 		[]string{
 			"--full-if-older-than", fullIfOlderThan,
 			"--s3-use-new-style",
@@ -145,7 +145,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) 
 		removeOlderThan = c.RemoveOlderThan
 	}
 
-	_, err = c.LaunchDuplicity(
+	_, _, err = c.LaunchDuplicity(
 		[]string{
 			"remove-older-than", removeOlderThan,
 			"--s3-use-new-style",
@@ -162,7 +162,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) 
 	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", -1)
 
 	// Cleanup
-	_, err = c.LaunchDuplicity(
+	_, _, err = c.LaunchDuplicity(
 		[]string{
 			"cleanup",
 			"--s3-use-new-style",
@@ -180,7 +180,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) 
 	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", -1)
 
 	// Verify
-	state, err := c.LaunchDuplicity(
+	state, _, err := c.LaunchDuplicity(
 		[]string{
 			"verify",
 			"--s3-use-new-style",
