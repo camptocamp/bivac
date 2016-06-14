@@ -129,7 +129,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) 
 	fullBackupDir := vol.Mountpoint + "/" + backupDir
 	roMount := vol.Name + ":" + vol.Mountpoint + ":ro"
 
-	volume := &conplicity.Volume{
+	volume := &volume.Volume{
 		Name:            vol.Name,
 		Target:          fullTarget,
 		BackupDir:       fullBackupDir,
