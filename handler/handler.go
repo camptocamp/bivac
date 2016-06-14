@@ -15,6 +15,7 @@ import (
 type environment struct {
 	Image              string   `env:"DUPLICITY_DOCKER_IMAGE" envDefault:"camptocamp/duplicity:latest"`
 	DuplicityTargetURL string   `env:"DUPLICITY_TARGET_URL"`
+	PushgatewayURL     string   `env:"PUSHGATEWAY_URL"`
 	AWSAccessKeyID     string   `env:"AWS_ACCESS_KEY_ID"`
 	AWSSecretAccessKey string   `env:"AWS_SECRET_ACCESS_KEY"`
 	SwiftUsername      string   `env:"SWIFT_USERNAME"`
