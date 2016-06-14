@@ -1,4 +1,6 @@
-conplicity: conplicity.go
+DEPS = $(wildcard */*.go)
+
+conplicity: conplicity.go $(DEPS)
 	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o $@ $<
 	strip $@
 
