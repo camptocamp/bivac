@@ -39,12 +39,18 @@ func main() {
 		metrics = append(metrics, _metrics...)
 	}
 	if c.PushgatewayURL != "" {
-		log.Infof("Sending metrics to Prometheurs Pushgateway: %v", strings.Join(metrics, "\n"))
-		resp, err := http.Post(
-			c.PushgatewayURL+"/metrics/job/conplicity/instance/"+c.Hostname,
-			"text/plain",
-			bytes.NewBufferString(strings.Join(metrics, "\n")),
-		)
+		data := strings.Join(metrics, "\n") + "\n"
+		log.Infof("Sending metrics to Prometheus Pushgateway: %v", data)
+
+		url := c.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
+		log.Infof("URL=%v", url)
+
+		req, err := http.NewRequest("POST", url, bytes.NewBufferString(data))
+		req.Header.Set("Content-Type", "text/plain; version=0.0.4")
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+
 		log.Infof("resp = %v", resp)
 		util.CheckErr(err, "Failed post data to Prometheus Pushgateway: %v", 1)
 	}
