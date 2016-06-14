@@ -1,3 +1,16 @@
+# [0.8.0](https://github.com/camptocamp/conplicity/releases/tag/0.8.0) (2016-06-14)
+
+* Features:
+
+  - Push metrics to Prometheus Pushgateway defined by PUSHGATEWAY_URL
+  - Generate verifyExitCode metric (fixes [#38](https://github.com/camptocamp/conplicity/issues/38))
+  - Generate lastBackup and lastFullBackup metrics (fixes [#40](https://github.com/camptocamp/conplicity/issues/40))
+
+* Internals:
+
+  - Fix Makefile to detect changes in all source files (fixes [#33](https://github.com/camptocamp/conplicity/issues/33))
+  - Refactor BackupVolume (fixes [#44](https://github.com/camptocamp/conplicity/issues/44))
+
 # [0.7.1](https://github.com/camptocamp/conplicity/releases/tag/0.7.1) (2016-05-23)
 
 * Bugfix:
