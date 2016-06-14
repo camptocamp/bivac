@@ -21,7 +21,12 @@ type Volume struct {
 	Client          *handler.Conplicity
 }
 
+// Constants
 const cacheMount = "duplicity_cache:/root/.cache/duplicity"
+const timeFormat = "Mon Jan 2 15:04:05 2006"
+
+var fullBackupRx = regexp.MustCompile("Last full backup date: (.+)")
+var chainEndTimeRx = regexp.MustCompile("Chain end time: (.+)")
 
 // Backup performs the backup of a volume with duplicity
 func (v *Volume) Backup() (metrics []string, err error) {
@@ -125,11 +130,6 @@ func (v *Volume) Status() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
-
-	fullBackupRx := regexp.MustCompile("Last full backup date: (.+)")
-	chainEndTimeRx := regexp.MustCompile("Chain end time: (.+)")
-
-	const timeFormat = "Mon Jan 2 15:04:05 2006"
 
 	fullBackup := fullBackupRx.FindStringSubmatch(stdout)
 	fullBackupDate, err := time.Parse(timeFormat, strings.TrimSpace(fullBackup[1]))
