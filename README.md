@@ -9,6 +9,13 @@ Conplicity
 conplicity lets you backup all your named docker volumes using duplicity.
 
 
+## Installing
+
+```shell
+$ go get github.com/camptocamp/conplicity
+```
+
+
 ## Examples
 
 ### Backup all named volumes to S3
