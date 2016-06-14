@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"net/http"
 	"sort"
+	"strings"
 	"unicode/utf8"
 
 	log "github.com/Sirupsen/logrus"
@@ -34,6 +37,16 @@ func main() {
 		_metrics, err := backupVolume(c, voll)
 		util.CheckErr(err, "Failed to process volume "+vol.Name+": %v", -1)
 		metrics = append(metrics, _metrics...)
+	}
+	if c.PushgatewayURL != "" {
+		log.Infof("Sending metrics to Prometheurs Pushgateway: %v", strings.Join(metrics, "\n"))
+		resp, err := http.Post(
+			c.PushgatewayURL+"/metrics/job/conplicity/instance/"+c.Hostname,
+			"text/plain",
+			bytes.NewBufferString(strings.Join(metrics, "\n")),
+		)
+		log.Infof("resp = %v", resp)
+		util.CheckErr(err, "Failed post data to Prometheus Pushgateway: %v", 1)
 	}
 
 	log.Infof("End backup...")
