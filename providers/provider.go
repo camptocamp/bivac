@@ -3,7 +3,9 @@ package providers
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
@@ -199,7 +201,44 @@ func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) 
 	util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", -1)
 
 	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"verifyExitCode\"} %v", vol.Name, state.ExitCode)
-	log.Infof("Metric : %v", metric)
+	log.Infof("ExitCode metric: %v", metric)
+	metrics = append(metrics, metric)
+
+	// Collection status
+	_, stdout, err := c.LaunchDuplicity(
+		[]string{
+			"collection-status",
+			"--s3-use-new-style",
+			"--ssh-options", "-oStrictHostKeyChecking=no",
+			"--no-encryption",
+			"--name", vol.Name,
+			c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
+		},
+		[]string{
+			vol.Name + ":" + vol.Mountpoint + ":ro",
+			"duplicity_cache:/root/.cache/duplicity",
+		},
+	)
+	util.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", -1)
+
+	fullBackupRx := regexp.MustCompile("Last full backup date: (.+)")
+	chainEndTimeRx := regexp.MustCompile("Chain end time: (.+)")
+
+	const timeFormat = "Mon Jan 2 15:04:05 2006"
+
+	fullBackup := fullBackupRx.FindStringSubmatch(stdout)
+	fullBackupDate, err := time.Parse(timeFormat, strings.TrimSpace(fullBackup[1]))
+	util.CheckErr(err, "Failed to parse full backup date: %v", -1)
+	chainEndTime := chainEndTimeRx.FindStringSubmatch(stdout)
+	chainEndTimeDate, err := time.Parse(timeFormat, strings.TrimSpace(chainEndTime[1]))
+	util.CheckErr(err, "Failed to parse chain end time date: %v", -1)
+
+	metric = fmt.Sprintf("conplicity{volume=\"%v\",what=\"lastBackup\"} %v", vol.Name, chainEndTimeDate.Unix())
+	log.Infof("Last backup metric: %v", metric)
+	metrics = append(metrics, metric)
+
+	metric = fmt.Sprintf("conplicity{volume=\"%v\",what=\"lastFullBackup\"} %v", vol.Name, fullBackupDate.Unix())
+	log.Infof("Last full backup metric: %v", metric)
 	metrics = append(metrics, metric)
 
 	return
