@@ -45,7 +45,7 @@ func main() {
 		url := c.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
 		log.Infof("URL=%v", url)
 
-		req, err := http.NewRequest("POST", url, bytes.NewBufferString(data))
+		req, err := http.NewRequest("PUT", url, bytes.NewBufferString(data))
 		req.Header.Set("Content-Type", "text/plain; version=0.0.4")
 
 		client := &http.Client{}
