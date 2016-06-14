@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -98,7 +99,7 @@ func PrepareBackup(p Provider) (err error) {
 }
 
 // BackupVolume performs the backup of the passed volume
-func BackupVolume(p Provider, vol *docker.Volume) (err error) {
+func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) {
 	log.Infof("ID: " + vol.Name)
 	log.Infof("Driver: " + vol.Driver)
 	log.Infof("Mountpoint: " + vol.Mountpoint)
@@ -120,7 +121,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 
 	backupDir := p.GetBackupDir()
 
-	err = c.LaunchDuplicity(
+	_, err = c.LaunchDuplicity(
 		[]string{
 			"--full-if-older-than", fullIfOlderThan,
 			"--s3-use-new-style",
@@ -144,7 +145,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 		removeOlderThan = c.RemoveOlderThan
 	}
 
-	err = c.LaunchDuplicity(
+	_, err = c.LaunchDuplicity(
 		[]string{
 			"remove-older-than", removeOlderThan,
 			"--s3-use-new-style",
@@ -161,7 +162,7 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", -1)
 
 	// Cleanup
-	err = c.LaunchDuplicity(
+	_, err = c.LaunchDuplicity(
 		[]string{
 			"cleanup",
 			"--s3-use-new-style",
@@ -177,6 +178,29 @@ func BackupVolume(p Provider, vol *docker.Volume) (err error) {
 		},
 	)
 	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", -1)
+
+	// Verify
+	state, err := c.LaunchDuplicity(
+		[]string{
+			"verify",
+			"--s3-use-new-style",
+			"--ssh-options", "-oStrictHostKeyChecking=no",
+			"--no-encryption",
+			"--allow-source-mismatch",
+			"--name", vol.Name,
+			c.DuplicityTargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name,
+			vol.Mountpoint + "/" + backupDir,
+		},
+		[]string{
+			vol.Name + ":" + vol.Mountpoint + ":ro",
+			"duplicity_cache:/root/.cache/duplicity",
+		},
+	)
+	util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", -1)
+
+	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"verifyExitCode\"} %v", vol.Name, state.ExitCode)
+	log.Infof("Metric : %v", metric)
+	metrics = append(metrics, metric)
 
 	return
 }

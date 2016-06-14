@@ -15,6 +15,7 @@ import (
 type environment struct {
 	Image              string   `env:"DUPLICITY_DOCKER_IMAGE" envDefault:"camptocamp/duplicity:latest"`
 	DuplicityTargetURL string   `env:"DUPLICITY_TARGET_URL"`
+	PushgatewayURL     string   `env:"PUSHGATEWAY_URL"`
 	AWSAccessKeyID     string   `env:"AWS_ACCESS_KEY_ID"`
 	AWSSecretAccessKey string   `env:"AWS_SECRET_ACCESS_KEY"`
 	SwiftUsername      string   `env:"SWIFT_USERNAME"`
@@ -72,7 +73,7 @@ func (c *Conplicity) pullImage() (err error) {
 }
 
 // LaunchDuplicity starts a duplicity container with given command and binds
-func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (err error) {
+func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker.State, err error) {
 	env := []string{
 		"AWS_ACCESS_KEY_ID=" + c.AWSAccessKeyID,
 		"AWS_SECRET_ACCESS_KEY=" + c.AWSSecretAccessKey,
@@ -107,6 +108,9 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (err error) {
 		Binds: binds,
 	})
 	util.CheckErr(err, "Failed to start container: %v", -1)
+
+	state = container.State
+
 	return
 }
 
