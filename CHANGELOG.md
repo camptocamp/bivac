@@ -1,3 +1,24 @@
+# [0.8.1](https://github.com/camptocamp/conplicity/releases/tag/0.8.1) (2016-06-15)
+
+* Features:
+
+  - Add flags to the command line (fixes [#49](https://github.com/camptocamp/conplicity/issues/49))
+
+* Bugfix:
+
+  - Send metrics to pushgateway only if slice is not empty (fixes [#47](https://github.com/camptocamp/conplicity/issues/47))
+
+* Internals:
+
+  - Use github.com/jessevdk/go-flags to manage flags and environment variables
+
+# [0.7.1](https://github.com/camptocamp/conplicity/releases/tag/0.7.1) (2016-05-23)
+
+* Bugfix:
+
+  - Add --ssh-options="-oStrictHostKeyChecking=no" to duplicity parameters (fixes [#32](https://github.com/camptocamp/conplicity/issues/32))
+  - Add missing LICENSE file (fixes [#30](https://github.com/camptocamp/conplicity/issues/30))
+
 # [0.8.0](https://github.com/camptocamp/conplicity/releases/tag/0.8.0) (2016-06-14)
 
 * Features:
