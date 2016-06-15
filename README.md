@@ -18,24 +18,23 @@ $ go get github.com/camptocamp/conplicity
 ## Usage
 
 ```shell
-$ conplicity -h
 Usage:
   conplicity [OPTIONS]
 
 Application Options:
   -i, --image=              The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
   -u, --url=                The duplicity target URL to push to. [$DUPLICITY_TARGET_URL]
-  -g, --gateway_url=        The prometheus push gateway URL to use. [$PUSHGATEWAY_URL]
-      --aws_access_key_id=  The AWS access key ID. [$AWS_ACCESS_KEY_ID]
-      --aws_secret_key_id=  The AWS secret access key. [$AWS_SECRET_ACCESS_KEY]
-      --swift_username=     The Swift user name. [$SWIFT_USERNAME]
-      --swift_password=     The Swift password. [$SWIFT_PASSWORD]
-      --swift_auth_url=     The Swift auth URL. [$SWIFT_AUTHURL]
-      --swift_tenant_name=  The Swift tenant name. [$SWIFT_TENANTNAME]
-      --swift_region_name=  The Swift region name. [$SWIFT_REGIONNAME]
-      --full_if_older_than= The number of days after which a full backup must be performed. (default: 15D) [$CONPLICITY_FULL_IF_OLDER_THAN]
-      --remove_older_than=  The number days after which backups must be removed. (default: 30D) [$CONPLICITY_REMOVE_OLDER_THAN]
-  -b, --volumes_blacklist=  Volumes to blacklist in backups. [$CONPLICITY_VOLUMES_BLACKLIST]
+  -g, --gateway-url=        The prometheus push gateway URL to use. [$PUSHGATEWAY_URL]
+      --aws-access-key-id=  The AWS access key ID. [$AWS_ACCESS_KEY_ID]
+      --aws-secret-key-id=  The AWS secret access key. [$AWS_SECRET_ACCESS_KEY]
+      --swift-username=     The Swift user name. [$SWIFT_USERNAME]
+      --swift-password=     The Swift password. [$SWIFT_PASSWORD]
+      --swift-auth_url=     The Swift auth URL. [$SWIFT_AUTHURL]
+      --swift-tenant-name=  The Swift tenant name. [$SWIFT_TENANTNAME]
+      --swift-region-name=  The Swift region name. [$SWIFT_REGIONNAME]
+      --full-if-older-than= The number of days after which a full backup must be performed. (default: 15D) [$CONPLICITY_FULL_IF_OLDER_THAN]
+      --remove-older-than=  The number days after which backups must be removed. (default: 30D) [$CONPLICITY_REMOVE_OLDER_THAN]
+  -b, --blacklist=          Volumes to blacklist in backups. [$CONPLICITY_VOLUMES_BLACKLIST]
 
 Help Options:
   -h, --help                Show this help message
@@ -50,8 +49,8 @@ exit status 1
 ```shell
 $ conplicity \
   -u s3://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
-  --aws_access_key_id=<my_key_id> \
-  --aws_secret_key_id=<my_secret_key>
+  --aws-access-key-id=<my_key_id> \
+  --aws-secret-key-id=<my_secret_key>
 ```
 
 
