@@ -38,8 +38,6 @@ Application Options:
 
 Help Options:
   -h, --help                Show this help message
-
-exit status 1
 ```
 
 ## Examples
