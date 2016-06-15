@@ -7,26 +7,26 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/caarlos0/env"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/fgrehm/go-dockerpty"
 	"github.com/fsouza/go-dockerclient"
+	"github.com/jessevdk/go-flags"
 )
 
 type environment struct {
-	Image              string   `env:"DUPLICITY_DOCKER_IMAGE" envDefault:"camptocamp/duplicity:latest"`
-	DuplicityTargetURL string   `env:"DUPLICITY_TARGET_URL"`
-	PushgatewayURL     string   `env:"PUSHGATEWAY_URL"`
-	AWSAccessKeyID     string   `env:"AWS_ACCESS_KEY_ID"`
-	AWSSecretAccessKey string   `env:"AWS_SECRET_ACCESS_KEY"`
-	SwiftUsername      string   `env:"SWIFT_USERNAME"`
-	SwiftPassword      string   `env:"SWIFT_PASSWORD"`
-	SwiftAuthURL       string   `env:"SWIFT_AUTHURL"`
-	SwiftTenantName    string   `env:"SWIFT_TENANTNAME"`
-	SwiftRegionName    string   `env:"SWIFT_REGIONNAME"`
-	FullIfOlderThan    string   `env:"CONPLICITY_FULL_IF_OLDER_THAN" envDefault:"15D"`
-	RemoveOlderThan    string   `env:"CONPLICITY_REMOVE_OLDER_THAN" envDefault:"30D"`
-	VolumesBlacklist   []string `env:"CONPLICITY_VOLUMES_BLACKLIST"`
+	Image              string   `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
+	DuplicityTargetURL string   `short:"u" long:"url" description:"The duplicity target URL to push to." env:"DUPLICITY_TARGET_URL"`
+	PushgatewayURL     string   `short:"g" long:"gateway-url" description:"The prometheus push gateway URL to use." env:"PUSHGATEWAY_URL"`
+	AWSAccessKeyID     string   `long:"aws-access-key-id" description:"The AWS access key ID." env:"AWS_ACCESS_KEY_ID"`
+	AWSSecretAccessKey string   `long:"aws-secret-key-id" description:"The AWS secret access key." env:"AWS_SECRET_ACCESS_KEY"`
+	SwiftUsername      string   `long:"swift-username" description:"The Swift user name." env:"SWIFT_USERNAME"`
+	SwiftPassword      string   `long:"swift-password" description:"The Swift password." env:"SWIFT_PASSWORD"`
+	SwiftAuthURL       string   `long:"swift-auth_url" description:"The Swift auth URL." env:"SWIFT_AUTHURL"`
+	SwiftTenantName    string   `long:"swift-tenant-name" description:"The Swift tenant name." env:"SWIFT_TENANTNAME"`
+	SwiftRegionName    string   `long:"swift-region-name" description:"The Swift region name." env:"SWIFT_REGIONNAME"`
+	FullIfOlderThan    string   `long:"full-if-older-than" description:"The number of days after which a full backup must be performed." env:"CONPLICITY_FULL_IF_OLDER_THAN" default:"15D"`
+	RemoveOlderThan    string   `long:"remove-older-than" description:"The number days after which backups must be removed." env:"CONPLICITY_REMOVE_OLDER_THAN" default:"30D"`
+	VolumesBlacklist   []string `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"CONPLICITY_VOLUMES_BLACKLIST"`
 }
 
 // Conplicity is the main handler struct
@@ -56,7 +56,10 @@ func (c *Conplicity) Setup() (err error) {
 
 func (c *Conplicity) getEnv() (err error) {
 	c.environment = &environment{}
-	env.Parse(c.environment)
+	parser := flags.NewParser(c.environment, flags.Default)
+	if _, err = parser.Parse(); err != nil {
+		os.Exit(1)
+	}
 	sort.Strings(c.VolumesBlacklist)
 	return
 }

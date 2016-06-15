@@ -18,13 +18,13 @@ import (
 const labelPrefix string = "io.conplicity"
 
 func main() {
-	log.Infof("Starting backup...")
-
 	var err error
 
 	c := &handler.Conplicity{}
 	err = c.Setup()
 	util.CheckErr(err, "Failed to setup Conplicity handler: %v", 1)
+
+	log.Infof("Starting backup...")
 
 	vols, err := c.ListVolumes(docker.ListVolumesOptions{})
 	util.CheckErr(err, "Failed to list Docker volumes: %v", 1)
