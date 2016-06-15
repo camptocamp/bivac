@@ -48,10 +48,10 @@ exit status 1
 ### Backup all named volumes to S3
 
 ```shell
-$ DUPLICITY_TARGET_URL=s3://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
-  AWS_ACCESS_KEY_ID=<my_key_id> \
-  AWS_SECRET_ACCESS_KEY=<my_secret_key> \
-    conplicity
+$ conplicity \
+  -u s3://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
+  --aws_access_key_id=<my_key_id> \
+  --aws_secret_key_id=<my_secret_key>
 ```
 
 
