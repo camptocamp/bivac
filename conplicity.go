@@ -38,8 +38,8 @@ func main() {
 		util.CheckErr(err, "Failed to process volume "+vol.Name+": %v", -1)
 		metrics = append(metrics, _metrics...)
 	}
-	if len(metrics) > 0 && c.PushgatewayURL != "" {
-		url := c.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
+	if len(metrics) > 0 && c.Metrics.PushgatewayURL != "" {
+		url := c.Metrics.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
 		data := strings.Join(metrics, "\n") + "\n"
 		err = pushToPrometheus(url, data)
 		util.CheckErr(err, "Failed post data to Prometheus Pushgateway: %v", 1)

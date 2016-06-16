@@ -17,20 +17,33 @@ import (
 const version = "0.8.1"
 
 type environment struct {
-	Version            bool     `short:"V" long:"version" description:"Display version."`
-	Image              string   `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
-	DuplicityTargetURL string   `short:"u" long:"url" description:"The duplicity target URL to push to." env:"DUPLICITY_TARGET_URL"`
-	PushgatewayURL     string   `short:"g" long:"gateway-url" description:"The prometheus push gateway URL to use." env:"PUSHGATEWAY_URL"`
-	AWSAccessKeyID     string   `long:"aws-access-key-id" description:"The AWS access key ID." env:"AWS_ACCESS_KEY_ID"`
-	AWSSecretAccessKey string   `long:"aws-secret-key-id" description:"The AWS secret access key." env:"AWS_SECRET_ACCESS_KEY"`
-	SwiftUsername      string   `long:"swift-username" description:"The Swift user name." env:"SWIFT_USERNAME"`
-	SwiftPassword      string   `long:"swift-password" description:"The Swift password." env:"SWIFT_PASSWORD"`
-	SwiftAuthURL       string   `long:"swift-auth_url" description:"The Swift auth URL." env:"SWIFT_AUTHURL"`
-	SwiftTenantName    string   `long:"swift-tenant-name" description:"The Swift tenant name." env:"SWIFT_TENANTNAME"`
-	SwiftRegionName    string   `long:"swift-region-name" description:"The Swift region name." env:"SWIFT_REGIONNAME"`
-	FullIfOlderThan    string   `long:"full-if-older-than" description:"The number of days after which a full backup must be performed." env:"CONPLICITY_FULL_IF_OLDER_THAN" default:"15D"`
-	RemoveOlderThan    string   `long:"remove-older-than" description:"The number days after which backups must be removed." env:"CONPLICITY_REMOVE_OLDER_THAN" default:"30D"`
-	VolumesBlacklist   []string `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"CONPLICITY_VOLUMES_BLACKLIST"`
+	Version bool   `short:"V" long:"version" description:"Display version."`
+	Image   string `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
+
+	Duplicity struct {
+		TargetURL       string `short:"u" long:"url" description:"The duplicity target URL to push to." env:"DUPLICITY_TARGET_URL"`
+		FullIfOlderThan string `long:"full-if-older-than" description:"The number of days after which a full backup must be performed." env:"CONPLICITY_FULL_IF_OLDER_THAN" default:"15D"`
+		RemoveOlderThan string `long:"remove-older-than" description:"The number days after which backups must be removed." env:"CONPLICITY_REMOVE_OLDER_THAN" default:"30D"`
+	} `group:"Duplicity Options"`
+
+	Metrics struct {
+		PushgatewayURL string `short:"g" long:"gateway-url" description:"The prometheus push gateway URL to use." env:"PUSHGATEWAY_URL"`
+	} `group:"Metrics Options"`
+
+	AWS struct {
+		AccessKeyID     string `long:"aws-access-key-id" description:"The AWS access key ID." env:"AWS_ACCESS_KEY_ID"`
+		SecretAccessKey string `long:"aws-secret-key-id" description:"The AWS secret access key." env:"AWS_SECRET_ACCESS_KEY"`
+	} `group:"AWS Options"`
+
+	Swift struct {
+		Username   string `long:"swift-username" description:"The Swift user name." env:"SWIFT_USERNAME"`
+		Password   string `long:"swift-password" description:"The Swift password." env:"SWIFT_PASSWORD"`
+		AuthURL    string `long:"swift-auth_url" description:"The Swift auth URL." env:"SWIFT_AUTHURL"`
+		TenantName string `long:"swift-tenant-name" description:"The Swift tenant name." env:"SWIFT_TENANTNAME"`
+		RegionName string `long:"swift-region-name" description:"The Swift region name." env:"SWIFT_REGIONNAME"`
+	} `group:"Swift Options"`
+
+	VolumesBlacklist []string `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"CONPLICITY_VOLUMES_BLACKLIST"`
 }
 
 // Conplicity is the main handler struct
@@ -89,13 +102,13 @@ func (c *Conplicity) pullImage() (err error) {
 // LaunchDuplicity starts a duplicity container with given command and binds
 func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker.State, stdout string, err error) {
 	env := []string{
-		"AWS_ACCESS_KEY_ID=" + c.AWSAccessKeyID,
-		"AWS_SECRET_ACCESS_KEY=" + c.AWSSecretAccessKey,
-		"SWIFT_USERNAME=" + c.SwiftUsername,
-		"SWIFT_PASSWORD=" + c.SwiftPassword,
-		"SWIFT_AUTHURL=" + c.SwiftAuthURL,
-		"SWIFT_TENANTNAME=" + c.SwiftTenantName,
-		"SWIFT_REGIONNAME=" + c.SwiftRegionName,
+		"AWS_ACCESS_KEY_ID=" + c.AWS.AccessKeyID,
+		"AWS_SECRET_ACCESS_KEY=" + c.AWS.SecretAccessKey,
+		"SWIFT_USERNAME=" + c.Swift.Username,
+		"SWIFT_PASSWORD=" + c.Swift.Password,
+		"SWIFT_AUTHURL=" + c.Swift.AuthURL,
+		"SWIFT_TENANTNAME=" + c.Swift.TenantName,
+		"SWIFT_REGIONNAME=" + c.Swift.RegionName,
 		"SWIFT_AUTHVERSION=2",
 	}
 
