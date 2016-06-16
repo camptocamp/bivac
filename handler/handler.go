@@ -45,6 +45,10 @@ type environment struct {
 		RegionName string `long:"swift-region-name" description:"The Swift region name." env:"SWIFT_REGIONNAME"`
 	} `group:"Swift Options"`
 
+	Docker struct {
+		Endpoint string `short:"e" long:"docker-endpoint" description:"The Docker endpoint." env:"DOCKER_ENDPOINT" default:"unix:///var/run/docker.sock"`
+	} `group:"Docker Options"`
+
 	VolumesBlacklist []string `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"CONPLICITY_VOLUMES_BLACKLIST"`
 }
 
@@ -65,9 +69,7 @@ func (c *Conplicity) Setup() (err error) {
 	c.Hostname, err = os.Hostname()
 	util.CheckErr(err, "Failed to get hostname: %v", 1)
 
-	endpoint := "unix:///var/run/docker.sock"
-
-	c.Client, err = docker.NewClient(endpoint)
+	c.Client, err = docker.NewClient(c.Docker.Endpoint)
 	util.CheckErr(err, "Failed to create Docker client: %v", 1)
 
 	err = c.pullImage()
