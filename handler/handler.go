@@ -20,7 +20,7 @@ const version = "0.8.1"
 type environment struct {
 	Version  bool   `short:"V" long:"version" description:"Display version."`
 	Image    string `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
-	Loglevel string `short:"l" long:"loglevel" description:"Set loglevel." env:"LOG_LEVEL" default:"info"`
+	Loglevel string `short:"l" long:"loglevel" description:"Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic')." env:"LOG_LEVEL" default:"info"`
 
 	Duplicity struct {
 		TargetURL       string `short:"u" long:"url" description:"The duplicity target URL to push to." env:"DUPLICITY_TARGET_URL"`
@@ -94,6 +94,8 @@ func (c *Conplicity) getEnv() (err error) {
 
 func (c *Conplicity) setupLoglevel() (err error) {
 	switch c.Loglevel {
+	case "debug":
+		log.SetLevel(log.DebugLevel)
 	case "info":
 		log.SetLevel(log.InfoLevel)
 	case "warn":

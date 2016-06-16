@@ -50,7 +50,7 @@ func main() {
 
 func pushToPrometheus(url, data string) error {
 	log.Infof("Sending metrics to Prometheus Pushgateway: %v", data)
-	log.Infof("URL=%v", url)
+	log.Debugf("URL=%v", url)
 
 	req, err := http.NewRequest("PUT", url, bytes.NewBufferString(data))
 	req.Header.Set("Content-Type", "text/plain; version=0.0.4")
@@ -58,7 +58,7 @@ func pushToPrometheus(url, data string) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
-	log.Infof("resp = %v", resp)
+	log.Debugf("resp = %v", resp)
 
 	return err
 }
