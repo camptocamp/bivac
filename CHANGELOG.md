@@ -1,3 +1,10 @@
+# [0.10.0](https://github.com/camptocamp/conplicity/releases/tag/0.10.0) (2016-06-16)
+
+* Internals:
+
+  - Refactor various parameters
+  - Set version from Makefile + git
+
 # [0.9.0](https://github.com/camptocamp/conplicity/releases/tag/0.9.0) (2016-06-16)
 
 * Features:
