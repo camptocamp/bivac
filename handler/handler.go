@@ -15,7 +15,7 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-const version = "0.8.1"
+const version = "0.9.0"
 
 type environment struct {
 	Version  bool   `short:"V" long:"version" description:"Display version."`
