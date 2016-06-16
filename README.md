@@ -24,7 +24,7 @@ Usage:
 Application Options:
   -V, --version             Display version.
   -i, --image=              The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
-  -l, --loglevel=           Set loglevel. (default: info) [$LOG_LEVEL]
+  -l, --loglevel=           Set loglevel. (default: info) [$CONPLICITY_LOG_LEVEL]
   -b, --blacklist=          Volumes to blacklist in backups. [$CONPLICITY_VOLUMES_BLACKLIST]
 
 Duplicity Options:
