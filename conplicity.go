@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"net/http"
 	"sort"
 	"strings"
 	"unicode/utf8"
@@ -11,6 +9,7 @@ import (
 	"github.com/fsouza/go-dockerclient"
 
 	"github.com/camptocamp/conplicity/handler"
+	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/providers"
 	"github.com/camptocamp/conplicity/util"
 )
@@ -27,38 +26,23 @@ func main() {
 	vols, err := c.ListVolumes(docker.ListVolumesOptions{})
 	util.CheckErr(err, "Failed to list Docker volumes: %v", 1)
 
-	var metrics []string
+	var all_metrics []string
 	for _, vol := range vols {
 		voll, err := c.InspectVolume(vol.Name)
 		util.CheckErr(err, "Failed to inspect volume "+vol.Name+": %v", -1)
 
-		_metrics, err := backupVolume(c, voll)
+		newMetrics, err := backupVolume(c, voll)
 		util.CheckErr(err, "Failed to process volume "+vol.Name+": %v", -1)
-		metrics = append(metrics, _metrics...)
+		all_metrics = append(all_metrics, newMetrics...)
 	}
-	if len(metrics) > 0 && c.Metrics.PushgatewayURL != "" {
+	if len(all_metrics) > 0 && c.Metrics.PushgatewayURL != "" {
 		url := c.Metrics.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
-		data := strings.Join(metrics, "\n") + "\n"
-		err = pushToPrometheus(url, data)
+		data := strings.Join(all_metrics, "\n") + "\n"
+		err = metrics.PushToPrometheus(url, data)
 		util.CheckErr(err, "Failed post data to Prometheus Pushgateway: %v", 1)
 	}
 
 	log.Infof("End backup...")
-}
-
-func pushToPrometheus(url, data string) error {
-	log.Infof("Sending metrics to Prometheus Pushgateway: %v", data)
-	log.Debugf("URL=%v", url)
-
-	req, err := http.NewRequest("PUT", url, bytes.NewBufferString(data))
-	req.Header.Set("Content-Type", "text/plain; version=0.0.4")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-
-	log.Debugf("resp = %v", resp)
-
-	return err
 }
 
 func backupVolume(c *handler.Conplicity, vol *docker.Volume) (metrics []string, err error) {
