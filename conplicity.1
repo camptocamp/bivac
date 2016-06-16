@@ -1,0 +1,69 @@
+.TH conplicity 1 "16 June 2016"
+.SH NAME
+conplicity \- 
+.SH SYNOPSIS
+\fBconplicity\fP [OPTIONS]
+.SH DESCRIPTION
+
+.SH OPTIONS
+.SS Application Options
+.TP
+\fB\fB\-V\fR, \fB\-\-version\fR\fP
+Display version.
+.TP
+\fB\fB\-i\fR, \fB\-\-image\fR <default: \fI"camptocamp/duplicity:latest"\fR>\fP
+The duplicity docker image.
+.TP
+\fB\fB\-l\fR, \fB\-\-loglevel\fR <default: \fI"info"\fR>\fP
+Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic').
+.TP
+\fB\fB\-b\fR, \fB\-\-blacklist\fR <default: \fI$CONPLICITY_VOLUMES_BLACKLIST\fR>\fP
+Volumes to blacklist in backups.
+.TP
+\fB\fB\-m\fR, \fB\-\-manpage\fR\fP
+Output manpage.
+.SS Duplicity Options
+.TP
+\fB\fB\-u\fR, \fB\-\-url\fR <default: \fI$DUPLICITY_TARGET_URL\fR>\fP
+The duplicity target URL to push to.
+.TP
+\fB\fB\-\-full-if-older-than\fR <default: \fI"15D"\fR>\fP
+The number of days after which a full backup must be performed.
+.TP
+\fB\fB\-\-remove-older-than\fR <default: \fI"30D"\fR>\fP
+The number days after which backups must be removed.
+.SS Metrics Options
+.TP
+\fB\fB\-g\fR, \fB\-\-gateway-url\fR <default: \fI$PUSHGATEWAY_URL\fR>\fP
+The prometheus push gateway URL to use.
+.SS AWS Options
+.TP
+\fB\fB\-\-aws-access-key-id\fR <default: \fI$AWS_ACCESS_KEY_ID\fR>\fP
+The AWS access key ID.
+.TP
+\fB\fB\-\-aws-secret-key-id\fR <default: \fI$AWS_SECRET_ACCESS_KEY\fR>\fP
+The AWS secret access key.
+.SS Swift Options
+.TP
+\fB\fB\-\-swift-username\fR <default: \fI$SWIFT_USERNAME\fR>\fP
+The Swift user name.
+.TP
+\fB\fB\-\-swift-password\fR <default: \fI$SWIFT_PASSWORD\fR>\fP
+The Swift password.
+.TP
+\fB\fB\-\-swift-auth_url\fR <default: \fI$SWIFT_AUTHURL\fR>\fP
+The Swift auth URL.
+.TP
+\fB\fB\-\-swift-tenant-name\fR <default: \fI$SWIFT_TENANTNAME\fR>\fP
+The Swift tenant name.
+.TP
+\fB\fB\-\-swift-region-name\fR <default: \fI$SWIFT_REGIONNAME\fR>\fP
+The Swift region name.
+.SS Docker Options
+.TP
+\fB\fB\-e\fR, \fB\-\-docker-endpoint\fR <default: \fI"unix:///var/run/docker.sock"\fR>\fP
+The Docker endpoint.
+.SS Help Options
+.TP
+\fB\fB\-h\fR, \fB\-\-help\fR\fP
+Show this help message

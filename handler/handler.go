@@ -17,9 +17,11 @@ import (
 )
 
 type config struct {
-	Version  bool   `short:"V" long:"version" description:"Display version."`
-	Image    string `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
-	Loglevel string `short:"l" long:"loglevel" description:"Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic')." env:"CONPLICITY_LOG_LEVEL" default:"info"`
+	Version          bool     `short:"V" long:"version" description:"Display version."`
+	Image            string   `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
+	Loglevel         string   `short:"l" long:"loglevel" description:"Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic')." env:"CONPLICITY_LOG_LEVEL" default:"info"`
+	VolumesBlacklist []string `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"CONPLICITY_VOLUMES_BLACKLIST"`
+	Manpage          bool     `short:"m" long:"manpage" description:"Output manpage."`
 
 	Duplicity struct {
 		TargetURL       string `short:"u" long:"url" description:"The duplicity target URL to push to." env:"DUPLICITY_TARGET_URL"`
@@ -47,8 +49,6 @@ type config struct {
 	Docker struct {
 		Endpoint string `short:"e" long:"docker-endpoint" description:"The Docker endpoint." env:"DOCKER_ENDPOINT" default:"unix:///var/run/docker.sock"`
 	} `group:"Docker Options"`
-
-	VolumesBlacklist []string `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"CONPLICITY_VOLUMES_BLACKLIST"`
 }
 
 // Conplicity is the main handler struct
@@ -87,6 +87,13 @@ func (c *Conplicity) getEnv(version string) (err error) {
 
 	if c.Config.Version {
 		fmt.Printf("Conplicity v%v\n", version)
+		os.Exit(0)
+	}
+
+	if c.Config.Manpage {
+		var buf bytes.Buffer
+		parser.WriteManPage(&buf)
+		fmt.Printf(buf.String())
 		os.Exit(0)
 	}
 

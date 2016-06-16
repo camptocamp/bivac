@@ -1,12 +1,17 @@
 DEPS = $(wildcard */*.go)
 VERSION = $(shell git describe --always --dirty)
 
+all: conplicity conplicity.1
+
 conplicity: conplicity.go $(DEPS)
 	CGO_ENABLED=0 GOOS=linux \
 	  go build -a \
 		  -ldflags="-X main.version=$(VERSION)" \
 	    -installsuffix cgo -o $@ $<
 	strip $@
+
+conplicity.1: conplicity
+	./conplicity -m > $@
 
 lint:
 	@ go get -v github.com/golang/lint/golint
