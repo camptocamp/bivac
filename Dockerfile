@@ -1,3 +1,4 @@
 FROM scratch
 ADD conplicity /
-CMD ["/conplicity"]
+ENTRYPOINT ["/conplicity"]
+CMD [""]
