@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"sort"
 	"strings"
@@ -13,7 +14,10 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
+const version = "0.8.1"
+
 type environment struct {
+	Version            bool     `short:"V" long:"version" description:"Display version."`
 	Image              string   `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
 	DuplicityTargetURL string   `short:"u" long:"url" description:"The duplicity target URL to push to." env:"DUPLICITY_TARGET_URL"`
 	PushgatewayURL     string   `short:"g" long:"gateway-url" description:"The prometheus push gateway URL to use." env:"PUSHGATEWAY_URL"`
@@ -60,6 +64,12 @@ func (c *Conplicity) getEnv() (err error) {
 	if _, err = parser.Parse(); err != nil {
 		os.Exit(1)
 	}
+
+	if c.environment.Version {
+		fmt.Printf("Conplicity v%v\n", version)
+		os.Exit(0)
+	}
+
 	sort.Strings(c.VolumesBlacklist)
 	return
 }
