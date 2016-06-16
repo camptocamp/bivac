@@ -1,7 +1,11 @@
 DEPS = $(wildcard */*.go)
+VERSION = $(shell git describe --always --long --dirty)
 
 conplicity: conplicity.go $(DEPS)
-	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o $@ $<
+	CGO_ENABLED=0 GOOS=linux \
+	  go build -a \
+		  -ldflags="-X main.version=$(VERSION)" \
+	    -installsuffix cgo -o $@ $<
 	strip $@
 
 lint:

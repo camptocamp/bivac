@@ -12,11 +12,13 @@ import (
 	"github.com/camptocamp/conplicity/util"
 )
 
+var version = "undefined"
+
 func main() {
 	var err error
 
 	c := &handler.Conplicity{}
-	err = c.Setup()
+	err = c.Setup(version)
 	util.CheckErr(err, "Failed to setup Conplicity handler: %v", 1)
 
 	log.Infof("Starting backup...")

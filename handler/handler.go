@@ -16,8 +16,6 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-const version = "0.9.0"
-
 type config struct {
 	Version  bool   `short:"V" long:"version" description:"Display version."`
 	Image    string `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
@@ -62,8 +60,8 @@ type Conplicity struct {
 }
 
 // Setup sets up a Conplicity struct
-func (c *Conplicity) Setup() (err error) {
-	c.getEnv()
+func (c *Conplicity) Setup(version string) (err error) {
+	c.getEnv(version)
 
 	err = c.setupLoglevel()
 	util.CheckErr(err, "Failed to setup log level: %v", 1)
@@ -80,7 +78,7 @@ func (c *Conplicity) Setup() (err error) {
 	return
 }
 
-func (c *Conplicity) getEnv() (err error) {
+func (c *Conplicity) getEnv(version string) (err error) {
 	c.Config = &config{}
 	parser := flags.NewParser(c.Config, flags.Default)
 	if _, err = parser.Parse(); err != nil {
