@@ -22,19 +22,29 @@ Usage:
   conplicity [OPTIONS]
 
 Application Options:
+  -V, --version             Display version.
   -i, --image=              The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
+  -l, --loglevel=           Set loglevel. (default: info) [$LOG_LEVEL]
+  -b, --blacklist=          Volumes to blacklist in backups. [$CONPLICITY_VOLUMES_BLACKLIST]
+
+Duplicity Options:
   -u, --url=                The duplicity target URL to push to. [$DUPLICITY_TARGET_URL]
+      --full-if-older-than= The number of days after which a full backup must be performed. (default: 15D) [$CONPLICITY_FULL_IF_OLDER_THAN]
+      --remove-older-than=  The number days after which backups must be removed. (default: 30D) [$CONPLICITY_REMOVE_OLDER_THAN]
+
+Metrics Options:
   -g, --gateway-url=        The prometheus push gateway URL to use. [$PUSHGATEWAY_URL]
+
+AWS Options:
       --aws-access-key-id=  The AWS access key ID. [$AWS_ACCESS_KEY_ID]
       --aws-secret-key-id=  The AWS secret access key. [$AWS_SECRET_ACCESS_KEY]
+
+Swift Options:
       --swift-username=     The Swift user name. [$SWIFT_USERNAME]
       --swift-password=     The Swift password. [$SWIFT_PASSWORD]
       --swift-auth_url=     The Swift auth URL. [$SWIFT_AUTHURL]
       --swift-tenant-name=  The Swift tenant name. [$SWIFT_TENANTNAME]
       --swift-region-name=  The Swift region name. [$SWIFT_REGIONNAME]
-      --full-if-older-than= The number of days after which a full backup must be performed. (default: 15D) [$CONPLICITY_FULL_IF_OLDER_THAN]
-      --remove-older-than=  The number days after which backups must be removed. (default: 30D) [$CONPLICITY_REMOVE_OLDER_THAN]
-  -b, --blacklist=          Volumes to blacklist in backups. [$CONPLICITY_VOLUMES_BLACKLIST]
 
 Help Options:
   -h, --help                Show this help message
