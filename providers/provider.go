@@ -18,6 +18,7 @@ type Provider interface {
 	GetHandler() *handler.Conplicity
 	GetVolume() *docker.Volume
 	GetBackupDir() string
+	BackupVolume(*docker.Volume) error
 }
 
 // BaseProvider is a struct implementing the Provider interface
@@ -97,7 +98,7 @@ func PrepareBackup(p Provider) (err error) {
 }
 
 // BackupVolume performs the backup of the passed volume
-func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) {
+func (p *BaseProvider) BackupVolume(vol *docker.Volume) (err error) {
 	log.Infof("ID: " + vol.Name)
 	log.Infof("Driver: " + vol.Driver)
 	log.Infof("Mountpoint: " + vol.Mountpoint)
@@ -150,11 +151,11 @@ func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) 
 
 	newMetrics, err = volume.Verify()
 	util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", -1)
-	metrics = append(metrics, newMetrics...)
+	c.Metrics = append(c.Metrics, newMetrics...)
 
 	newMetrics, err = volume.Status()
 	util.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", -1)
-	metrics = append(metrics, newMetrics...)
+	c.Metrics = append(c.Metrics, newMetrics...)
 
 	return
 }
