@@ -9,9 +9,9 @@ import (
 	"github.com/camptocamp/conplicity/handler"
 )
 
-func PushToPrometheus(c *handler.Conplicity, metrics []string) error {
-	url := c.Metrics.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
-	data := strings.Join(metrics, "\n") + "\n"
+func PushToPrometheus(c *handler.Conplicity) error {
+	url := c.Config.Metrics.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
+	data := strings.Join(c.Metrics, "\n") + "\n"
 
 	log.Infof("Sending metrics to Prometheus Pushgateway: %v", data)
 	log.Debugf("URL=%v", url)

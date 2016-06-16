@@ -17,7 +17,7 @@ import (
 
 const version = "0.9.0"
 
-type environment struct {
+type config struct {
 	Version  bool   `short:"V" long:"version" description:"Display version."`
 	Image    string `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
 	Loglevel string `short:"l" long:"loglevel" description:"Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic')." env:"CONPLICITY_LOG_LEVEL" default:"info"`
@@ -55,8 +55,9 @@ type environment struct {
 // Conplicity is the main handler struct
 type Conplicity struct {
 	*docker.Client
-	*environment
+	Config   *config
 	Hostname string
+	Metrics  []string
 }
 
 // Setup sets up a Conplicity struct
@@ -69,7 +70,7 @@ func (c *Conplicity) Setup() (err error) {
 	c.Hostname, err = os.Hostname()
 	util.CheckErr(err, "Failed to get hostname: %v", 1)
 
-	c.Client, err = docker.NewClient(c.Docker.Endpoint)
+	c.Client, err = docker.NewClient(c.Config.Docker.Endpoint)
 	util.CheckErr(err, "Failed to create Docker client: %v", 1)
 
 	err = c.pullImage()
@@ -79,23 +80,23 @@ func (c *Conplicity) Setup() (err error) {
 }
 
 func (c *Conplicity) getEnv() (err error) {
-	c.environment = &environment{}
-	parser := flags.NewParser(c.environment, flags.Default)
+	c.Config = &config{}
+	parser := flags.NewParser(c.Config, flags.Default)
 	if _, err = parser.Parse(); err != nil {
 		os.Exit(1)
 	}
 
-	if c.environment.Version {
+	if c.Config.Version {
 		fmt.Printf("Conplicity v%v\n", version)
 		os.Exit(0)
 	}
 
-	sort.Strings(c.VolumesBlacklist)
+	sort.Strings(c.Config.VolumesBlacklist)
 	return
 }
 
 func (c *Conplicity) setupLoglevel() (err error) {
-	switch c.Loglevel {
+	switch c.Config.Loglevel {
 	case "debug":
 		log.SetLevel(log.DebugLevel)
 	case "info":
@@ -109,18 +110,18 @@ func (c *Conplicity) setupLoglevel() (err error) {
 	case "panic":
 		log.SetLevel(log.PanicLevel)
 	default:
-		err_msg := fmt.Sprintf("Wrong log level '%v'", c.Loglevel)
+		err_msg := fmt.Sprintf("Wrong log level '%v'", c.Config.Loglevel)
 		err = errors.New(err_msg)
 	}
 	return
 }
 
 func (c *Conplicity) pullImage() (err error) {
-	if _, err = c.InspectImage(c.Image); err != nil {
+	if _, err = c.InspectImage(c.Config.Image); err != nil {
 		// TODO: output pull to logs
-		log.Infof("Pulling image %v", c.Image)
+		log.Infof("Pulling image %v", c.Config.Image)
 		err = c.Client.PullImage(docker.PullImageOptions{
-			Repository: c.Image,
+			Repository: c.Config.Image,
 		}, docker.AuthConfiguration{})
 	}
 
@@ -130,13 +131,13 @@ func (c *Conplicity) pullImage() (err error) {
 // LaunchDuplicity starts a duplicity container with given command and binds
 func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker.State, stdout string, err error) {
 	env := []string{
-		"AWS_ACCESS_KEY_ID=" + c.AWS.AccessKeyID,
-		"AWS_SECRET_ACCESS_KEY=" + c.AWS.SecretAccessKey,
-		"SWIFT_USERNAME=" + c.Swift.Username,
-		"SWIFT_PASSWORD=" + c.Swift.Password,
-		"SWIFT_AUTHURL=" + c.Swift.AuthURL,
-		"SWIFT_TENANTNAME=" + c.Swift.TenantName,
-		"SWIFT_REGIONNAME=" + c.Swift.RegionName,
+		"AWS_ACCESS_KEY_ID=" + c.Config.AWS.AccessKeyID,
+		"AWS_SECRET_ACCESS_KEY=" + c.Config.AWS.SecretAccessKey,
+		"SWIFT_USERNAME=" + c.Config.Swift.Username,
+		"SWIFT_PASSWORD=" + c.Config.Swift.Password,
+		"SWIFT_AUTHURL=" + c.Config.Swift.AuthURL,
+		"SWIFT_TENANTNAME=" + c.Config.Swift.TenantName,
+		"SWIFT_REGIONNAME=" + c.Config.Swift.RegionName,
 		"SWIFT_AUTHVERSION=2",
 	}
 
@@ -145,7 +146,7 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker
 			Config: &docker.Config{
 				Cmd:          cmd,
 				Env:          env,
-				Image:        c.Image,
+				Image:        c.Config.Image,
 				OpenStdin:    true,
 				StdinOnce:    true,
 				AttachStdin:  true,

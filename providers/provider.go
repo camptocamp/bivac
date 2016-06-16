@@ -108,22 +108,22 @@ func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) 
 
 	fullIfOlderThan := util.GetVolumeLabel(vol, ".full_if_older_than")
 	if fullIfOlderThan == "" {
-		fullIfOlderThan = c.Duplicity.FullIfOlderThan
+		fullIfOlderThan = c.Config.Duplicity.FullIfOlderThan
 	}
 
 	removeOlderThan := util.GetVolumeLabel(vol, ".remove_older_than")
 	if removeOlderThan == "" {
-		removeOlderThan = c.Duplicity.RemoveOlderThan
+		removeOlderThan = c.Config.Duplicity.RemoveOlderThan
 	}
 
 	pathSeparator := "/"
-	if strings.HasPrefix(c.Duplicity.TargetURL, "swift://") {
+	if strings.HasPrefix(c.Config.Duplicity.TargetURL, "swift://") {
 		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity
 		pathSeparator = "_"
 	}
 
 	backupDir := p.GetBackupDir()
-	fullTarget := c.Duplicity.TargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name
+	fullTarget := c.Config.Duplicity.TargetURL + pathSeparator + c.Hostname + pathSeparator + vol.Name
 	fullBackupDir := vol.Mountpoint + "/" + backupDir
 	roMount := vol.Name + ":" + vol.Mountpoint + ":ro"
 

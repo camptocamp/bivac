@@ -25,17 +25,16 @@ func main() {
 	vols, err := c.ListVolumes(docker.ListVolumesOptions{})
 	util.CheckErr(err, "Failed to list Docker volumes: %v", 1)
 
-	var all_metrics []string
 	for _, vol := range vols {
 		voll, err := c.InspectVolume(vol.Name)
 		util.CheckErr(err, "Failed to inspect volume "+vol.Name+": %v", -1)
 
 		newMetrics, err := backupVolume(c, voll)
 		util.CheckErr(err, "Failed to process volume "+vol.Name+": %v", -1)
-		all_metrics = append(all_metrics, newMetrics...)
+		c.Metrics = append(c.Metrics, newMetrics...)
 	}
-	if len(all_metrics) > 0 && c.Metrics.PushgatewayURL != "" {
-		err = metrics.PushToPrometheus(c, all_metrics)
+	if len(c.Metrics) > 0 && c.Config.Metrics.PushgatewayURL != "" {
+		err = metrics.PushToPrometheus(c)
 		util.CheckErr(err, "Failed post data to Prometheus Pushgateway: %v", 1)
 	}
 
@@ -48,7 +47,7 @@ func backupVolume(c *handler.Conplicity, vol *docker.Volume) (metrics []string, 
 		return
 	}
 
-	list := c.VolumesBlacklist
+	list := c.Config.VolumesBlacklist
 	i := sort.SearchStrings(list, vol.Name)
 	if i < len(list) && list[i] == vol.Name {
 		log.Infof("Ignoring blacklisted volume " + vol.Name)
