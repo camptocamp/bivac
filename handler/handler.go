@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"sort"
 	"strings"
@@ -177,6 +178,28 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker
 
 	state = container.State
 	stdout = stdoutBuffer.String()
+
+	return
+}
+
+func (c *Conplicity) PushToPrometheus() (err error) {
+	if len(c.Metrics) == 0 || c.Config.Metrics.PushgatewayURL == "" {
+		return
+	}
+
+	url := c.Config.Metrics.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
+	data := strings.Join(c.Metrics, "\n") + "\n"
+
+	log.Infof("Sending metrics to Prometheus Pushgateway: %v", data)
+	log.Debugf("URL=%v", url)
+
+	req, err := http.NewRequest("PUT", url, bytes.NewBufferString(data))
+	req.Header.Set("Content-Type", "text/plain; version=0.0.4")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	log.Debugf("resp = %v", resp)
 
 	return
 }

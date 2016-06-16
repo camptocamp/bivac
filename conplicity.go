@@ -8,7 +8,6 @@ import (
 	"github.com/fsouza/go-dockerclient"
 
 	"github.com/camptocamp/conplicity/handler"
-	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/providers"
 	"github.com/camptocamp/conplicity/util"
 )
@@ -33,7 +32,7 @@ func main() {
 		util.CheckErr(err, "Failed to process volume "+vol.Name+": %v", -1)
 	}
 
-	err = metrics.PushToPrometheus(c)
+	err = c.PushToPrometheus()
 	util.CheckErr(err, "Failed post data to Prometheus Pushgateway: %v", 1)
 
 	log.Infof("End backup...")
