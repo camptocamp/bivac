@@ -76,7 +76,7 @@ func backupVolume(c *handler.Conplicity, vol *docker.Volume) (metrics []string, 
 		return
 	}
 
-	if getVolumeLabel(vol, ".ignore") == "true" {
+	if util.GetVolumeLabel(vol, ".ignore") == "true" {
 		log.Infof("Ignoring blacklisted volume " + vol.Name)
 		return
 	}
@@ -87,10 +87,5 @@ func backupVolume(c *handler.Conplicity, vol *docker.Volume) (metrics []string, 
 	util.CheckErr(err, "Failed to prepare backup for volume "+vol.Name+": %v", -1)
 	metrics, err = providers.BackupVolume(p, vol)
 	util.CheckErr(err, "Failed to backup volume "+vol.Name+": %v", -1)
-	return
-}
-
-func getVolumeLabel(vol *docker.Volume, key string) (value string) {
-	value = vol.Labels[labelPrefix+key]
 	return
 }

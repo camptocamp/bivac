@@ -11,8 +11,6 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
-const labelPrefix string = "io.conplicity"
-
 // A Provider is an interface for providers
 type Provider interface {
 	GetName() string
@@ -108,12 +106,12 @@ func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) 
 
 	c := p.GetHandler()
 
-	fullIfOlderThan := getVolumeLabel(vol, ".full_if_older_than")
+	fullIfOlderThan := util.GetVolumeLabel(vol, ".full_if_older_than")
 	if fullIfOlderThan == "" {
 		fullIfOlderThan = c.Duplicity.FullIfOlderThan
 	}
 
-	removeOlderThan := getVolumeLabel(vol, ".remove_older_than")
+	removeOlderThan := util.GetVolumeLabel(vol, ".remove_older_than")
 	if removeOlderThan == "" {
 		removeOlderThan = c.Duplicity.RemoveOlderThan
 	}
@@ -158,11 +156,6 @@ func BackupVolume(p Provider, vol *docker.Volume) (metrics []string, err error) 
 	util.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", -1)
 	metrics = append(metrics, newMetrics...)
 
-	return
-}
-
-func getVolumeLabel(vol *docker.Volume, key string) (value string) {
-	value = vol.Labels[labelPrefix+key]
 	return
 }
 
