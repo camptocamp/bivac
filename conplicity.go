@@ -15,8 +15,6 @@ import (
 	"github.com/camptocamp/conplicity/util"
 )
 
-const labelPrefix string = "io.conplicity"
-
 func main() {
 	var err error
 
