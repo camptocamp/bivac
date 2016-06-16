@@ -3,11 +3,16 @@ package metrics
 import (
 	"bytes"
 	"net/http"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/camptocamp/conplicity/handler"
 )
 
-func PushToPrometheus(url, data string) error {
+func PushToPrometheus(c *handler.Conplicity, metrics []string) error {
+	url := c.Metrics.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
+	data := strings.Join(metrics, "\n") + "\n"
+
 	log.Infof("Sending metrics to Prometheus Pushgateway: %v", data)
 	log.Debugf("URL=%v", url)
 

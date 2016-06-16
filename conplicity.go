@@ -2,7 +2,6 @@ package main
 
 import (
 	"sort"
-	"strings"
 	"unicode/utf8"
 
 	log "github.com/Sirupsen/logrus"
@@ -36,9 +35,7 @@ func main() {
 		all_metrics = append(all_metrics, newMetrics...)
 	}
 	if len(all_metrics) > 0 && c.Metrics.PushgatewayURL != "" {
-		url := c.Metrics.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
-		data := strings.Join(all_metrics, "\n") + "\n"
-		err = metrics.PushToPrometheus(url, data)
+		err = metrics.PushToPrometheus(c, all_metrics)
 		util.CheckErr(err, "Failed post data to Prometheus Pushgateway: %v", 1)
 	}
 
