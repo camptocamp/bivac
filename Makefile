@@ -1,5 +1,5 @@
 DEPS = $(wildcard */*.go)
-VERSION = $(shell git describe --always --long --dirty)
+VERSION = $(shell git describe --always --dirty)
 
 conplicity: conplicity.go $(DEPS)
 	CGO_ENABLED=0 GOOS=linux \
