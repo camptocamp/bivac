@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"sort"
@@ -17,8 +18,9 @@ import (
 const version = "0.8.1"
 
 type environment struct {
-	Version bool   `short:"V" long:"version" description:"Display version."`
-	Image   string `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
+	Version  bool   `short:"V" long:"version" description:"Display version."`
+	Image    string `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
+	Loglevel string `short:"l" long:"loglevel" description:"Set loglevel." env:"LOG_LEVEL" default:"info"`
 
 	Duplicity struct {
 		TargetURL       string `short:"u" long:"url" description:"The duplicity target URL to push to." env:"DUPLICITY_TARGET_URL"`
@@ -57,6 +59,9 @@ type Conplicity struct {
 func (c *Conplicity) Setup() (err error) {
 	c.getEnv()
 
+	err = c.setupLoglevel()
+	util.CheckErr(err, "Failed to setup log level: %v", 1)
+
 	c.Hostname, err = os.Hostname()
 	util.CheckErr(err, "Failed to get hostname: %v", 1)
 
@@ -87,6 +92,25 @@ func (c *Conplicity) getEnv() (err error) {
 	return
 }
 
+func (c *Conplicity) setupLoglevel() (err error) {
+	switch c.Loglevel {
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "warn":
+		log.SetLevel(log.WarnLevel)
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "fatal":
+		log.SetLevel(log.FatalLevel)
+	case "panic":
+		log.SetLevel(log.PanicLevel)
+	default:
+		err_msg := fmt.Sprintf("Wrong log level '%v'", c.Loglevel)
+		err = errors.New(err_msg)
+	}
+	return
+}
+
 func (c *Conplicity) pullImage() (err error) {
 	if _, err = c.InspectImage(c.Image); err != nil {
 		// TODO: output pull to logs
@@ -96,7 +120,7 @@ func (c *Conplicity) pullImage() (err error) {
 		}, docker.AuthConfiguration{})
 	}
 
-	return err
+	return
 }
 
 // LaunchDuplicity starts a duplicity container with given command and binds
