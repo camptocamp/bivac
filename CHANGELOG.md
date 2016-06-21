@@ -1,3 +1,9 @@
+# [0.10.1](https://github.com/camptocamp/conplicity/releases/tag/0.10.1) (2016-06-21)
+
+* Bugfix:
+
+  - Specify env-delim for `CONPLICITY_VOLUMES_BLACKLIST`
+
 # [0.10.0](https://github.com/camptocamp/conplicity/releases/tag/0.10.0) (2016-06-16)
 
 * Internals:
