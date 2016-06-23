@@ -1,6 +1,7 @@
 package volume
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -137,11 +138,26 @@ func (v *Volume) Status() (metrics []string, err error) {
 	util.CheckErr(err, "Failed to launch Duplicity: %v", 1)
 
 	fullBackup := fullBackupRx.FindStringSubmatch(stdout)
-	fullBackupDate, err := time.Parse(timeFormat, strings.TrimSpace(fullBackup[1]))
-	util.CheckErr(err, "Failed to parse full backup date: %v", -1)
+	var fullBackupDate time.Time
+	if len(fullBackup) > 0 {
+		fullBackupDate, err = time.Parse(timeFormat, strings.TrimSpace(fullBackup[1]))
+		util.CheckErr(err, "Failed to parse full backup date: %v", -1)
+	} else {
+		err_msg := fmt.Sprintf("Failed to parse Duplicity output for last full backup date of %v", v.Name)
+		err = errors.New(err_msg)
+		return
+	}
+
 	chainEndTime := chainEndTimeRx.FindStringSubmatch(stdout)
-	chainEndTimeDate, err := time.Parse(timeFormat, strings.TrimSpace(chainEndTime[1]))
-	util.CheckErr(err, "Failed to parse chain end time date: %v", -1)
+	var chainEndTimeDate time.Time
+	if len(chainEndTime) > 0 {
+		chainEndTimeDate, err = time.Parse(timeFormat, strings.TrimSpace(chainEndTime[1]))
+		util.CheckErr(err, "Failed to parse chain end time date: %v", -1)
+	} else {
+		err_msg := fmt.Sprintf("Failed to parse Duplicity output for chain end time of %v", v.Name)
+		err = errors.New(err_msg)
+		return
+	}
 
 	lastBackupMetric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"lastBackup\"} %v", v.Name, chainEndTimeDate.Unix())
 
