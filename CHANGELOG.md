@@ -1,3 +1,9 @@
+# [0.10.2](https://github.com/camptocamp/conplicity/releases/tag/0.10.2) (2016-06-23)
+
+* Bugfix:
+
+  - Check errors better
+
 # [0.10.1](https://github.com/camptocamp/conplicity/releases/tag/0.10.1) (2016-06-21)
 
 * Bugfix:
