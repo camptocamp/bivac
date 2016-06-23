@@ -46,6 +46,7 @@ func (v *Volume) Backup() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
+	util.CheckErr(err, "Failed to launch Duplicity: %v", 1)
 	return
 }
 
@@ -65,6 +66,7 @@ func (v *Volume) RemoveOld() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
+	util.CheckErr(err, "Failed to launch Duplicity: %v", 1)
 	return
 }
 
@@ -85,6 +87,7 @@ func (v *Volume) Cleanup() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
+	util.CheckErr(err, "Failed to launch Duplicity: %v", 1)
 	return
 }
 
@@ -106,6 +109,7 @@ func (v *Volume) Verify() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
+	util.CheckErr(err, "Failed to launch Duplicity: %v", 1)
 
 	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"verifyExitCode\"} %v", v.Name, state.ExitCode)
 	metrics = []string{
@@ -130,6 +134,7 @@ func (v *Volume) Status() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
+	util.CheckErr(err, "Failed to launch Duplicity: %v", 1)
 
 	fullBackup := fullBackupRx.FindStringSubmatch(stdout)
 	fullBackupDate, err := time.Parse(timeFormat, strings.TrimSpace(fullBackup[1]))
