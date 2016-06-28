@@ -23,7 +23,7 @@ type config struct {
 	VolumesBlacklist []string `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"CONPLICITY_VOLUMES_BLACKLIST" env-delim:","`
 	Manpage          bool     `short:"m" long:"manpage" description:"Output manpage."`
 	NoVerify         bool     `long:"no-verify" description:"Do not verify backup." env:"CONPLICITY_NO_VERIFY"`
-	Json             bool     `short:"j" long:"json" description:"Log as JSON (to stderr)." env:"JSON_OUTPUT"`
+	JSON             bool     `short:"j" long:"json" description:"Log as JSON (to stderr)." env:"JSON_OUTPUT"`
 
 	Duplicity struct {
 		TargetURL       string `short:"u" long:"url" description:"The duplicity target URL to push to." env:"DUPLICITY_TARGET_URL"`
@@ -122,7 +122,7 @@ func (c *Conplicity) setupLoglevel() (err error) {
 		err = errors.New(errMsg)
 	}
 
-	if c.Config.Json {
+	if c.Config.JSON {
 		log.SetFormatter(&log.JSONFormatter{})
 	}
 
@@ -132,10 +132,16 @@ func (c *Conplicity) setupLoglevel() (err error) {
 func (c *Conplicity) pullImage() (err error) {
 	if _, err = c.InspectImage(c.Config.Image); err != nil {
 		// TODO: output pull to logs
-		log.Infof("Pulling image %v", c.Config.Image)
+		log.WithFields(log.Fields{
+			"image": c.Config.Image,
+		}).Info("Pulling image")
 		err = c.Client.PullImage(docker.PullImageOptions{
 			Repository: c.Config.Image,
 		}, docker.AuthConfiguration{})
+	} else {
+		log.WithFields(log.Fields{
+			"image": c.Config.Image,
+		}).Debug("Image already pulled, not pulling")
 	}
 
 	return
@@ -172,7 +178,7 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker
 	util.CheckErr(err, "Failed to create container: %v", 1)
 	defer c.removeContainer(container)
 
-	log.Infof("Launching 'duplicity %v'...", strings.Join(cmd, " "))
+	log.Debug("Launching 'duplicity %v'...", strings.Join(cmd, " "))
 	err = dockerpty.Start(c.Client, container, &docker.HostConfig{
 		Binds: binds,
 	})
@@ -203,8 +209,10 @@ func (c *Conplicity) PushToPrometheus() (err error) {
 	url := c.Config.Metrics.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
 	data := strings.Join(c.Metrics, "\n") + "\n"
 
-	log.Infof("Sending metrics to Prometheus Pushgateway: %v", data)
-	log.Debugf("URL=%v", url)
+	log.WithFields(log.Fields{
+		"data": data,
+		"url":  url,
+	}).Debug("Sending metrics to Prometheus Pushgateway")
 
 	req, err := http.NewRequest("PUT", url, bytes.NewBufferString(data))
 	req.Header.Set("Content-Type", "text/plain; version=0.0.4")
@@ -212,13 +220,17 @@ func (c *Conplicity) PushToPrometheus() (err error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
-	log.Debugf("resp = %v", resp)
+	log.WithFields(log.Fields{
+		"resp": resp,
+	}).Debug("Received Prometheus response")
 
 	return
 }
 
 func (c *Conplicity) removeContainer(cont *docker.Container) {
-	log.Infof("Removing container %v...", cont.ID)
+	log.WithFields(log.Fields{
+		"container": cont.ID,
+	}).Infof("Removing container")
 	c.RemoveContainer(docker.RemoveContainerOptions{
 		ID:            cont.ID,
 		Force:         true,

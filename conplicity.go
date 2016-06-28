@@ -42,24 +42,38 @@ func main() {
 
 func backupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" {
-		log.Infof("Ignoring unnamed volume " + vol.Name)
+		log.WithFields(log.Fields{
+			"volume": vol.Name,
+			"reason": "unnamed",
+		}).Info("Ignoring volume")
 		return
 	}
 
 	list := c.Config.VolumesBlacklist
 	i := sort.SearchStrings(list, vol.Name)
 	if i < len(list) && list[i] == vol.Name {
-		log.Infof("Ignoring blacklisted volume " + vol.Name)
+		log.WithFields(log.Fields{
+			"volume": vol.Name,
+			"reason": "blacklisted",
+			"source": "blacklist config",
+		}).Info("Ignoring volume")
 		return
 	}
 
 	if ignoreLbl, _ := util.GetVolumeLabel(vol, ".ignore"); ignoreLbl == "true" {
-		log.Infof("Ignoring blacklisted volume " + vol.Name)
+		log.WithFields(log.Fields{
+			"volume": vol.Name,
+			"reason": "blacklisted",
+			"source": "volume label",
+		}).Info("Ignoring volume")
 		return
 	}
 
 	p := providers.GetProvider(c, vol)
-	log.Infof("Using provider %v to backup %v", p.GetName(), vol.Name)
+	log.WithFields(log.Fields{
+		"volume":   vol.Name,
+		"provider": p.GetName(),
+	}).Info("Found provider")
 	err = providers.PrepareBackup(p)
 	util.CheckErr(err, "Failed to prepare backup for volume "+vol.Name+": %v", -1)
 	err = p.BackupVolume(vol)
