@@ -11,11 +11,14 @@ import (
 // Set up mocked Conplicity handler
 type fakeHandler struct{}
 
-func (h *fakeHandler) LaunchDuplicity(c, m []string) (docker.State, string, error) {
+func (h *fakeHandler) LaunchDuplicity(c, m []string) (state docker.State, stdout string, err error) {
 	fmt.Printf("Command: %s\n", strings.Join(c, " "))
 	fmt.Printf("Mounts: %s\n", strings.Join(m, " "))
 
-	return docker.State{}, "", nil
+	stdout = "Last full backup date: Mon Jan 2 15:04:05 2006\nChain end time: Mon Jan 2 15:04:05 2006\n"
+	state.ExitCode = 42
+
+	return state, stdout, nil
 }
 
 // Set up fake volume
@@ -58,10 +61,12 @@ func TestNewVolume(t *testing.T) {
 
 // ExampleBackup checks the launching of a volume backup
 func ExampleBackup() {
-	fakeVol.Backup()
+	m, _ := fakeVol.Backup()
+	fmt.Printf("Metrics: %s\n", strings.Join(m, "\n"))
 	// Output:
 	// Command: --full-if-older-than 3W --s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption --allow-source-mismatch --name Test /back /foo
 	// Mounts: /mnt duplicity_cache:/root/.cache/duplicity
+	// Metrics: conplicity{volume="Test",what="backupExitCode"} 42
 }
 
 // ExampleRemoveOld checks the removal of old backups
@@ -82,16 +87,21 @@ func ExampleCleanup() {
 
 // ExampleVerify checks the verification of a backup
 func ExampleVerify() {
-	fakeVol.Verify()
+	m, _ := fakeVol.Verify()
+	fmt.Printf("Metrics: %s\n", strings.Join(m, "\n"))
 	// Output:
 	// Command: verify --s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption --allow-source-mismatch --name Test /foo /back
 	// Mounts: /mnt duplicity_cache:/root/.cache/duplicity
+	// Metrics: conplicity{volume="Test",what="verifyExitCode"} 42
 }
 
 // ExampleStatus checks the status of a backup
 func ExampleStatus() {
-	fakeVol.Status()
+	m, _ := fakeVol.Status()
+	fmt.Printf("Metrics: %s\n", strings.Join(m, "\n"))
 	// Output:
 	// Command: collection-status --s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption --name Test /foo
 	// Mounts: /mnt duplicity_cache:/root/.cache/duplicity
+	// Metrics: conplicity{volume="Test",what="lastBackup"} 1136214245
+	// conplicity{volume="Test",what="lastFullBackup"} 1136214245
 }
