@@ -5,6 +5,7 @@ go:
 - 1.6
 install:
 - go get ./...
+- go get github.com/bradfitz/goimports
 after_success:
 - "./.travis/build.sh && ./.travis/publish.sh"
 deploy:
