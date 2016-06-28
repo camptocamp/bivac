@@ -18,7 +18,9 @@ func (*DefaultProvider) GetName() string {
 
 // PrepareBackup sets up the data before backup
 func (p *DefaultProvider) PrepareBackup() error {
-	log.Infof("Provider %v does not implement a prepare method", p.GetName())
+	log.WithFields(log.Fields{
+		"provider": p.GetName(),
+	}).Debug("Provider does not implement a prepare method")
 	return nil
 }
 

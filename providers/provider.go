@@ -30,23 +30,31 @@ type BaseProvider struct {
 
 // GetProvider detects which provider suits the passed volume and returns it
 func GetProvider(c *handler.Conplicity, v *docker.Volume) Provider {
-	log.Infof("Detecting provider for volume %v", v.Name)
+	log.WithFields(log.Fields{
+		"volume": v.Name,
+	}).Info("Detecting provider")
 	p := &BaseProvider{
 		handler: c,
 		vol:     v,
 	}
 	if f, err := os.Stat(v.Mountpoint + "/PG_VERSION"); err == nil && f.Mode().IsRegular() {
-		log.Infof("PG_VERSION file found, this should be a PostgreSQL datadir")
+		log.WithFields(log.Fields{
+			"volume": v.Name,
+		}).Debug("PG_VERSION file found, this should be a PostgreSQL datadir")
 		return &PostgreSQLProvider{
 			BaseProvider: p,
 		}
 	} else if f, err := os.Stat(v.Mountpoint + "/mysql"); err == nil && f.Mode().IsDir() {
-		log.Infof("mysql directory found, this should be MySQL datadir")
+		log.WithFields(log.Fields{
+			"volume": v.Name,
+		}).Debug("mysql directory found, this should be MySQL datadir")
 		return &MySQLProvider{
 			BaseProvider: p,
 		}
 	} else if f, err := os.Stat(v.Mountpoint + "/DB_CONFIG"); err == nil && f.Mode().IsRegular() {
-		log.Infof("DB_CONFIG file found, this should be and OpenLDAP datadir")
+		log.WithFields(log.Fields{
+			"volume": v.Name,
+		}).Debug("DB_CONFIG file found, this should be and OpenLDAP datadir")
 		return &OpenLDAPProvider{
 			BaseProvider: p,
 		}
@@ -68,11 +76,13 @@ func PrepareBackup(p Provider) (err error) {
 		util.CheckErr(err, "Failed to inspect container "+container.ID+": %v", -1)
 		for _, mount := range container.Mounts {
 			if mount.Name == vol.Name {
-				log.Infof("Volume %v is used by container %v", vol.Name, container.ID)
+				log.WithFields(log.Fields{
+					"volume":    vol.Name,
+					"container": container.ID,
+				}).Debug("Container found using volume")
 
 				cmd := p.GetPrepareCommand(&mount)
 				if cmd != nil {
-
 					exec, err := c.CreateExec(
 						docker.CreateExecOptions{
 							Container: container.ID,
@@ -89,7 +99,10 @@ func PrepareBackup(p Provider) (err error) {
 
 					util.CheckErr(err, "Failed to create exec", 1)
 				} else {
-					log.Infof("Not executing command for volume %v in container %v", vol.Name, container.ID)
+					log.WithFields(log.Fields{
+						"volume":    vol.Name,
+						"container": container.ID,
+					}).Info("No prepare command to execute in container")
 				}
 			}
 		}
@@ -99,11 +112,11 @@ func PrepareBackup(p Provider) (err error) {
 
 // BackupVolume performs the backup of the passed volume
 func (p *BaseProvider) BackupVolume(vol *docker.Volume) (err error) {
-	log.Infof("ID: " + vol.Name)
-	log.Infof("Driver: " + vol.Driver)
-	log.Infof("Mountpoint: " + vol.Mountpoint)
-
-	log.Infof("Creating duplicity container...")
+	log.WithFields(log.Fields{
+		"volume":     vol.Name,
+		"driver":     vol.Driver,
+		"mountpoint": vol.Mountpoint,
+	}).Info("Creating duplicity container")
 
 	c := p.GetHandler()
 
@@ -153,7 +166,9 @@ func (p *BaseProvider) BackupVolume(vol *docker.Volume) (err error) {
 	noVerifyLbl, _ := util.GetVolumeLabel(vol, ".no_verify")
 	noVerify := c.Config.NoVerify || (noVerifyLbl == "true")
 	if noVerify {
-		log.Infof("Skipping verification of volume %v", vol.Name)
+		log.WithFields(log.Fields{
+			"volume": vol.Name,
+		}).Info("Skipping verification")
 	} else {
 		newMetrics, err = volume.Verify()
 		util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", -1)
