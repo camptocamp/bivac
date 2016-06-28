@@ -12,7 +12,7 @@ script:
 - make
 - "./.travis/build.sh && ./.travis/publish.sh"
 - make coverage
-- "$HOME/gopath/bin/goveralls -service=travis-ci"
+- "$HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=coverage.out"
 deploy:
   provider: releases
   api_key:
