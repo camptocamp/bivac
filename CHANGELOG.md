@@ -1,3 +1,9 @@
+# [0.11.0](https://github.com/camptocamp/conplicity/releases/tag/0.11.0) (2016-06-XX)
+
+* Features:
+
+  - Add --no-verify to skip volume backup verification
+
 # [0.10.2](https://github.com/camptocamp/conplicity/releases/tag/0.10.2) (2016-06-23)
 
 * Bugfix:
