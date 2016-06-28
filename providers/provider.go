@@ -150,7 +150,7 @@ func (p *BaseProvider) BackupVolume(vol *docker.Volume) (err error) {
 	_, err = volume.Cleanup()
 	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", -1)
 
-	noVerify := c.Config.NoVerify || (util.GetVolumeLabel(vol, "no_verify") == "true")
+	noVerify := c.Config.NoVerify || (util.GetVolumeLabel(vol, ".no_verify") == "true")
 	if noVerify {
 		log.Infof("Skipping verification of volume %v", vol.Name)
 	} else {
