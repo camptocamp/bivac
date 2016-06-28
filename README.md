@@ -79,6 +79,7 @@ The parameters used to backup each volume can be fine-tuned using volume labels 
 
 - `io.conplicity.ignore=true` ignores the volume
 - `io.conplicity.full_if_older_than=<value>` sets the time period after which a full backup is performed. Defaults to the `CONPLICITY_FULL_IF_OLDER_THAN` environment variable value
+- `io.conplicity.no_verify=true` skips verification of the volume's backup (faster)
 
 
 ## Providers
