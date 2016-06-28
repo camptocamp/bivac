@@ -1,4 +1,4 @@
-# [0.11.0](https://github.com/camptocamp/conplicity/releases/tag/0.11.0) (2016-06-XX)
+# [0.11.0](https://github.com/camptocamp/conplicity/releases/tag/0.11.0) (2016-06-28)
 
 * Features:
 
