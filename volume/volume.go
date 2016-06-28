@@ -31,7 +31,7 @@ var chainEndTimeRx = regexp.MustCompile("Chain end time: (.+)")
 
 // Backup performs the backup of a volume with duplicity
 func (v *Volume) Backup() (metrics []string, err error) {
-	_, _, err = v.Client.LaunchDuplicity(
+	state, _, err := v.Client.LaunchDuplicity(
 		[]string{
 			"--full-if-older-than", v.FullIfOlderThan,
 			"--s3-use-new-style",
@@ -48,6 +48,11 @@ func (v *Volume) Backup() (metrics []string, err error) {
 		},
 	)
 	util.CheckErr(err, "Failed to launch Duplicity: %v", 1)
+
+	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"backupExitCode\"} %v", v.Name, state.ExitCode)
+	metrics = []string{
+		metric,
+	}
 	return
 }
 
