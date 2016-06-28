@@ -70,16 +70,16 @@ func (c *Conplicity) Setup(version string) (err error) {
 	c.getEnv(version)
 
 	err = c.setupLoglevel()
-	util.CheckErr(err, "Failed to setup log level: %v", 1)
+	util.CheckErr(err, "Failed to setup log level: %v", "panic")
 
 	c.Hostname, err = os.Hostname()
-	util.CheckErr(err, "Failed to get hostname: %v", 1)
+	util.CheckErr(err, "Failed to get hostname: %v", "panic")
 
 	c.Client, err = docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
-	util.CheckErr(err, "Failed to create Docker client: %v", 1)
+	util.CheckErr(err, "Failed to create Docker client: %v", "panic")
 
 	err = c.pullImage()
-	util.CheckErr(err, "Failed to pull image: %v", 1)
+	util.CheckErr(err, "Failed to pull image: %v", "panic")
 
 	return
 }
@@ -185,12 +185,12 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state int, s
 			Binds: binds,
 		}, nil, "",
 	)
-	util.CheckErr(err, "Failed to create container: %v", 1)
+	util.CheckErr(err, "Failed to create container: %v", "fatal")
 	defer c.removeContainer(container.ID)
 
 	log.Debugf("Launching 'duplicity %v'...", strings.Join(cmd, " "))
 	err = c.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
-	util.CheckErr(err, "Failed to start container: %v", -1)
+	util.CheckErr(err, "Failed to start container: %v", "fatal")
 
 	body, err := c.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
 		ShowStdout: true,
@@ -198,16 +198,16 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state int, s
 		Details:    true,
 		Follow:     true,
 	})
-	util.CheckErr(err, "Failed to retrieve logs: %v", -1)
+	util.CheckErr(err, "Failed to retrieve logs: %v", "error")
 
 	defer body.Close()
 	content, err := ioutil.ReadAll(body)
-	util.CheckErr(err, "Failed to read logs from response: %v", -1)
+	util.CheckErr(err, "Failed to read logs from response: %v", "error")
 
 	stdout = string(content)
 
 	cont, err := c.ContainerInspect(context.Background(), container.ID)
-	util.CheckErr(err, "Failed to inspect container: %v", -1)
+	util.CheckErr(err, "Failed to inspect container: %v", "error")
 
 	state = cont.State.ExitCode
 

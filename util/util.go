@@ -3,7 +3,6 @@ package util
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/engine-api/types"
@@ -12,13 +11,23 @@ import (
 const labelPrefix string = "io.conplicity"
 
 // CheckErr checks for error, logs and optionally exits the program
-func CheckErr(err error, msg string, exit int) {
+func CheckErr(err error, msg string, level string) {
 	if err != nil {
-		if exit != -1 {
-			log.Fatalf(msg, err)
-			os.Exit(exit)
-		} else {
+		switch level {
+		case "debug":
+			log.Debugf(msg, err)
+		case "info":
+			log.Infof(msg, err)
+		case "warn":
+			log.Warnf(msg, err)
+		case "error":
 			log.Errorf(msg, err)
+		case "fatal":
+			log.Fatalf(msg, err)
+		case "panic":
+			log.Panicf(msg, err)
+		default:
+			log.Panicf("Wrong loglevel '%v', please report this bug", level)
 		}
 	}
 }

@@ -22,23 +22,23 @@ func main() {
 
 	c := &handler.Conplicity{}
 	err = c.Setup(version)
-	util.CheckErr(err, "Failed to setup Conplicity handler: %v", 1)
+	util.CheckErr(err, "Failed to setup Conplicity handler: %v", "panic")
 
 	log.Infof("Starting backup...")
 
 	vols, err := c.VolumeList(context.Background(), filters.NewArgs())
-	util.CheckErr(err, "Failed to list Docker volumes: %v", 1)
+	util.CheckErr(err, "Failed to list Docker volumes: %v", "panic")
 
 	for _, vol := range vols.Volumes {
 		voll, err := c.VolumeInspect(context.Background(), vol.Name)
-		util.CheckErr(err, "Failed to inspect volume "+vol.Name+": %v", -1)
+		util.CheckErr(err, "Failed to inspect volume "+vol.Name+": %v", "fatal")
 
 		err = backupVolume(c, voll)
-		util.CheckErr(err, "Failed to process volume "+vol.Name+": %v", -1)
+		util.CheckErr(err, "Failed to process volume "+vol.Name+": %v", "fatal")
 	}
 
 	err = c.PushToPrometheus()
-	util.CheckErr(err, "Failed post data to Prometheus Pushgateway: %v", 1)
+	util.CheckErr(err, "Failed post data to Prometheus Pushgateway: %v", "fatal")
 
 	log.Infof("End backup...")
 }
@@ -78,8 +78,8 @@ func backupVolume(c *handler.Conplicity, vol types.Volume) (err error) {
 		"provider": p.GetName(),
 	}).Info("Found provider")
 	err = providers.PrepareBackup(p)
-	util.CheckErr(err, "Failed to prepare backup for volume "+vol.Name+": %v", -1)
+	util.CheckErr(err, "Failed to prepare backup for volume "+vol.Name+": %v", "fatal")
 	err = p.BackupVolume(&vol)
-	util.CheckErr(err, "Failed to backup volume "+vol.Name+": %v", -1)
+	util.CheckErr(err, "Failed to backup volume "+vol.Name+": %v", "fatal")
 	return
 }

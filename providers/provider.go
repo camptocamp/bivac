@@ -72,10 +72,10 @@ func PrepareBackup(p Provider) (err error) {
 	c := p.GetHandler()
 	vol := p.GetVolume()
 	containers, err := c.ContainerList(context.Background(), types.ContainerListOptions{})
-	util.CheckErr(err, "Failed to list containers: %v", -1)
+	util.CheckErr(err, "Failed to list containers: %v", "fatal")
 	for _, container := range containers {
 		container, err := c.ContainerInspect(context.Background(), container.ID)
-		util.CheckErr(err, "Failed to inspect container "+container.ID+": %v", -1)
+		util.CheckErr(err, "Failed to inspect container "+container.ID+": %v", "fatal")
 		for _, mount := range container.Mounts {
 			if mount.Name == vol.Name {
 				log.WithFields(log.Fields{
@@ -90,11 +90,11 @@ func PrepareBackup(p Provider) (err error) {
 					},
 					)
 
-					util.CheckErr(err, "Failed to create exec", 1)
+					util.CheckErr(err, "Failed to create exec", "fatal")
 
 					err = c.ContainerExecStart(context.Background(), exec.ID, types.ExecStartCheck{})
 
-					util.CheckErr(err, "Failed to create exec", 1)
+					util.CheckErr(err, "Failed to create exec", "fatal")
 				} else {
 					log.WithFields(log.Fields{
 						"volume":    vol.Name,
@@ -151,14 +151,14 @@ func (p *BaseProvider) BackupVolume(vol *types.Volume) (err error) {
 	var newMetrics []string
 
 	newMetrics, err = volume.Backup()
-	util.CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", -1)
+	util.CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", "fatal")
 	c.Metrics = append(c.Metrics, newMetrics...)
 
 	_, err = volume.RemoveOld()
-	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", -1)
+	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", "fatal")
 
 	_, err = volume.Cleanup()
-	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", -1)
+	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", "fatal")
 
 	noVerifyLbl, _ := util.GetVolumeLabel(vol, ".no_verify")
 	noVerify := c.Config.NoVerify || (noVerifyLbl == "true")
@@ -168,12 +168,12 @@ func (p *BaseProvider) BackupVolume(vol *types.Volume) (err error) {
 		}).Info("Skipping verification")
 	} else {
 		newMetrics, err = volume.Verify()
-		util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", -1)
+		util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", "fatal")
 		c.Metrics = append(c.Metrics, newMetrics...)
 	}
 
 	newMetrics, err = volume.Status()
-	util.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", -1)
+	util.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", "fatal")
 	c.Metrics = append(c.Metrics, newMetrics...)
 
 	return
