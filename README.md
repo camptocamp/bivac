@@ -8,7 +8,7 @@ Conplicity
 
 Conplicity lets you backup all your named docker volumes using duplicity.
 
-![Conplicity](img/conplicity_200.png)
+![Conplicity](img/conplicity_small.png)
 
 
 ## Installing
