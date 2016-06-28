@@ -1,8 +1,6 @@
 package providers
 
-import (
-	"github.com/fsouza/go-dockerclient"
-)
+import "github.com/docker/engine-api/types"
 
 // PostgreSQLProvider implements a BaseProvider struct
 // for PostgreSQL backups
@@ -16,7 +14,7 @@ func (p *PostgreSQLProvider) GetName() string {
 }
 
 // GetPrepareCommand returns the command to be executed before backup
-func (p *PostgreSQLProvider) GetPrepareCommand(mount *docker.Mount) []string {
+func (p *PostgreSQLProvider) GetPrepareCommand(mount *types.MountPoint) []string {
 	return []string{
 		"sh",
 		"-c",

@@ -1,8 +1,6 @@
 package providers
 
-import (
-	"github.com/fsouza/go-dockerclient"
-)
+import "github.com/docker/engine-api/types"
 
 // MySQLProvider implements a BaseProvider struct
 // for MySQL backups
@@ -16,7 +14,7 @@ func (*MySQLProvider) GetName() string {
 }
 
 // GetPrepareCommand returns the command to be executed before backup
-func (p *MySQLProvider) GetPrepareCommand(mount *docker.Mount) []string {
+func (p *MySQLProvider) GetPrepareCommand(mount *types.MountPoint) []string {
 	return []string{
 		"sh",
 		"-c",

@@ -2,7 +2,7 @@ package providers
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/fsouza/go-dockerclient"
+	"github.com/docker/engine-api/types"
 )
 
 // DefaultProvider implements a BaseProvider struct
@@ -25,6 +25,6 @@ func (p *DefaultProvider) PrepareBackup() error {
 }
 
 // GetPrepareCommand returns the command to be executed before backup
-func (p *DefaultProvider) GetPrepareCommand(mount *docker.Mount) []string {
+func (p *DefaultProvider) GetPrepareCommand(mount *types.MountPoint) []string {
 	return nil
 }

@@ -8,12 +8,11 @@ import (
 	"time"
 
 	"github.com/camptocamp/conplicity/util"
-	"github.com/fsouza/go-dockerclient"
 )
 
 // Handler is an interface providing a mean of launching Duplicity
 type Handler interface {
-	LaunchDuplicity([]string, []string) (docker.State, string, error)
+	LaunchDuplicity([]string, []string) (int, string, error)
 }
 
 // Volume provides backup methods for a single Docker volume
@@ -54,7 +53,7 @@ func (v *Volume) Backup() (metrics []string, err error) {
 	)
 	util.CheckErr(err, "Failed to launch Duplicity: %v", 1)
 
-	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"backupExitCode\"} %v", v.Name, state.ExitCode)
+	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"backupExitCode\"} %v", v.Name, state)
 	metrics = []string{
 		metric,
 	}
@@ -122,7 +121,7 @@ func (v *Volume) Verify() (metrics []string, err error) {
 	)
 	util.CheckErr(err, "Failed to launch Duplicity: %v", 1)
 
-	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"verifyExitCode\"} %v", v.Name, state.ExitCode)
+	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"verifyExitCode\"} %v", v.Name, state)
 	metrics = []string{
 		metric,
 	}

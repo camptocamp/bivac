@@ -4,10 +4,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/fsouza/go-dockerclient"
+	"github.com/docker/engine-api/types"
 )
 
-var fakeVol = docker.Volume{
+var fakeVol = types.Volume{
 	Name: "Test",
 	Labels: map[string]string{
 		"io.conplicity.test": "Fake label",

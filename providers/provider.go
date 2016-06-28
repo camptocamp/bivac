@@ -4,32 +4,34 @@ import (
 	"os"
 	"strings"
 
+	"golang.org/x/net/context"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
-	"github.com/fsouza/go-dockerclient"
+	"github.com/docker/engine-api/types"
 )
 
 // A Provider is an interface for providers
 type Provider interface {
 	GetName() string
-	GetPrepareCommand(*docker.Mount) []string
+	GetPrepareCommand(*types.MountPoint) []string
 	GetHandler() *handler.Conplicity
-	GetVolume() *docker.Volume
+	GetVolume() *types.Volume
 	GetBackupDir() string
-	BackupVolume(*docker.Volume) error
+	BackupVolume(*types.Volume) error
 }
 
 // BaseProvider is a struct implementing the Provider interface
 type BaseProvider struct {
 	handler   *handler.Conplicity
-	vol       *docker.Volume
+	vol       *types.Volume
 	backupDir string
 }
 
 // GetProvider detects which provider suits the passed volume and returns it
-func GetProvider(c *handler.Conplicity, v *docker.Volume) Provider {
+func GetProvider(c *handler.Conplicity, v *types.Volume) Provider {
 	log.WithFields(log.Fields{
 		"volume": v.Name,
 	}).Info("Detecting provider")
@@ -69,10 +71,10 @@ func GetProvider(c *handler.Conplicity, v *docker.Volume) Provider {
 func PrepareBackup(p Provider) (err error) {
 	c := p.GetHandler()
 	vol := p.GetVolume()
-	containers, err := c.ListContainers(docker.ListContainersOptions{})
+	containers, err := c.ContainerList(context.Background(), types.ContainerListOptions{})
 	util.CheckErr(err, "Failed to list containers: %v", -1)
 	for _, container := range containers {
-		container, err := c.InspectContainer(container.ID)
+		container, err := c.ContainerInspect(context.Background(), container.ID)
 		util.CheckErr(err, "Failed to inspect container "+container.ID+": %v", -1)
 		for _, mount := range container.Mounts {
 			if mount.Name == vol.Name {
@@ -83,19 +85,14 @@ func PrepareBackup(p Provider) (err error) {
 
 				cmd := p.GetPrepareCommand(&mount)
 				if cmd != nil {
-					exec, err := c.CreateExec(
-						docker.CreateExecOptions{
-							Container: container.ID,
-							Cmd:       p.GetPrepareCommand(&mount),
-						},
+					exec, err := c.ContainerExecCreate(context.Background(), container.ID, types.ExecConfig{
+						Cmd: p.GetPrepareCommand(&mount),
+					},
 					)
 
 					util.CheckErr(err, "Failed to create exec", 1)
 
-					err = c.StartExec(
-						exec.ID,
-						docker.StartExecOptions{},
-					)
+					err = c.ContainerExecStart(context.Background(), exec.ID, types.ExecStartCheck{})
 
 					util.CheckErr(err, "Failed to create exec", 1)
 				} else {
@@ -111,7 +108,7 @@ func PrepareBackup(p Provider) (err error) {
 }
 
 // BackupVolume performs the backup of the passed volume
-func (p *BaseProvider) BackupVolume(vol *docker.Volume) (err error) {
+func (p *BaseProvider) BackupVolume(vol *types.Volume) (err error) {
 	log.WithFields(log.Fields{
 		"volume":     vol.Name,
 		"driver":     vol.Driver,
@@ -188,7 +185,7 @@ func (p *BaseProvider) GetHandler() *handler.Conplicity {
 }
 
 // GetVolume returns the volume associated with the provider
-func (p *BaseProvider) GetVolume() *docker.Volume {
+func (p *BaseProvider) GetVolume() *types.Volume {
 	return p.vol
 }
 
