@@ -11,6 +11,7 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+// Handler is an interface providing a mean of launching Duplicity
 type Handler interface {
 	LaunchDuplicity([]string, []string) (docker.State, string, error)
 }
