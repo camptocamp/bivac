@@ -30,5 +30,14 @@ imports: conplicity.go
 test: lint vet imports
 	go test ./...
 
+coverage:
+	rm -rf coverage/
+	mkdir -p coverage/
+	go test -coverprofile=coverage.out
+	for i in handler providers util volume; do \
+		go test -coverprofile=coverage/$$i.coverage.out ./$$i/; \
+		tail -n +2 coverage/$$i.coverage.out >> coverage.out; \
+  done
+
 clean:
 	rm -f conplicity conplicity.1
