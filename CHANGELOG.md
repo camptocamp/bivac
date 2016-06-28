@@ -1,3 +1,18 @@
+# [0.12.0](https://github.com/camptocamp/conplicity/releases/tag/0.12.0) (2016-06-28)
+
+* Features:
+
+  - Log as JSON with -j (fix #56)
+  - Use logs with fields (fix #57)
+  - Add stdout in debug output
+
+* Internals:
+  - Rewrite using github.com/docker/engine-api/types
+
+* Bugfix:
+
+  - Fix stdout redirection bug (fix #51)
+
 # [0.11.0](https://github.com/camptocamp/conplicity/releases/tag/0.11.0) (2016-06-28)
 
 * Features:
