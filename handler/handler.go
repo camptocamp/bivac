@@ -117,8 +117,8 @@ func (c *Conplicity) setupLoglevel() (err error) {
 	case "panic":
 		log.SetLevel(log.PanicLevel)
 	default:
-		err_msg := fmt.Sprintf("Wrong log level '%v'", c.Config.Loglevel)
-		err = errors.New(err_msg)
+		errMsg := fmt.Sprintf("Wrong log level '%v'", c.Config.Loglevel)
+		err = errors.New(errMsg)
 	}
 	return
 }
@@ -188,6 +188,7 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker
 	return
 }
 
+// PushToPrometheus sends metrics to a Prometheus push gateway
 func (c *Conplicity) PushToPrometheus() (err error) {
 	if len(c.Metrics) == 0 || c.Config.Metrics.PushgatewayURL == "" {
 		return

@@ -148,8 +148,8 @@ func (v *Volume) Status() (metrics []string, err error) {
 		fullBackupDate, err = time.Parse(timeFormat, strings.TrimSpace(fullBackup[1]))
 		util.CheckErr(err, "Failed to parse full backup date: %v", -1)
 	} else {
-		err_msg := fmt.Sprintf("Failed to parse Duplicity output for last full backup date of %v", v.Name)
-		err = errors.New(err_msg)
+		errMsg := fmt.Sprintf("Failed to parse Duplicity output for last full backup date of %v", v.Name)
+		err = errors.New(errMsg)
 		return
 	}
 
@@ -159,8 +159,8 @@ func (v *Volume) Status() (metrics []string, err error) {
 		chainEndTimeDate, err = time.Parse(timeFormat, strings.TrimSpace(chainEndTime[1]))
 		util.CheckErr(err, "Failed to parse chain end time date: %v", -1)
 	} else {
-		err_msg := fmt.Sprintf("Failed to parse Duplicity output for chain end time of %v", v.Name)
-		err = errors.New(err_msg)
+		errMsg := fmt.Sprintf("Failed to parse Duplicity output for chain end time of %v", v.Name)
+		err = errors.New(errMsg)
 		return
 	}
 

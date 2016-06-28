@@ -20,6 +20,8 @@ func CheckErr(err error, msg string, exit int) {
 	}
 }
 
+// GetVolumeLabel retrieves the value of given key in the io.conplicity
+// namespace of the volume labels
 func GetVolumeLabel(vol *docker.Volume, key string) (value string) {
 	value = vol.Labels[labelPrefix+key]
 	return
