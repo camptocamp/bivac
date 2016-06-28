@@ -15,19 +15,19 @@ var fakeVol = types.Volume{
 }
 
 func ExampleCheckErrNil() {
-	CheckErr(nil, "test", 0)
+	CheckErr(nil, "test", "fatal")
 	// Output:
 }
 
 func ExampleCheckErrNoExit() {
 	fakeErr := errors.New("Fake error")
-	CheckErr(fakeErr, "test: %v", 0)
+	CheckErr(fakeErr, "test: %v", "error")
 	// Output:
 }
 
 func ExampleCheckErrExit() {
 	fakeErr := errors.New("Fake error")
-	CheckErr(fakeErr, "test: %v", -1)
+	CheckErr(fakeErr, "test: %v", "fatal")
 	// Output:
 	// How do we test the exit?
 }
