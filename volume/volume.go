@@ -7,9 +7,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/util"
+	"github.com/fsouza/go-dockerclient"
 )
+
+type Handler interface {
+	LaunchDuplicity([]string, []string) (docker.State, string, error)
+}
 
 // Volume provides backup methods for a single Docker volume
 type Volume struct {
@@ -19,7 +23,7 @@ type Volume struct {
 	Mount           string
 	FullIfOlderThan string
 	RemoveOlderThan string
-	Client          *handler.Conplicity
+	Client          Handler
 }
 
 // Constants
