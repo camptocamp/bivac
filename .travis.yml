@@ -6,8 +6,13 @@ go:
 install:
 - go get ./...
 - go get github.com/bradfitz/goimports
-after_success:
+- go get github.com/mattn/goveralls
+- go get golang.org/x/tools/cmd/cover
+script:
+- make
 - "./.travis/build.sh && ./.travis/publish.sh"
+- make coverage
+- "$HOME/gopath/bin/goveralls -service=travis-ci"
 deploy:
   provider: releases
   api_key:
@@ -18,3 +23,6 @@ deploy:
   on:
     repo: camptocamp/conplicity
     tags: true
+env:
+  global:
+    secure: Gx0cywNVrJwFASQyQTwcutKfRKbCxLT3i/ZPRM9dt7isHF/mW6KcjGq52pJ9J3QMI1PL59LfZ/Hthz0MCXnJbMcdW0ASVREfWwz0FaPagVY5SAwRnpGlpqyCxmRpYZwC8puh9XxkdKpeyplzskz2gZJakv9HjStx9AbVUjCMvF7O5eQj50nCwwJpKYzaoS9Knmkf+s0qG6dRJny5Nwf5YbpjSauGQldxxrCyOHtTBBqtw1rnfCP5L3HkmWJ3mdhSs0M3qr5LewTMAY1tcSiKJWyvCyzgLywhoN/Td8rxUe4o74ciZC5jU09GZfKys8M8nVPETmSDJnzdvL8PhnZsp9sgIaSc4+7ZNCdtYxde/GiPchiw3TL5cwVqFYdA5NjtxTP1ct8nMvFsBWIcgD3MUO00dQU/Oy+Zx5mSRafD574OcANaJNL+JDGcNKdbnI4ehXLyhed6WYMlrhW3NTNvF1tGfdGVufB0zEDPk/LAwNkNTCV4+lmUtcvBWw4v6BLpe6AP/a2UkKY3jaSBVgucng2cxF1GA9wi0nQRiNJ8INd/6+lSm/Mj1aMetX9OA1ycNIqiDzupSPOQ0OQTSRuaxhwUcAf4gFUJP/biBQyIVqnXjJn2OwN1Z3tkXvt8KGg5JLJg+MyHIhuVZjfUpqaI8jpJTdftN4M5RBe9CZLrAlc=
