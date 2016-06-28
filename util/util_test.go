@@ -1,22 +1,28 @@
 package util
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/camptocamp/conplicity/util"
 	"github.com/fsouza/go-dockerclient"
 )
 
+var vol = docker.Volume{
+	Labels: map[string]string{
+		"io.conplicity.test": "Fake label",
+	},
+}
+
 func TestVolumeLabel(t *testing.T) {
-	vol := docker.Volume{
-		Labels: map[string]string{
-			"io.conplicity.test": "Fake label",
-		},
-	}
 	expectedStr := "Fake label"
-	result := util.GetVolumeLabel(&vol, ".test")
-	fmt.Println(result)
+	result := GetVolumeLabel(&vol, ".test")
+	if result != expectedStr {
+		t.Fatalf("Expected %s, got %s", expectedStr, result)
+	}
+}
+
+func TestVolumeLabelNotFound(t *testing.T) {
+	expectedStr := ""
+	result := GetVolumeLabel(&vol, ".unknown")
 	if result != expectedStr {
 		t.Fatalf("Expected %s, got %s", expectedStr, result)
 	}
