@@ -23,6 +23,7 @@ type config struct {
 	VolumesBlacklist []string `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"CONPLICITY_VOLUMES_BLACKLIST" env-delim:","`
 	Manpage          bool     `short:"m" long:"manpage" description:"Output manpage."`
 	NoVerify         bool     `long:"no-verify" description:"Do not verify backup." env:"CONPLICITY_NO_VERIFY"`
+	Json             bool     `short:"j" long:"json" description:"Log as JSON (to stderr)." env:"JSON_OUTPUT"`
 
 	Duplicity struct {
 		TargetURL       string `short:"u" long:"url" description:"The duplicity target URL to push to." env:"DUPLICITY_TARGET_URL"`
@@ -120,6 +121,11 @@ func (c *Conplicity) setupLoglevel() (err error) {
 		errMsg := fmt.Sprintf("Wrong log level '%v'", c.Config.Loglevel)
 		err = errors.New(errMsg)
 	}
+
+	if c.Config.Json {
+		log.SetFormatter(&log.JSONFormatter{})
+	}
+
 	return
 }
 
