@@ -197,6 +197,8 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker
 	state = container.State
 	stdout = stdoutBuffer.String()
 
+	log.Debug(stdout)
+
 	return
 }
 
