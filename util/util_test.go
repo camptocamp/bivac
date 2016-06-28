@@ -20,14 +20,14 @@ func ExampleCheckErrNil() {
 }
 
 func ExampleCheckErrNoExit() {
-	fakeErr := errors.New("Fake error %v")
-	CheckErr(fakeErr, "test", 0)
+	fakeErr := errors.New("Fake error")
+	CheckErr(fakeErr, "test: %v", 0)
 	// Output:
 }
 
 func ExampleCheckErrExit() {
-	fakeErr := errors.New("Fake error %v")
-	CheckErr(fakeErr, "test", -1)
+	fakeErr := errors.New("Fake error")
+	CheckErr(fakeErr, "test: %v", -1)
 	// Output:
 	// How do we test the exit?
 }
