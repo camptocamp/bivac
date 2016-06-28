@@ -5,6 +5,10 @@
   - Add --no-verify to skip volume backup verification
   - Add backupExitCode new metric
 
+* Internals:
+
+  - Lint code
+
 # [0.10.2](https://github.com/camptocamp/conplicity/releases/tag/0.10.2) (2016-06-23)
 
 * Bugfix:
