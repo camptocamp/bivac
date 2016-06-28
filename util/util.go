@@ -14,10 +14,11 @@ const labelPrefix string = "io.conplicity"
 // CheckErr checks for error, logs and optionally exits the program
 func CheckErr(err error, msg string, exit int) {
 	if err != nil {
-		log.Errorf(msg, err)
-
 		if exit != -1 {
+			log.Fatalf(msg, err)
 			os.Exit(exit)
+		} else {
+			log.Errorf(msg, err)
 		}
 	}
 }
