@@ -140,8 +140,9 @@ func (p *BaseProvider) BackupVolume(vol *docker.Volume) (err error) {
 
 	var newMetrics []string
 
-	_, err = volume.Backup()
+	newMetrics, err = volume.Backup()
 	util.CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", -1)
+	c.Metrics = append(c.Metrics, newMetrics...)
 
 	_, err = volume.RemoveOld()
 	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", -1)
