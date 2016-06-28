@@ -3,6 +3,7 @@ Conplicity
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/camptocamp/conplicity.svg)](https://hub.docker.com/r/camptocamp/conplicity/)
 [![Build Status](https://img.shields.io/travis/camptocamp/conplicity/master.svg)](https://travis-ci.org/camptocamp/conplicity)
+[![Coverage Status](https://img.shields.io/coveralls/camptocamp/conplicity.svg)](https://coveralls.io/r/camptocamp/conplicity?branch=master)
 [![By Camptocamp](https://img.shields.io/badge/by-camptocamp-fb7047.svg)](http://www.camptocamp.com)
 
 
