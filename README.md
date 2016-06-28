@@ -24,8 +24,11 @@ Usage:
 Application Options:
   -V, --version             Display version.
   -i, --image=              The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
-  -l, --loglevel=           Set loglevel. (default: info) [$CONPLICITY_LOG_LEVEL]
+  -l, --loglevel=           Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic'). (default: info) [$CONPLICITY_LOG_LEVEL]
   -b, --blacklist=          Volumes to blacklist in backups. [$CONPLICITY_VOLUMES_BLACKLIST]
+  -m, --manpage             Output manpage.
+      --no-verify           Do not verify backup. [$CONPLICITY_NO_VERIFY]
+  -j, --json                Log as JSON (to stderr). [$JSON_OUTPUT]
 
 Duplicity Options:
   -u, --url=                The duplicity target URL to push to. [$DUPLICITY_TARGET_URL]
@@ -45,6 +48,9 @@ Swift Options:
       --swift-auth_url=     The Swift auth URL. [$SWIFT_AUTHURL]
       --swift-tenant-name=  The Swift tenant name. [$SWIFT_TENANTNAME]
       --swift-region-name=  The Swift region name. [$SWIFT_REGIONNAME]
+
+Docker Options:
+  -e, --docker-endpoint=    The Docker endpoint. (default: unix:///var/run/docker.sock) [$DOCKER_ENDPOINT]
 
 Help Options:
   -h, --help                Show this help message
