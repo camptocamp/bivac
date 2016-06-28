@@ -7,6 +7,7 @@ import (
 )
 
 var vol = docker.Volume{
+	Name: "Test",
 	Labels: map[string]string{
 		"io.conplicity.test": "Fake label",
 	},
@@ -14,7 +15,7 @@ var vol = docker.Volume{
 
 func TestVolumeLabel(t *testing.T) {
 	expectedStr := "Fake label"
-	result := GetVolumeLabel(&vol, ".test")
+	result, _ := GetVolumeLabel(&vol, ".test")
 	if result != expectedStr {
 		t.Fatalf("Expected %s, got %s", expectedStr, result)
 	}
@@ -22,8 +23,13 @@ func TestVolumeLabel(t *testing.T) {
 
 func TestVolumeLabelNotFound(t *testing.T) {
 	expectedStr := ""
-	result := GetVolumeLabel(&vol, ".unknown")
+	expectedErr := "Key .unknown not found in labels for volume Test"
+	result, err := GetVolumeLabel(&vol, ".unknown")
 	if result != expectedStr {
 		t.Fatalf("Expected %s, got %s", expectedStr, result)
+	}
+
+	if err.Error() != expectedErr {
+		t.Fatalf("Expected %v, got %v", expectedErr, err)
 	}
 }

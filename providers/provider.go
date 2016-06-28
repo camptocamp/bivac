@@ -107,12 +107,12 @@ func (p *BaseProvider) BackupVolume(vol *docker.Volume) (err error) {
 
 	c := p.GetHandler()
 
-	fullIfOlderThan := util.GetVolumeLabel(vol, ".full_if_older_than")
+	fullIfOlderThan, _ := util.GetVolumeLabel(vol, ".full_if_older_than")
 	if fullIfOlderThan == "" {
 		fullIfOlderThan = c.Config.Duplicity.FullIfOlderThan
 	}
 
-	removeOlderThan := util.GetVolumeLabel(vol, ".remove_older_than")
+	removeOlderThan, _ := util.GetVolumeLabel(vol, ".remove_older_than")
 	if removeOlderThan == "" {
 		removeOlderThan = c.Config.Duplicity.RemoveOlderThan
 	}
@@ -150,7 +150,8 @@ func (p *BaseProvider) BackupVolume(vol *docker.Volume) (err error) {
 	_, err = volume.Cleanup()
 	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", -1)
 
-	noVerify := c.Config.NoVerify || (util.GetVolumeLabel(vol, ".no_verify") == "true")
+	noVerifyLbl, _ := util.GetVolumeLabel(vol, ".no_verify")
+	noVerify := c.Config.NoVerify || (noVerifyLbl == "true")
 	if noVerify {
 		log.Infof("Skipping verification of volume %v", vol.Name)
 	} else {

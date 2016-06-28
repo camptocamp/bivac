@@ -53,7 +53,7 @@ func backupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
 		return
 	}
 
-	if util.GetVolumeLabel(vol, ".ignore") == "true" {
+	if ignoreLbl, _ := util.GetVolumeLabel(vol, ".ignore"); ignoreLbl == "true" {
 		log.Infof("Ignoring blacklisted volume " + vol.Name)
 		return
 	}
