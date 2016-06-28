@@ -9,10 +9,7 @@ import (
 )
 
 // Set up mocked Conplicity handler
-type fakeHandler struct {
-	Command []string
-	Mounts  []string
-}
+type fakeHandler struct{}
 
 func (h *fakeHandler) LaunchDuplicity(c, m []string) (docker.State, string, error) {
 	fmt.Printf("Command: %s\n", strings.Join(c, " "))
