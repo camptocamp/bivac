@@ -28,6 +28,7 @@ imports: conplicity.go
 	goimports -d $<
 
 test: lint vet imports
+	go test ./...
 
 clean:
 	rm -f conplicity conplicity.1
