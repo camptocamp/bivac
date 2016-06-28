@@ -26,10 +26,9 @@ func ExampleCheckErrNoExit() {
 }
 
 func ExampleCheckErrExit() {
-	fakeErr := errors.New("Fake error")
-	CheckErr(fakeErr, "test: %v", "fatal")
-	// Output:
-	// How do we test the exit?
+	// fakeErr := errors.New("Fake error")
+	// How do we test the output and the os.Exit(1)?"
+	// CheckErr(fakeErr, "test: %v", "fatal")
 }
 
 func TestVolumeLabel(t *testing.T) {
