@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-
-	"github.com/fsouza/go-dockerclient"
 )
 
 // Set up mocked Conplicity handler
 type fakeHandler struct{}
 
-func (h *fakeHandler) LaunchDuplicity(c, m []string) (state docker.State, stdout string, err error) {
+func (h *fakeHandler) LaunchDuplicity(c, m []string) (state int, stdout string, err error) {
 	fmt.Printf("Command: %s\n", strings.Join(c, " "))
 	fmt.Printf("Mounts: %s\n", strings.Join(m, " "))
 
 	stdout = "Last full backup date: Mon Jan 2 15:04:05 2006\nChain end time: Mon Jan 2 15:04:05 2006\n"
-	state.ExitCode = 42
+	//state.ExitCode = 42
+	// TODO
+	state = 42
 
 	return state, stdout, nil
 }

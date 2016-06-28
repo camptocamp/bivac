@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"os"
 	"testing"
+
+	"golang.org/x/net/context"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -17,10 +20,10 @@ func TestSetup(t *testing.T) {
 	}
 
 	// Check Client
-	expectedEndpoint := "unix:///var/run/docker.sock"
-	gotEndpoint := fakeHandler.Client.Endpoint()
-	if gotEndpoint != expectedEndpoint {
-		t.Fatalf("Expected %s, got %s", expectedEndpoint, gotEndpoint)
+	expectedInfo, _ := os.Hostname()
+	gotInfo, _ := fakeHandler.Client.Info(context.Background())
+	if gotInfo.Name != expectedInfo {
+		t.Fatalf("Expected %s, got %s", expectedInfo, gotInfo.Name)
 	}
 
 	// Check default Loglevel

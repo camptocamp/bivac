@@ -1,8 +1,6 @@
 package providers
 
-import (
-	"github.com/fsouza/go-dockerclient"
-)
+import "github.com/docker/engine-api/types"
 
 // OpenLDAPProvider implements a BaseProvider struct
 // for OpenLDAP backups
@@ -16,7 +14,7 @@ func (p *OpenLDAPProvider) GetName() string {
 }
 
 // GetPrepareCommand returns the command to be executed before backup
-func (p *OpenLDAPProvider) GetPrepareCommand(mount *docker.Mount) []string {
+func (p *OpenLDAPProvider) GetPrepareCommand(mount *types.MountPoint) []string {
 	return []string{
 		"sh",
 		"-c",

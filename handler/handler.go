@@ -4,15 +4,19 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"sort"
 	"strings"
 
+	"golang.org/x/net/context"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/util"
-	"github.com/fgrehm/go-dockerpty"
-	"github.com/fsouza/go-dockerclient"
+	docker "github.com/docker/engine-api/client"
+	"github.com/docker/engine-api/types"
+	"github.com/docker/engine-api/types/container"
 	"github.com/jessevdk/go-flags"
 )
 
@@ -71,7 +75,7 @@ func (c *Conplicity) Setup(version string) (err error) {
 	c.Hostname, err = os.Hostname()
 	util.CheckErr(err, "Failed to get hostname: %v", 1)
 
-	c.Client, err = docker.NewClient(c.Config.Docker.Endpoint)
+	c.Client, err = docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
 	util.CheckErr(err, "Failed to create Docker client: %v", 1)
 
 	err = c.pullImage()
@@ -130,14 +134,12 @@ func (c *Conplicity) setupLoglevel() (err error) {
 }
 
 func (c *Conplicity) pullImage() (err error) {
-	if _, err = c.InspectImage(c.Config.Image); err != nil {
+	if _, _, err = c.ImageInspectWithRaw(context.Background(), c.Config.Image, false); err != nil {
 		// TODO: output pull to logs
 		log.WithFields(log.Fields{
 			"image": c.Config.Image,
 		}).Info("Pulling image")
-		err = c.Client.PullImage(docker.PullImageOptions{
-			Repository: c.Config.Image,
-		}, docker.AuthConfiguration{})
+		_, err = c.Client.ImagePull(context.Background(), c.Config.Image, types.ImagePullOptions{})
 	} else {
 		log.WithFields(log.Fields{
 			"image": c.Config.Image,
@@ -148,7 +150,7 @@ func (c *Conplicity) pullImage() (err error) {
 }
 
 // LaunchDuplicity starts a duplicity container with given command and binds
-func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker.State, stdout string, err error) {
+func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state int, stdout string, err error) {
 	env := []string{
 		"AWS_ACCESS_KEY_ID=" + c.Config.AWS.AccessKeyID,
 		"AWS_SECRET_ACCESS_KEY=" + c.Config.AWS.SecretAccessKey,
@@ -160,42 +162,54 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state docker
 		"SWIFT_AUTHVERSION=2",
 	}
 
-	container, err := c.CreateContainer(
-		docker.CreateContainerOptions{
-			Config: &docker.Config{
-				Cmd:          cmd,
-				Env:          env,
-				Image:        c.Config.Image,
-				OpenStdin:    true,
-				StdinOnce:    true,
-				AttachStdin:  true,
-				AttachStdout: true,
-				AttachStderr: true,
-				Tty:          true,
-			},
+	log.WithFields(log.Fields{
+		"image":       c.Config.Image,
+		"command":     strings.Join(cmd, " "),
+		"environment": strings.Join(env, ", "),
+	}).Debug("Creating container")
+
+	container, err := c.ContainerCreate(
+		context.Background(),
+		&container.Config{
+			Cmd:          cmd,
+			Env:          env,
+			Image:        c.Config.Image,
+			OpenStdin:    true,
+			StdinOnce:    true,
+			AttachStdin:  true,
+			AttachStdout: true,
+			AttachStderr: true,
+			Tty:          true,
 		},
+		&container.HostConfig{
+			Binds: binds,
+		}, nil, "",
 	)
 	util.CheckErr(err, "Failed to create container: %v", 1)
-	defer c.removeContainer(container)
+	defer c.removeContainer(container.ID)
 
-	log.Debug("Launching 'duplicity %v'...", strings.Join(cmd, " "))
-	err = dockerpty.Start(c.Client, container, &docker.HostConfig{
-		Binds: binds,
-	})
+	log.Debugf("Launching 'duplicity %v'...", strings.Join(cmd, " "))
+	err = c.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
 	util.CheckErr(err, "Failed to start container: %v", -1)
 
-	var stdoutBuffer bytes.Buffer
-	opts := docker.LogsOptions{
-		Container:    container.ID,
-		OutputStream: &stdoutBuffer,
-		Stdout:       true,
-		RawTerminal:  true,
-	}
-	err = c.Logs(opts)
+	body, err := c.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+		Details:    true,
+		Follow:     true,
+	})
 	util.CheckErr(err, "Failed to retrieve logs: %v", -1)
 
-	state = container.State
-	stdout = stdoutBuffer.String()
+	defer body.Close()
+	content, err := ioutil.ReadAll(body)
+	util.CheckErr(err, "Failed to read logs from response: %v", -1)
+
+	stdout = string(content)
+
+	cont, err := c.ContainerInspect(context.Background(), container.ID)
+	util.CheckErr(err, "Failed to inspect container: %v", -1)
+
+	state = cont.State.ExitCode
 
 	log.Debug(stdout)
 
@@ -229,13 +243,13 @@ func (c *Conplicity) PushToPrometheus() (err error) {
 	return
 }
 
-func (c *Conplicity) removeContainer(cont *docker.Container) {
+func (c *Conplicity) removeContainer(id string) {
 	log.WithFields(log.Fields{
-		"container": cont.ID,
+		"container": id,
 	}).Infof("Removing container")
-	c.RemoveContainer(docker.RemoveContainerOptions{
-		ID:            cont.ID,
+	c.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{
 		Force:         true,
 		RemoveVolumes: true,
+		RemoveLinks:   true,
 	})
 }

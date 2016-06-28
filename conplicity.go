@@ -4,8 +4,11 @@ import (
 	"sort"
 	"unicode/utf8"
 
+	"golang.org/x/net/context"
+
 	log "github.com/Sirupsen/logrus"
-	"github.com/fsouza/go-dockerclient"
+	"github.com/docker/engine-api/types"
+	"github.com/docker/engine-api/types/filters"
 
 	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/providers"
@@ -23,11 +26,11 @@ func main() {
 
 	log.Infof("Starting backup...")
 
-	vols, err := c.ListVolumes(docker.ListVolumesOptions{})
+	vols, err := c.VolumeList(context.Background(), filters.NewArgs())
 	util.CheckErr(err, "Failed to list Docker volumes: %v", 1)
 
-	for _, vol := range vols {
-		voll, err := c.InspectVolume(vol.Name)
+	for _, vol := range vols.Volumes {
+		voll, err := c.VolumeInspect(context.Background(), vol.Name)
 		util.CheckErr(err, "Failed to inspect volume "+vol.Name+": %v", -1)
 
 		err = backupVolume(c, voll)
@@ -40,7 +43,7 @@ func main() {
 	log.Infof("End backup...")
 }
 
-func backupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
+func backupVolume(c *handler.Conplicity, vol types.Volume) (err error) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" {
 		log.WithFields(log.Fields{
 			"volume": vol.Name,
@@ -60,7 +63,7 @@ func backupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
 		return
 	}
 
-	if ignoreLbl, _ := util.GetVolumeLabel(vol, ".ignore"); ignoreLbl == "true" {
+	if ignoreLbl, _ := util.GetVolumeLabel(&vol, ".ignore"); ignoreLbl == "true" {
 		log.WithFields(log.Fields{
 			"volume": vol.Name,
 			"reason": "blacklisted",
@@ -69,14 +72,14 @@ func backupVolume(c *handler.Conplicity, vol *docker.Volume) (err error) {
 		return
 	}
 
-	p := providers.GetProvider(c, vol)
+	p := providers.GetProvider(c, &vol)
 	log.WithFields(log.Fields{
 		"volume":   vol.Name,
 		"provider": p.GetName(),
 	}).Info("Found provider")
 	err = providers.PrepareBackup(p)
 	util.CheckErr(err, "Failed to prepare backup for volume "+vol.Name+": %v", -1)
-	err = p.BackupVolume(vol)
+	err = p.BackupVolume(&vol)
 	util.CheckErr(err, "Failed to backup volume "+vol.Name+": %v", -1)
 	return
 }
