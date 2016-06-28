@@ -149,9 +149,13 @@ func (p *BaseProvider) BackupVolume(vol *docker.Volume) (err error) {
 	_, err = volume.Cleanup()
 	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", -1)
 
-	newMetrics, err = volume.Verify()
-	util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", -1)
-	c.Metrics = append(c.Metrics, newMetrics...)
+	if c.Config.NoVerify {
+		log.Infof("Skipping verification of volume %v", vol.Name)
+	} else {
+		newMetrics, err = volume.Verify()
+		util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", -1)
+		c.Metrics = append(c.Metrics, newMetrics...)
+	}
 
 	newMetrics, err = volume.Status()
 	util.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", -1)
