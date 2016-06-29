@@ -9,13 +9,13 @@ import (
 // Set up mocked Conplicity handler
 type fakeHandler struct{}
 
+var fakeStdout string
+
 func (h *fakeHandler) LaunchDuplicity(c, m []string) (state int, stdout string, err error) {
 	fmt.Printf("Command: %s\n", strings.Join(c, " "))
 	fmt.Printf("Mounts: %s\n", strings.Join(m, " "))
 
-	stdout = "Last full backup date: Mon Jan 2 15:04:05 2006\nChain end time: Mon Jan 2 15:04:05 2006\n"
-	//state.ExitCode = 42
-	// TODO
+	stdout = fakeStdout
 	state = 42
 
 	return state, stdout, nil
@@ -97,6 +97,7 @@ func ExampleVerify() {
 
 // ExampleStatus checks the status of a backup
 func ExampleStatus() {
+	fakeStdout = "Last full backup date: Mon Jan 2 15:04:05 2006\nChain end time: Mon Jan 2 15:04:05 2006\n"
 	m, _ := fakeVol.Status()
 	fmt.Printf("Metrics: %s\n", strings.Join(m, "\n"))
 	// Output:
@@ -104,4 +105,36 @@ func ExampleStatus() {
 	// Mounts: /mnt duplicity_cache:/root/.cache/duplicity
 	// Metrics: conplicity{volume="Test",what="lastBackup"} 1136214245
 	// conplicity{volume="Test",what="lastFullBackup"} 1136214245
+}
+
+// TestStatusNoFullBackupDate checks the status of a backup
+func TestStatusNoFullBackupDate(t *testing.T) {
+	fakeStdout = "Wrong stdout"
+	_, err := fakeVol.Status()
+
+	if err == nil {
+		t.Fatal("Expected an error, got no error")
+	}
+
+	expected := "Failed to parse Duplicity output for last full backup date of Test"
+	got := err.Error()
+	if got != expected {
+		t.Fatalf("Expected %s, got %s", expected, got)
+	}
+}
+
+// TestStatusNoChainEndTime checks the status of a backup
+func TestStatusNoChainEndTime(t *testing.T) {
+	fakeStdout = "Last full backup date: Mon Jan 2 15:04:05 2006\nWhatever else\n"
+	_, err := fakeVol.Status()
+
+	if err == nil {
+		t.Fatal("Expected an error, got no error")
+	}
+
+	expected := "Failed to parse Duplicity output for chain end time of Test"
+	got := err.Error()
+	if got != expected {
+		t.Fatalf("Expected %s, got %s", expected, got)
+	}
 }
