@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // Handler is an interface providing a mean of launching Duplicity
@@ -33,6 +35,14 @@ var chainEndTimeRx = regexp.MustCompile("Chain end time: (.+)")
 
 // Backup performs the backup of a volume with duplicity
 func (v *Volume) Backup() (metrics []string, err error) {
+	log.WithFields(log.Fields{
+		"name":               v.Name,
+		"backup_dir":         v.BackupDir,
+		"full_if_older_than": v.FullIfOlderThan,
+		"target":             v.Target,
+		"mount":              v.Mount,
+	}).Debug("Starting volume backup")
+
 	state, _, err := v.Client.LaunchDuplicity(
 		[]string{
 			"--full-if-older-than", v.FullIfOlderThan,
