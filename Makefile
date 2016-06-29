@@ -35,6 +35,8 @@ coverage:
 	go test -coverprofile=coverage.out
 	go test -coverprofile=lib.coverage.out github.com/camptocamp/conplicity/lib
 	tail -n +2 lib.coverage.out >> coverage.out;
+	go test -coverprofile=providers.coverage.out github.com/camptocamp/conplicity/providers
+	tail -n +2 providers.coverage.out >> coverage.out;
 
 clean:
 	rm -f conplicity conplicity.1
