@@ -147,7 +147,15 @@ func (c *Conplicity) pullImage() (err error) {
 		log.WithFields(log.Fields{
 			"image": c.Config.Image,
 		}).Info("Pulling image")
-		_, err = c.Client.ImagePull(context.Background(), c.Config.Image, types.ImagePullOptions{})
+		resp, err := c.Client.ImagePull(context.Background(), c.Config.Image, types.ImagePullOptions{})
+		if err != nil {
+			return err
+		}
+		body, err := ioutil.ReadAll(resp)
+		if err != nil {
+			return err
+		}
+		log.Debugf("Pull image body: %v", body)
 	} else {
 		log.WithFields(log.Fields{
 			"image": c.Config.Image,
