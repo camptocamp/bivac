@@ -1,3 +1,24 @@
+# [0.13.0](https://github.com/camptocamp/conplicity/releases/tag/0.13.0) (2016-06-29)
+
+* Breaking changes:
+
+  - JSON_OUTPUT renamed to CONPLICITY_JSON_OUTPUT
+
+* Internals:
+
+  - Reorganize packages in lib/ (fix #60)
+
+* Bugfix:
+
+  - Do not intent to remove links in removeContainer()
+
+* Testing:
+
+  - Test with verbose
+  - Add more tests
+  - Add coverage
+
+
 # [0.12.0](https://github.com/camptocamp/conplicity/releases/tag/0.12.0) (2016-06-28)
 
 * Features:
@@ -7,7 +28,7 @@
   - Add stdout in debug output
 
 * Internals:
-  - Rewrite using github.com/docker/engine-api/types
+  - Rewrite using github.com/docker/engine-api (fix #58)
 
 * Bugfix:
 
