@@ -160,7 +160,7 @@ func (v *Volume) Status() (metrics []string, err error) {
 	var chainEndTimeDate time.Time
 
 	if len(fullBackup) > 0 {
-		if fullBackup[1] == "none" {
+		if strings.TrimSpace(fullBackup[1]) == "none" {
 			fullBackupDate = time.Unix(0, 0)
 			chainEndTimeDate = time.Unix(0, 0)
 		} else {

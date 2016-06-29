@@ -97,7 +97,7 @@ func ExampleVerify() {
 
 // ExampleStatus checks the status of a backup
 func ExampleStatus() {
-	fakeStdout = "Last full backup date: Mon Jan 2 15:04:05 2006\nChain end time: Mon Jan 2 15:04:05 2006\n"
+	fakeStdout = "Last full backup date: Mon Jan 2 15:04:05 2006  \nChain end time: Mon Jan 2 15:04:05 2006  \n"
 	m, _ := fakeVol.Status()
 	fmt.Printf("Metrics: %s\n", strings.Join(m, "\n"))
 	// Output:
@@ -109,7 +109,7 @@ func ExampleStatus() {
 
 // ExampleStatusNoFullBackup checks the status of a backup
 func ExampleStatusNoFullBackup() {
-	fakeStdout = "Last full backup date: none\nNo backup chains with active signatures found\n"
+	fakeStdout = "Last full backup date: none  \nNo backup chains with active signatures found  \n"
 	m, _ := fakeVol.Status()
 	fmt.Printf("Metrics: %s\n", strings.Join(m, "\n"))
 	// Output:
@@ -137,7 +137,7 @@ func TestStatusNoFullBackupDate(t *testing.T) {
 
 // TestStatusNoChainEndTime checks the status of a backup
 func TestStatusNoChainEndTime(t *testing.T) {
-	fakeStdout = "Last full backup date: Mon Jan 2 15:04:05 2006\nWhatever else\n"
+	fakeStdout = "Last full backup date: Mon Jan 2 15:04:05 2006  \nWhatever else  \n"
 	_, err := fakeVol.Status()
 
 	if err == nil {
