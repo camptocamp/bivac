@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/lib"
 	"github.com/docker/engine-api/types"
 )
@@ -87,13 +88,19 @@ func TestBackupVolume(t *testing.T) {
 	p.handler.Config.Duplicity.FullIfOlderThan = "314D"
 	p.handler.Config.Duplicity.RemoveOlderThan = "1Y"
 	p.handler.Config.Duplicity.TargetURL = "file:///foo/bar"
+	p.handler.Config.Image = "camptocamp/duplicity:latest"
+	p.handler.Config.Docker.Endpoint = "unix:///var/run/docker.sock"
 	p.handler.Hostname, _ = os.Hostname()
+	p.handler.SetupDocker()
 
-	t.Skip("Fails in volume.Backup()")
+	log.SetLevel(log.DebugLevel)
+
+	t.Skip("How to fake the backup or make it pass?")
 
 	_ = p.BackupVolume(&types.Volume{
-		Name:       "Test",
-		Mountpoint: dir,
+		Name:       dir,
+		Driver:     "local",
+		Mountpoint: "/mnt",
 	})
 }
 
