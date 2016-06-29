@@ -69,6 +69,34 @@ func TestGetProvider(t *testing.T) {
 	}
 }
 
+func TestPrepareBackup(t *testing.T) {
+	t.Skip("How do we mock the Docker API here?")
+}
+
+func TestBackupVolume(t *testing.T) {
+	// Use Default provider
+	dir, _ := ioutil.TempDir("", "test_backup_volume")
+	defer os.RemoveAll(dir)
+
+	p := &BaseProvider{
+		handler: &conplicity.Conplicity{},
+	}
+
+	// Fill Config manually
+	p.handler.Config = &conplicity.Config{} // Init Config
+	p.handler.Config.Duplicity.FullIfOlderThan = "314D"
+	p.handler.Config.Duplicity.RemoveOlderThan = "1Y"
+	p.handler.Config.Duplicity.TargetURL = "file:///foo/bar"
+	p.handler.Hostname, _ = os.Hostname()
+
+	t.Skip("Fails in volume.Backup()")
+
+	_ = p.BackupVolume(&types.Volume{
+		Name:       "Test",
+		Mountpoint: dir,
+	})
+}
+
 func TestBaseGetHandler(t *testing.T) {
 	expected := ""
 

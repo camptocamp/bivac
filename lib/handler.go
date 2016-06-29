@@ -19,7 +19,7 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-type config struct {
+type Config struct {
 	Version          bool     `short:"V" long:"version" description:"Display version."`
 	Image            string   `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
 	Loglevel         string   `short:"l" long:"loglevel" description:"Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic')." env:"CONPLICITY_LOG_LEVEL" default:"info"`
@@ -59,7 +59,7 @@ type config struct {
 // Conplicity is the main handler struct
 type Conplicity struct {
 	*docker.Client
-	Config   *config
+	Config   *Config
 	Hostname string
 	Metrics  []string
 }
@@ -84,7 +84,7 @@ func (c *Conplicity) Setup(version string) (err error) {
 }
 
 func (c *Conplicity) getEnv(version string) (err error) {
-	c.Config = &config{}
+	c.Config = &Config{}
 	parser := flags.NewParser(c.Config, flags.Default)
 	if _, err = parser.Parse(); err != nil {
 		os.Exit(1)
