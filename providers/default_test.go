@@ -14,6 +14,13 @@ func TestDefaultGetName(t *testing.T) {
 	}
 }
 
+func TestDefaultPrepareBackup(t *testing.T) {
+	got := (&DefaultProvider{}).PrepareBackup()
+	if got != nil {
+		t.Fatalf("Expected to get nil, got %s", got)
+	}
+}
+
 func TestDefaultGetPrepareCommand(t *testing.T) {
 	mount := &types.MountPoint{
 		Destination: "/mnt",
