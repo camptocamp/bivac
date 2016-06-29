@@ -165,6 +165,7 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state int, s
 		"image":       c.Config.Image,
 		"command":     strings.Join(cmd, " "),
 		"environment": strings.Join(env, ", "),
+		"binds":       strings.Join(binds, ", "),
 	}).Debug("Creating container")
 
 	container, err := c.ContainerCreate(
