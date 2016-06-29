@@ -76,7 +76,7 @@ func (c *Conplicity) Setup(version string) (err error) {
 	CheckErr(err, "Failed to get hostname: %v", "panic")
 
 	err = c.SetupDocker()
-	CheckErr(err, "Failed to setup docker: %v", "panic")
+	CheckErr(err, "Failed to setup docker: %v", "fatal")
 
 	return
 }
@@ -84,10 +84,10 @@ func (c *Conplicity) Setup(version string) (err error) {
 // SetupDocker for the  client
 func (c *Conplicity) SetupDocker() (err error) {
 	c.Client, err = docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
-	CheckErr(err, "Failed to create Docker client: %v", "panic")
+	CheckErr(err, "Failed to create Docker client: %v", "fatal")
 
 	err = c.pullImage()
-	CheckErr(err, "Failed to pull image: %v", "panic")
+	CheckErr(err, "Failed to pull image: %v", "fatal")
 
 	return
 }
