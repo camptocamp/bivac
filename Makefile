@@ -28,7 +28,7 @@ imports: conplicity.go
 	goimports -d $<
 
 test: lint vet imports
-	go test ./...
+	go test -v ./...
 
 coverage:
 	rm -rf *.out
