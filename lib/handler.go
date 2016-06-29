@@ -246,9 +246,9 @@ func (c *Conplicity) removeContainer(id string) {
 	log.WithFields(log.Fields{
 		"container": id,
 	}).Infof("Removing container")
-	c.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{
+	err := c.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{
 		Force:         true,
 		RemoveVolumes: true,
-		RemoveLinks:   true,
 	})
+	CheckErr(err, "Failed to remove container "+id+": %v", "error")
 }
