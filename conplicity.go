@@ -8,6 +8,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/lib"
+	"github.com/camptocamp/conplicity/providers"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/engine-api/types/filters"
 )
@@ -69,12 +70,12 @@ func backupVolume(c *conplicity.Conplicity, vol types.Volume) (err error) {
 		return
 	}
 
-	p := conplicity.GetProvider(c, &vol)
+	p := providers.GetProvider(c, &vol)
 	log.WithFields(log.Fields{
 		"volume":   vol.Name,
 		"provider": p.GetName(),
 	}).Info("Found provider")
-	err = conplicity.PrepareBackup(p)
+	err = providers.PrepareBackup(p)
 	conplicity.CheckErr(err, "Failed to prepare backup for volume "+vol.Name+": %v", "fatal")
 	err = p.BackupVolume(&vol)
 	conplicity.CheckErr(err, "Failed to backup volume "+vol.Name+": %v", "fatal")

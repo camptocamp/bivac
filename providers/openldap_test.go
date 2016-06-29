@@ -1,4 +1,4 @@
-package conplicity
+package providers
 
 import (
 	"testing"
@@ -6,23 +6,23 @@ import (
 	"github.com/docker/engine-api/types"
 )
 
-func TestMySQLGetName(t *testing.T) {
-	expected := "MySQL"
-	got := (&MySQLProvider{}).GetName()
+func TestOpenLDAPGetName(t *testing.T) {
+	expected := "OpenLDAP"
+	got := (&OpenLDAPProvider{}).GetName()
 	if expected != got {
 		t.Fatalf("Expected %s, got %s", expected, got)
 	}
 }
 
-func TestMySQLGetBackupDir(t *testing.T) {
+func TestOpenLDAPGetBackupDir(t *testing.T) {
 	expected := "backups"
-	got := (&MySQLProvider{}).GetBackupDir()
+	got := (&OpenLDAPProvider{}).GetBackupDir()
 	if expected != got {
 		t.Fatalf("Expected %s, got %s", expected, got)
 	}
 }
 
-func TestMySQLGetPrepareCommand(t *testing.T) {
+func TestOpenLDAPGetPrepareCommand(t *testing.T) {
 	mount := &types.MountPoint{
 		Destination: "/mnt",
 	}
@@ -30,9 +30,9 @@ func TestMySQLGetPrepareCommand(t *testing.T) {
 	expected := []string{
 		"sh",
 		"-c",
-		"mkdir -p /mnt/backups && mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD > /mnt/backups/all.sql",
+		"mkdir -p /mnt/backups && slapcat > /mnt/backups/all.ldif",
 	}
-	got := (&MySQLProvider{}).GetPrepareCommand(mount)
+	got := (&OpenLDAPProvider{}).GetPrepareCommand(mount)
 	if len(got) != 3 {
 		t.Fatalf("Expected command to have 3 elements, got %s", len(got))
 	} else {

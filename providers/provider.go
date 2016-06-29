@@ -1,4 +1,4 @@
-package conplicity
+package providers
 
 import (
 	"os"
@@ -7,6 +7,7 @@ import (
 	"golang.org/x/net/context"
 
 	log "github.com/Sirupsen/logrus"
+	conplicity "github.com/camptocamp/conplicity/lib"
 	"github.com/docker/engine-api/types"
 )
 
@@ -14,7 +15,7 @@ import (
 type Provider interface {
 	GetName() string
 	GetPrepareCommand(*types.MountPoint) []string
-	GetHandler() *Conplicity
+	GetHandler() *conplicity.Conplicity
 	GetVolume() *types.Volume
 	GetBackupDir() string
 	BackupVolume(*types.Volume) error
@@ -22,13 +23,13 @@ type Provider interface {
 
 // BaseProvider is a struct implementing the Provider interface
 type BaseProvider struct {
-	handler   *Conplicity
+	handler   *conplicity.Conplicity
 	vol       *types.Volume
 	backupDir string
 }
 
 // GetProvider detects which provider suits the passed volume and returns it
-func GetProvider(c *Conplicity, v *types.Volume) Provider {
+func GetProvider(c *conplicity.Conplicity, v *types.Volume) Provider {
 	log.WithFields(log.Fields{
 		"volume": v.Name,
 	}).Info("Detecting provider")
@@ -69,10 +70,10 @@ func PrepareBackup(p Provider) (err error) {
 	c := p.GetHandler()
 	vol := p.GetVolume()
 	containers, err := c.ContainerList(context.Background(), types.ContainerListOptions{})
-	CheckErr(err, "Failed to list containers: %v", "fatal")
+	conplicity.CheckErr(err, "Failed to list containers: %v", "fatal")
 	for _, container := range containers {
 		container, err := c.ContainerInspect(context.Background(), container.ID)
-		CheckErr(err, "Failed to inspect container "+container.ID+": %v", "fatal")
+		conplicity.CheckErr(err, "Failed to inspect container "+container.ID+": %v", "fatal")
 		for _, mount := range container.Mounts {
 			if mount.Name == vol.Name {
 				log.WithFields(log.Fields{
@@ -87,11 +88,11 @@ func PrepareBackup(p Provider) (err error) {
 					},
 					)
 
-					CheckErr(err, "Failed to create exec", "fatal")
+					conplicity.CheckErr(err, "Failed to create exec", "fatal")
 
 					err = c.ContainerExecStart(context.Background(), exec.ID, types.ExecStartCheck{})
 
-					CheckErr(err, "Failed to create exec", "fatal")
+					conplicity.CheckErr(err, "Failed to create exec", "fatal")
 				} else {
 					log.WithFields(log.Fields{
 						"volume":    vol.Name,
@@ -114,12 +115,12 @@ func (p *BaseProvider) BackupVolume(vol *types.Volume) (err error) {
 
 	c := p.GetHandler()
 
-	fullIfOlderThan, _ := GetVolumeLabel(vol, ".full_if_older_than")
+	fullIfOlderThan, _ := conplicity.GetVolumeLabel(vol, ".full_if_older_than")
 	if fullIfOlderThan == "" {
 		fullIfOlderThan = c.Config.Duplicity.FullIfOlderThan
 	}
 
-	removeOlderThan, _ := GetVolumeLabel(vol, ".remove_older_than")
+	removeOlderThan, _ := conplicity.GetVolumeLabel(vol, ".remove_older_than")
 	if removeOlderThan == "" {
 		removeOlderThan = c.Config.Duplicity.RemoveOlderThan
 	}
@@ -135,7 +136,7 @@ func (p *BaseProvider) BackupVolume(vol *types.Volume) (err error) {
 	fullBackupDir := vol.Mountpoint + "/" + backupDir
 	roMount := vol.Name + ":" + vol.Mountpoint + ":ro"
 
-	volume := &Volume{
+	volume := &conplicity.Volume{
 		Name:            vol.Name,
 		Target:          fullTarget,
 		BackupDir:       fullBackupDir,
@@ -148,16 +149,16 @@ func (p *BaseProvider) BackupVolume(vol *types.Volume) (err error) {
 	var newMetrics []string
 
 	newMetrics, err = volume.Backup()
-	CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", "fatal")
+	conplicity.CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", "fatal")
 	c.Metrics = append(c.Metrics, newMetrics...)
 
 	_, err = volume.RemoveOld()
-	CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", "fatal")
+	conplicity.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", "fatal")
 
 	_, err = volume.Cleanup()
-	CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", "fatal")
+	conplicity.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", "fatal")
 
-	noVerifyLbl, _ := GetVolumeLabel(vol, ".no_verify")
+	noVerifyLbl, _ := conplicity.GetVolumeLabel(vol, ".no_verify")
 	noVerify := c.Config.NoVerify || (noVerifyLbl == "true")
 	if noVerify {
 		log.WithFields(log.Fields{
@@ -165,19 +166,19 @@ func (p *BaseProvider) BackupVolume(vol *types.Volume) (err error) {
 		}).Info("Skipping verification")
 	} else {
 		newMetrics, err = volume.Verify()
-		CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", "fatal")
+		conplicity.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", "fatal")
 		c.Metrics = append(c.Metrics, newMetrics...)
 	}
 
 	newMetrics, err = volume.Status()
-	CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", "fatal")
+	conplicity.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", "fatal")
 	c.Metrics = append(c.Metrics, newMetrics...)
 
 	return
 }
 
 // GetHandler returns the handler associated with the provider
-func (p *BaseProvider) GetHandler() *Conplicity {
+func (p *BaseProvider) GetHandler() *conplicity.Conplicity {
 	return p.handler
 }
 

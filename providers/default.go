@@ -1,4 +1,4 @@
-package conplicity
+package providers
 
 import (
 	log "github.com/Sirupsen/logrus"
