@@ -1,4 +1,4 @@
-package handler
+package conplicity
 
 import (
 	"os"
@@ -9,9 +9,9 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-var fakeHandler = Conplicity{}
-
 func TestSetup(t *testing.T) {
+	var fakeHandler = Conplicity{}
+
 	fakeHandler.Setup("noversion")
 
 	// Check Hostname

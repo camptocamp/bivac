@@ -1,4 +1,4 @@
-package volume
+package conplicity
 
 import (
 	"errors"
@@ -6,8 +6,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/camptocamp/conplicity/util"
 )
 
 // Handler is an interface providing a mean of launching Duplicity
@@ -51,7 +49,7 @@ func (v *Volume) Backup() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
-	util.CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
+	CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
 
 	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"backupExitCode\"} %v", v.Name, state)
 	metrics = []string{
@@ -76,7 +74,7 @@ func (v *Volume) RemoveOld() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
-	util.CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
+	CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
 	return
 }
 
@@ -97,7 +95,7 @@ func (v *Volume) Cleanup() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
-	util.CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
+	CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
 	return
 }
 
@@ -119,7 +117,7 @@ func (v *Volume) Verify() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
-	util.CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
+	CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
 
 	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"verifyExitCode\"} %v", v.Name, state)
 	metrics = []string{
@@ -144,13 +142,13 @@ func (v *Volume) Status() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
-	util.CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
+	CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
 
 	fullBackup := fullBackupRx.FindStringSubmatch(stdout)
 	var fullBackupDate time.Time
 	if len(fullBackup) > 0 {
 		fullBackupDate, err = time.Parse(timeFormat, strings.TrimSpace(fullBackup[1]))
-		util.CheckErr(err, "Failed to parse full backup date: %v", "error")
+		CheckErr(err, "Failed to parse full backup date: %v", "error")
 	} else {
 		errMsg := fmt.Sprintf("Failed to parse Duplicity output for last full backup date of %v", v.Name)
 		err = errors.New(errMsg)
@@ -161,7 +159,7 @@ func (v *Volume) Status() (metrics []string, err error) {
 	var chainEndTimeDate time.Time
 	if len(chainEndTime) > 0 {
 		chainEndTimeDate, err = time.Parse(timeFormat, strings.TrimSpace(chainEndTime[1]))
-		util.CheckErr(err, "Failed to parse chain end time date: %v", "error")
+		CheckErr(err, "Failed to parse chain end time date: %v", "error")
 	} else {
 		errMsg := fmt.Sprintf("Failed to parse Duplicity output for chain end time of %v", v.Name)
 		err = errors.New(errMsg)
