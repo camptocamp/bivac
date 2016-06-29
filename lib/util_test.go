@@ -1,4 +1,4 @@
-package util
+package conplicity
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"github.com/docker/engine-api/types"
 )
 
-var fakeVol = types.Volume{
+var fakeDockerVol = types.Volume{
 	Name: "Test",
 	Labels: map[string]string{
 		"io.conplicity.test": "Fake label",
@@ -33,7 +33,7 @@ func ExampleCheckErrExit() {
 
 func TestVolumeLabel(t *testing.T) {
 	expectedStr := "Fake label"
-	result, _ := GetVolumeLabel(&fakeVol, ".test")
+	result, _ := GetVolumeLabel(&fakeDockerVol, ".test")
 	if result != expectedStr {
 		t.Fatalf("Expected %s, got %s", expectedStr, result)
 	}
@@ -42,7 +42,7 @@ func TestVolumeLabel(t *testing.T) {
 func TestVolumeLabelNotFound(t *testing.T) {
 	expectedStr := ""
 	expectedErr := "Key .unknown not found in labels for volume Test"
-	result, err := GetVolumeLabel(&fakeVol, ".unknown")
+	result, err := GetVolumeLabel(&fakeDockerVol, ".unknown")
 	if result != expectedStr {
 		t.Fatalf("Expected %s, got %s", expectedStr, result)
 	}

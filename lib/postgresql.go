@@ -1,4 +1,4 @@
-package providers
+package conplicity
 
 import "github.com/docker/engine-api/types"
 
