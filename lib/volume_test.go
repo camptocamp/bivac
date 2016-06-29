@@ -107,6 +107,18 @@ func ExampleStatus() {
 	// conplicity{volume="Test",what="lastFullBackup"} 1136214245
 }
 
+// ExampleStatusNoFullBackup checks the status of a backup
+func ExampleStatusNoFullBackup() {
+	fakeStdout = "Last full backup date: none\nChain end time: Mon Jan 2 15:04:05 2006\n"
+	m, _ := fakeVol.Status()
+	fmt.Printf("Metrics: %s\n", strings.Join(m, "\n"))
+	// Output:
+	// Command: collection-status --s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption --name Test /foo
+	// Mounts: /mnt duplicity_cache:/root/.cache/duplicity
+	// Metrics: conplicity{volume="Test",what="lastBackup"} 1136214245
+	// conplicity{volume="Test",what="lastFullBackup"} 0
+}
+
 // TestStatusNoFullBackupDate checks the status of a backup
 func TestStatusNoFullBackupDate(t *testing.T) {
 	fakeStdout = "Wrong stdout"

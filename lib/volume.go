@@ -157,8 +157,12 @@ func (v *Volume) Status() (metrics []string, err error) {
 	fullBackup := fullBackupRx.FindStringSubmatch(stdout)
 	var fullBackupDate time.Time
 	if len(fullBackup) > 0 {
-		fullBackupDate, err = time.Parse(timeFormat, strings.TrimSpace(fullBackup[1]))
-		CheckErr(err, "Failed to parse full backup date: %v", "error")
+		if fullBackup[1] == "none" {
+			fullBackupDate = time.Unix(0, 0)
+		} else {
+			fullBackupDate, err = time.Parse(timeFormat, strings.TrimSpace(fullBackup[1]))
+			CheckErr(err, "Failed to parse full backup date: %v", "error")
+		}
 	} else {
 		errMsg := fmt.Sprintf("Failed to parse Duplicity output for last full backup date of %v", v.Name)
 		err = errors.New(errMsg)
