@@ -19,6 +19,7 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
+// Config stores the handler's configuration and UI interface parameters
 type Config struct {
 	Version          bool     `short:"V" long:"version" description:"Display version."`
 	Image            string   `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
