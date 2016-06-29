@@ -31,7 +31,7 @@ Application Options:
   -b, --blacklist=          Volumes to blacklist in backups. [$CONPLICITY_VOLUMES_BLACKLIST]
   -m, --manpage             Output manpage.
       --no-verify           Do not verify backup. [$CONPLICITY_NO_VERIFY]
-  -j, --json                Log as JSON (to stderr). [$JSON_OUTPUT]
+  -j, --json                Log as JSON (to stderr). [$CONPLICITY_JSON_OUTPUT]
 
 Duplicity Options:
   -u, --url=                The duplicity target URL to push to. [$DUPLICITY_TARGET_URL]
