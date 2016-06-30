@@ -10,7 +10,7 @@ install:
 - go get golang.org/x/tools/cmd/cover
 script:
 - make
-- "./.travis/build.sh && ./.travis/publish.sh"
+- "./.travis/build.sh && ./.travis/test.sh && ./.travis/publish.sh"
 - make coverage
 - "$HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=coverage.out"
 deploy:
