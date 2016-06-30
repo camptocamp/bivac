@@ -71,11 +71,39 @@ func TestGetProvider(t *testing.T) {
 }
 
 func TestPrepareBackup(t *testing.T) {
-	t.Skip("How do we mock the Docker API here?")
+	// Use Default provider
+	dir, _ := ioutil.TempDir("", "test_backup_volume")
+	defer os.RemoveAll(dir)
+
+	p := &DefaultProvider{
+		BaseProvider: &BaseProvider{
+			handler: &conplicity.Conplicity{},
+			vol: &types.Volume{
+				Name:       dir,
+				Driver:     "local",
+				Mountpoint: "/mnt",
+			},
+		},
+	}
+
+	// Fill Config manually
+	p.handler.Config = &conplicity.Config{} // Init Config
+	p.handler.Config.Image = "camptocamp/duplicity:latest"
+	p.handler.Config.Docker.Endpoint = "unix:///var/run/docker.sock"
+	p.handler.Hostname, _ = os.Hostname()
+	p.handler.SetupDocker()
+
+	log.SetLevel(log.DebugLevel)
+
+	err := PrepareBackup(p)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got error: %v", err)
+	}
 }
 
 func TestBackupVolume(t *testing.T) {
-	// Use Default provider
+	// Use Base provider
 	dir, _ := ioutil.TempDir("", "test_backup_volume")
 	defer os.RemoveAll(dir)
 
