@@ -149,20 +149,23 @@ func (c *Conplicity) pullImage() (err error) {
 		}).Info("Pulling image")
 		resp, err := c.Client.ImagePull(context.Background(), c.Config.Image, types.ImagePullOptions{})
 		if err != nil {
+			log.Errorf("ImagePull returned an error: %v", err)
 			return err
 		}
+		defer resp.Close()
 		body, err := ioutil.ReadAll(resp)
 		if err != nil {
+			log.Errorf("Failed to read from ImagePull response: %v", err)
 			return err
 		}
-		log.Debugf("Pull image body: %v", body)
+		log.Debugf("Pull image response body: %v", body)
 	} else {
 		log.WithFields(log.Fields{
 			"image": c.Config.Image,
 		}).Debug("Image already pulled, not pulling")
 	}
 
-	return
+	return nil
 }
 
 // LaunchDuplicity starts a duplicity container with given command and binds
