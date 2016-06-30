@@ -1,3 +1,19 @@
+# [0.13.1](https://github.com/camptocamp/conplicity/releases/tag/0.13.1) (2016-06-30)
+
+* Bugfix:
+
+  - Fix image pulling (fix #61)
+  - Support "none" as value for last full backup date
+    (avoid crashing on first backup)
+
+* Internals:
+
+  - Change some panic errors into fatal to avoid traces
+
+* Testing:
+
+  - Add more tests
+
 # [0.13.0](https://github.com/camptocamp/conplicity/releases/tag/0.13.0) (2016-06-29)
 
 * Breaking changes:
@@ -17,7 +33,6 @@
   - Test with verbose
   - Add more tests
   - Add coverage
-
 
 # [0.12.0](https://github.com/camptocamp/conplicity/releases/tag/0.12.0) (2016-06-28)
 
