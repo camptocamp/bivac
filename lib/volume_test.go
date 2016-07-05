@@ -119,6 +119,18 @@ func ExampleStatusNoFullBackup() {
 	// conplicity{volume="Test",what="lastFullBackup"} 0
 }
 
+// ExampleStatusMetadataSync checks the status of a backup
+func ExampleStatusMetadataSync() {
+	fakeStdout = "Local and Remote metadata are synchronized, no sync needed.\r\n"
+	m, _ := fakeVol.Status()
+	fmt.Printf("Metrics: %s\n", strings.Join(m, "\n"))
+	// Output:
+	// Command: collection-status --s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption --name Test /foo
+	// Mounts: /mnt duplicity_cache:/root/.cache/duplicity
+	// Metrics: conplicity{volume="Test",what="lastBackup"} 0
+	// conplicity{volume="Test",what="lastFullBackup"} 0
+}
+
 // TestStatusNoFullBackupDate checks the status of a backup
 func TestStatusNoFullBackupDate(t *testing.T) {
 	fakeStdout = "Wrong stdout"
