@@ -2,7 +2,7 @@ language: go
 sudo: required
 services: docker
 go:
-- 1.7beta2
+- tip
 install:
 - go get ./...
 - go get github.com/bradfitz/goimports
