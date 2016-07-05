@@ -212,6 +212,18 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state int, s
 	err = c.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
 	CheckErr(err, "Failed to start container: %v", "fatal")
 
+	var exited bool
+
+	for !exited {
+		cont, err := c.ContainerInspect(context.Background(), container.ID)
+		CheckErr(err, "Failed to inspect container: %v", "error")
+
+		if cont.State.Status == "exited" {
+			exited = true
+			state = cont.State.ExitCode
+		}
+	}
+
 	body, err := c.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
@@ -225,11 +237,6 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state int, s
 	CheckErr(err, "Failed to read logs from response: %v", "error")
 
 	stdout = string(content)
-
-	cont, err := c.ContainerInspect(context.Background(), container.ID)
-	CheckErr(err, "Failed to inspect container: %v", "error")
-
-	state = cont.State.ExitCode
 
 	log.Debug(stdout)
 
