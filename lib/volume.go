@@ -177,10 +177,6 @@ func (v *Volume) Status() (metrics []string, err error) {
 			}
 
 		}
-	} else if strings.Contains(stdout, "metadata are synchronized") {
-		log.Warnf("Did not get any date information for %v", v.Name)
-		fullBackupDate = time.Unix(0, 0)
-		chainEndTimeDate = time.Unix(0, 0)
 	} else {
 		errMsg := fmt.Sprintf("Failed to parse Duplicity output for last full backup date of %v", v.Name)
 		err = errors.New(errMsg)
