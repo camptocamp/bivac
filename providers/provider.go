@@ -8,8 +8,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	conplicity "github.com/camptocamp/conplicity/lib"
+	docker "github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
-	"github.com/fsouza/go-dockerclient"
 )
 
 // A Provider is an interface for providers
@@ -75,7 +75,7 @@ func PrepareBackup(p Provider) (err error) {
 
 	// Work around https://github.com/docker/engine-api/issues/303
 	client, err := docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
-	CheckErr(err, "Failed to create new Docker client: %v", "fatal")
+	conplicity.CheckErr(err, "Failed to create new Docker client: %v", "fatal")
 
 	for _, container := range containers {
 		container, err := client.ContainerInspect(context.Background(), container.ID)
