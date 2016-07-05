@@ -88,11 +88,11 @@ func PrepareBackup(p Provider) (err error) {
 					},
 					)
 
-					conplicity.CheckErr(err, "Failed to create exec", "fatal")
+					conplicity.CheckErr(err, "Failed to create exec: %v", "fatal")
 
 					err = c.ContainerExecStart(context.Background(), exec.ID, types.ExecStartCheck{})
 
-					conplicity.CheckErr(err, "Failed to create exec", "fatal")
+					conplicity.CheckErr(err, "Failed to start exec: %v", "fatal")
 				} else {
 					log.WithFields(log.Fields{
 						"volume":    vol.Name,
