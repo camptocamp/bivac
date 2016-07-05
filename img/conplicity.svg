@@ -17,9 +17,9 @@
    height="579.15002"
    viewBox="0 0 579.15002 579.15002"
    sodipodi:docname="conplicity.svg"
-   inkscape:export-filename="/home/rpinson/go/src/github.com/camptocamp/conplicity/img/conplicity.png"
-   inkscape:export-xdpi="299.87775"
-   inkscape:export-ydpi="299.87775">
+   inkscape:export-filename="./conplicity_small.png"
+   inkscape:export-xdpi="81.976524"
+   inkscape:export-ydpi="81.976524">
   <metadata
      id="metadata4196">
     <rdf:RDF>
@@ -28,7 +28,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -100,15 +100,15 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1366"
-     inkscape:window-height="704"
+     inkscape:window-width="1918"
+     inkscape:window-height="1059"
      id="namedview4192"
      showgrid="false"
-     inkscape:zoom="1.2331483"
-     inkscape:cx="342.3088"
-     inkscape:cy="241.98962"
-     inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:zoom="2.4662966"
+     inkscape:cx="227.45814"
+     inkscape:cy="307.67119"
+     inkscape:window-x="1920"
+     inkscape:window-y="19"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg4190" />
   <g
@@ -217,7 +217,7 @@
   </g>
   <path
      inkscape:connector-curvature="0"
-     style="clip-rule:evenodd;fill:#3a4e55;fill-rule:evenodd"
+     style="clip-rule:evenodd;fill:#3a4e55;fill-rule:evenodd;fill-opacity:1"
      d="m 328.57841,320.90516 33.7,0 0,34.4 17,0 c 7.9,0 15.90001,-1.4 23.40001,-3.9 3.7,-1.2 7.8,-3 11.4,-5.1 -4.8,-6.2 -7.2,-14 -7.9,-21.8 -1,-10.5 1.1,-24.2 8.3,-32.4 l 3.5,-4.1 4.2,3.4 c 10.6,8.5 19.5,20.4 21.1,34 12.8,-3.8 27.8,-2.9 39,3.6 l 4.6,2.7 -2.4,4.7 c -9.5,18.6 -29.4,24.3 -48.9,23.3 -29.1,72.6 -92.60001,106.9 -169.50001,106.9 -39.7,0 -76.2,-14.9 -96.89999,-50.1 l -0.3,-0.6 -3,-6.2 c -7,-15.5 -9.3,-32.5 -7.8,-49.5 l 0.5,-5.1 28.8,0 0,-34.2 33.59999,0 0,-33.6 67.3,0 0,-33.7 40.4,0 0,67.3 z"
      id="path4237" />
   <path
@@ -382,9 +382,48 @@
      x="-377.48364"
      y="263.97702"
      transform="matrix(-0.97886039,0.20452955,0.20452955,0.97886039,0,0)" />
+  <path
+     inkscape:connector-curvature="0"
+     id="path3213"
+     sodipodi:nodetypes="ccc"
+     style="fill:none;stroke:#3a4e55;stroke-width:0.99683988px;stroke-opacity:1"
+     d="m 393.49229,244.90808 c -2.07776,13.06794 -16.61225,9.42506 -24.0272,4.56116 -2.37318,8.50678 4.74636,25.83316 4.74636,25.83316" />
+  <ellipse
+     cy="258.58707"
+     cx="376.87979"
+     id="path3215"
+     style="fill:#ffffff;fill-rule:evenodd;stroke:#808080;stroke-width:0.99683988;stroke-linecap:round"
+     rx="3.5597413"
+     ry="3.647897" />
+  <ellipse
+     cy="268.92337"
+     cx="378.66016"
+     id="path3217"
+     style="fill:#ffffff;fill-rule:evenodd;stroke:#808080;stroke-width:0.99683988;stroke-linecap:round"
+     rx="3.5597413"
+     ry="3.647897" />
+  <path
+     inkscape:connector-curvature="0"
+     id="path3219"
+     style="fill:#ffffff;fill-rule:evenodd;stroke:#3a4e55;stroke-width:2.63976932;stroke-linecap:round;stroke-opacity:1"
+     d="m 418.27731,157.38704 c 5.11502,1.48307 8.11598,6.76428 6.70698,11.77522 -1.22978,4.34582 -5.4022,7.07312 -9.82639,6.73708 l -6.84562,24.24299 -33.19006,-9.68745 6.84562,-24.24298 c -3.92503,-2.10361 -6.03069,-6.65701 -4.80091,-11.00284 1.42504,-5.01047 6.72561,-7.8697 11.84018,-6.37028 2.97967,0.86774 5.24868,3.02314 6.33138,5.66841 2.31112,-1.65156 5.33231,-2.26996 8.31151,-1.38588 2.97967,0.86774 5.23311,3.00634 6.33231,5.63574 2.29506,-1.652 5.31533,-2.23773 8.295,-1.37001 z" />
+  <path
+     style="fill:#d38d5f;fill-opacity:1;fill-rule:evenodd;stroke:#3a4e55;stroke-width:1.05841494px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 240.03755,222.01567 11.30492,-11.84833 c 67.65266,13.67062 64.49366,27.69327 -11.30492,11.84833 z"
+     id="path4354"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="ccc" />
+  <rect
+     style="fill:#d38d5f;fill-opacity:1;fill-rule:evenodd;stroke:#3a4e55;stroke-width:0.87815851px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     id="rect3506"
+     width="70.81295"
+     height="4.1357522"
+     x="338.37"
+     y="157.64069"
+     transform="matrix(0.9781476,0.20791169,-0.20791169,0.9781476,0,0)" />
   <g
      id="g5054"
-     transform="translate(165.47268,50.470481)">
+     transform="matrix(0.9781476,0.20791169,-0.20791169,0.9781476,132.50382,-5.2606002)">
     <rect
        ry="0"
        rx="0"
