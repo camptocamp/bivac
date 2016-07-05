@@ -42,7 +42,7 @@ func main() {
 }
 
 func backupVolume(c *conplicity.Conplicity, vol types.Volume) (err error) {
-	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" {
+	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" || vol.Name == "lost+found" {
 		log.WithFields(log.Fields{
 			"volume": vol.Name,
 			"reason": "unnamed",
