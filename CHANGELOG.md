@@ -1,3 +1,10 @@
+# [0.13.3](https://github.com/camptocamp/conplicity/releases/tag/0.13.3) (2016-07-05)
+
+* Bugfix:
+
+  - Blacklist lost+found (fix #68)
+  - Wait for container to exit before retrieving logs (fix #69)
+
 # [0.13.2](https://github.com/camptocamp/conplicity/releases/tag/0.13.2) (2016-07-05)
 
 * Bugfix:
@@ -8,7 +15,6 @@
 * Testing:
 
   - Add docker image testing
-
 
 # [0.13.1](https://github.com/camptocamp/conplicity/releases/tag/0.13.1) (2016-06-30)
 
