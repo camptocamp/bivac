@@ -3,7 +3,7 @@
 * Bugfix:
 
   - Fix logging in exec create
-  - Build on Go 1.7 to avoid https://github.com/docker/docker/issues/12845
+  - Create new Docker client for PrepareBackup (fix #70)
 
 * Testing:
 
