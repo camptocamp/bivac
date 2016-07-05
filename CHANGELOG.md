@@ -1,3 +1,15 @@
+# [0.13.2](https://github.com/camptocamp/conplicity/releases/tag/0.13.2) (2016-07-05)
+
+* Bugfix:
+
+  - Fix logging in exec create
+  - Build on Go 1.7 to avoid https://github.com/docker/docker/issues/12845
+
+* Testing:
+
+  - Add docker image testing
+
+
 # [0.13.1](https://github.com/camptocamp/conplicity/releases/tag/0.13.1) (2016-06-30)
 
 * Bugfix:
