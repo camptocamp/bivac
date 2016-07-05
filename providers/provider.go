@@ -9,6 +9,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	conplicity "github.com/camptocamp/conplicity/lib"
 	"github.com/docker/engine-api/types"
+	"github.com/fsouza/go-dockerclient"
 )
 
 // A Provider is an interface for providers
@@ -71,8 +72,13 @@ func PrepareBackup(p Provider) (err error) {
 	vol := p.GetVolume()
 	containers, err := c.ContainerList(context.Background(), types.ContainerListOptions{})
 	conplicity.CheckErr(err, "Failed to list containers: %v", "fatal")
+
+	// Work around https://github.com/docker/engine-api/issues/303
+	client, err := docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
+	CheckErr(err, "Failed to create new Docker client: %v", "fatal")
+
 	for _, container := range containers {
-		container, err := c.ContainerInspect(context.Background(), container.ID)
+		container, err := client.ContainerInspect(context.Background(), container.ID)
 		conplicity.CheckErr(err, "Failed to inspect container "+container.ID+": %v", "fatal")
 		for _, mount := range container.Mounts {
 			if mount.Name == vol.Name {
@@ -83,14 +89,14 @@ func PrepareBackup(p Provider) (err error) {
 
 				cmd := p.GetPrepareCommand(&mount)
 				if cmd != nil {
-					exec, err := c.ContainerExecCreate(context.Background(), container.ID, types.ExecConfig{
+					exec, err := client.ContainerExecCreate(context.Background(), container.ID, types.ExecConfig{
 						Cmd: p.GetPrepareCommand(&mount),
 					},
 					)
 
 					conplicity.CheckErr(err, "Failed to create exec: %v", "fatal")
 
-					err = c.ContainerExecStart(context.Background(), exec.ID, types.ExecStartCheck{})
+					err = client.ContainerExecStart(context.Background(), exec.ID, types.ExecStartCheck{})
 
 					conplicity.CheckErr(err, "Failed to start exec: %v", "fatal")
 				} else {
