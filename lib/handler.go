@@ -258,10 +258,13 @@ func (c *Conplicity) PushToPrometheus() (err error) {
 	}).Debug("Sending metrics to Prometheus Pushgateway")
 
 	req, err := http.NewRequest("PUT", url, bytes.NewBufferString(data))
+	CheckErr(err, "Failed to create HTTP request to send metrics to Prometheus: %v", "error")
+
 	req.Header.Set("Content-Type", "text/plain; version=0.0.4")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
+	CheckErr(err, "Failed to get HTTP response from sending metrics to Prometheus: %v", "error")
 
 	log.WithFields(log.Fields{
 		"resp": resp,
