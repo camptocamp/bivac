@@ -266,8 +266,12 @@ func (c *Conplicity) PushToPrometheus() (err error) {
 	resp, err := client.Do(req)
 	CheckErr(err, "Failed to get HTTP response from sending metrics to Prometheus: %v", "error")
 
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	CheckErr(err, "Failed to read HTTP response from sending metrics to Prometheus: %v", "error")
+
 	log.WithFields(log.Fields{
-		"resp": resp,
+		"resp": body,
 	}).Debug("Received Prometheus response")
 
 	return
