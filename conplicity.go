@@ -22,7 +22,7 @@ func main() {
 	err = c.Setup(version)
 	conplicity.CheckErr(err, "Failed to setup Conplicity handler: %v", "panic")
 
-	log.Infof("Starting backup...")
+	log.Infof("Conplity v%s starting backup...", version)
 
 	vols, err := c.VolumeList(context.Background(), filters.NewArgs())
 	conplicity.CheckErr(err, "Failed to list Docker volumes: %v", "panic")
