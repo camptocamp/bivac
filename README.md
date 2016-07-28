@@ -25,38 +25,44 @@ Usage:
   conplicity [OPTIONS]
 
 Application Options:
-  -V, --version             Display version.
-  -i, --image=              The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
-  -l, --loglevel=           Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic'). (default: info) [$CONPLICITY_LOG_LEVEL]
-  -b, --blacklist=          Volumes to blacklist in backups. [$CONPLICITY_VOLUMES_BLACKLIST]
-  -m, --manpage             Output manpage.
-      --no-verify           Do not verify backup. [$CONPLICITY_NO_VERIFY]
-  -j, --json                Log as JSON (to stderr). [$CONPLICITY_JSON_OUTPUT]
+  -V, --version                Display version.
+  -l, --loglevel=              Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic'). (default: info) [$CONPLICITY_LOG_LEVEL]
+  -b, --blacklist=             Volumes to blacklist in backups. [$CONPLICITY_VOLUMES_BLACKLIST]
+  -m, --manpage                Output manpage.
+      --no-verify              Do not verify backup. [$CONPLICITY_NO_VERIFY]
+  -j, --json                   Log as JSON (to stderr). [$CONPLICITY_JSON_OUTPUT]
+  -E, --engine=                Backup engine to use. (default: duplicity) [$CONPLICITY_ENGINE]
+  -H, --hostname-from-rancher  Retrieve hostname from Rancher metadata. [$CONPLICITY_HOSTNAME_FROM_RANCHER]
 
 Duplicity Options:
-  -u, --url=                The duplicity target URL to push to. [$DUPLICITY_TARGET_URL]
-      --full-if-older-than= The number of days after which a full backup must be performed. (default: 15D) [$CONPLICITY_FULL_IF_OLDER_THAN]
-      --remove-older-than=  The number days after which backups must be removed. (default: 30D) [$CONPLICITY_REMOVE_OLDER_THAN]
+      --duplicity-image=       The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
+      --duplicity-url=         The duplicity target URL to push to. [$DUPLICITY_TARGET_URL]
+      --full-if-older-than=    The number of days after which a full backup must be performed. (default: 15D) [$CONPLICITY_FULL_IF_OLDER_THAN]
+      --remove-older-than=     The number days after which backups must be removed. (default: 30D) [$CONPLICITY_REMOVE_OLDER_THAN]
+
+RClone Options:
+      --rclone-image=          The rclone docker image. (default: camptocamp/rclone:latest) [$RCLONE_DOCKER_IMAGE]
+      --rclone-url=            The RClone target URL to push to. [$RCLONE_TARGET_URL]
 
 Metrics Options:
-  -g, --gateway-url=        The prometheus push gateway URL to use. [$PUSHGATEWAY_URL]
+  -g, --gateway-url=           The prometheus push gateway URL to use. [$PUSHGATEWAY_URL]
 
 AWS Options:
-      --aws-access-key-id=  The AWS access key ID. [$AWS_ACCESS_KEY_ID]
-      --aws-secret-key-id=  The AWS secret access key. [$AWS_SECRET_ACCESS_KEY]
+      --aws-access-key-id=     The AWS access key ID. [$AWS_ACCESS_KEY_ID]
+      --aws-secret-key-id=     The AWS secret access key. [$AWS_SECRET_ACCESS_KEY]
 
 Swift Options:
-      --swift-username=     The Swift user name. [$SWIFT_USERNAME]
-      --swift-password=     The Swift password. [$SWIFT_PASSWORD]
-      --swift-auth_url=     The Swift auth URL. [$SWIFT_AUTHURL]
-      --swift-tenant-name=  The Swift tenant name. [$SWIFT_TENANTNAME]
-      --swift-region-name=  The Swift region name. [$SWIFT_REGIONNAME]
+      --swift-username=        The Swift user name. [$SWIFT_USERNAME]
+      --swift-password=        The Swift password. [$SWIFT_PASSWORD]
+      --swift-auth_url=        The Swift auth URL. [$SWIFT_AUTHURL]
+      --swift-tenant-name=     The Swift tenant name. [$SWIFT_TENANTNAME]
+      --swift-region-name=     The Swift region name. [$SWIFT_REGIONNAME]
 
 Docker Options:
-  -e, --docker-endpoint=    The Docker endpoint. (default: unix:///var/run/docker.sock) [$DOCKER_ENDPOINT]
+  -e, --docker-endpoint=       The Docker endpoint. (default: unix:///var/run/docker.sock) [$DOCKER_ENDPOINT]
 
 Help Options:
-  -h, --help                Show this help message
+  -h, --help                   Show this help message
 ```
 
 ## Examples
@@ -101,3 +107,10 @@ Conplicity detects automatically the kind of data that is stored on a volume and
 * OpenLDAP: Run `slapcat` before backup
 * Default: Backup volume data as is
 
+
+## Engines
+
+Conplicity supports various engines for performing the backup:
+
+* Duplicity
+* RClone: use for heavy data that Duplicity cannot manage efficiently
