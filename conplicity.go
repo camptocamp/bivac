@@ -34,17 +34,6 @@ func main() {
 		voll, err := c.VolumeInspect(context.Background(), vol.Name)
 		util.CheckErr(err, "Failed to inspect volume "+vol.Name+": %v", "fatal")
 
-		list := c.Config.VolumesBlacklist
-		i := sort.SearchStrings(list, vol.Name)
-		if i < len(list) && list[i] == vol.Name {
-			log.WithFields(log.Fields{
-				"volume": vol.Name,
-				"reason": "blacklisted",
-				"source": "blacklist config",
-			}).Info("Ignoring volume")
-			continue
-		}
-
 		metrics, err := backupVolume(c, &voll)
 		util.CheckErr(err, "Failed to process volume "+vol.Name+": %v", "fatal")
 		c.Metrics = append(c.Metrics, metrics...)
@@ -57,20 +46,21 @@ func main() {
 }
 
 func backupVolume(c *conplicity.Conplicity, vol *types.Volume) (metrics []string, err error) {
-	fullIfOlderThan, _ := util.GetVolumeLabel(vol, ".full_if_older_than")
-	if fullIfOlderThan == "" {
-		fullIfOlderThan = c.Config.Duplicity.FullIfOlderThan
-	}
-
-	removeOlderThan, _ := util.GetVolumeLabel(vol, ".remove_older_than")
-	if removeOlderThan == "" {
-		removeOlderThan = c.Config.Duplicity.RemoveOlderThan
-	}
-
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" || vol.Name == "lost+found" {
 		log.WithFields(log.Fields{
 			"volume": vol.Name,
 			"reason": "unnamed",
+		}).Info("Ignoring volume")
+		return
+	}
+
+	list := c.Config.VolumesBlacklist
+	i := sort.SearchStrings(list, vol.Name)
+	if i < len(list) && list[i] == vol.Name {
+		log.WithFields(log.Fields{
+			"volume": vol.Name,
+			"reason": "blacklisted",
+			"source": "blacklist config",
 		}).Info("Ignoring volume")
 		return
 	}
@@ -82,6 +72,16 @@ func backupVolume(c *conplicity.Conplicity, vol *types.Volume) (metrics []string
 			"source": "volume label",
 		}).Info("Ignoring volume")
 		return
+	}
+
+	fullIfOlderThan, _ := util.GetVolumeLabel(vol, ".full_if_older_than")
+	if fullIfOlderThan == "" {
+		fullIfOlderThan = c.Config.Duplicity.FullIfOlderThan
+	}
+
+	removeOlderThan, _ := util.GetVolumeLabel(vol, ".remove_older_than")
+	if removeOlderThan == "" {
+		removeOlderThan = c.Config.Duplicity.RemoveOlderThan
 	}
 
 	v := &volume.Volume{
