@@ -24,7 +24,10 @@ func main() {
 
 	for _, vol := range vols {
 		metrics, err := backupVolume(c, vol)
-		util.CheckErr(err, "Failed to process volume "+vol.Name+": %v", "fatal")
+		if err != nil {
+			log.Errorf("Failed to backup volume %s: %v", vol.Name, err)
+			continue
+		}
 		c.Metrics = append(c.Metrics, metrics...)
 	}
 
