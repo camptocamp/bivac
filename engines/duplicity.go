@@ -41,20 +41,19 @@ func (*DuplicityEngine) GetName() string {
 
 // Backup performs the backup of the passed volume
 func (d *DuplicityEngine) Backup() (metrics []string, err error) {
-	v := d.Volume
-	vol := v.Volume
+	vol := d.Volume
 	log.WithFields(log.Fields{
 		"volume":     vol.Name,
 		"driver":     vol.Driver,
 		"mountpoint": vol.Mountpoint,
 	}).Info("Creating duplicity container")
 
-	fullIfOlderThan, _ := util.GetVolumeLabel(vol, ".full_if_older_than")
+	fullIfOlderThan, _ := util.GetVolumeLabel(vol.Volume, ".full_if_older_than")
 	if fullIfOlderThan == "" {
 		fullIfOlderThan = d.Config.Duplicity.FullIfOlderThan
 	}
 
-	removeOlderThan, _ := util.GetVolumeLabel(vol, ".remove_older_than")
+	removeOlderThan, _ := util.GetVolumeLabel(vol.Volume, ".remove_older_than")
 	if removeOlderThan == "" {
 		removeOlderThan = d.Config.Duplicity.RemoveOlderThan
 	}
@@ -65,39 +64,39 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 		pathSeparator = "_"
 	}
 
-	backupDir := v.BackupDir
+	backupDir := vol.BackupDir
 	hostname, _ := os.Hostname()
-	v.Target = d.Config.Duplicity.TargetURL + pathSeparator + hostname + pathSeparator + vol.Name
-	v.BackupDir = vol.Mountpoint + "/" + backupDir
-	v.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
-	v.FullIfOlderThan = fullIfOlderThan
-	v.RemoveOlderThan = removeOlderThan
+	vol.Target = d.Config.Duplicity.TargetURL + pathSeparator + hostname + pathSeparator + vol.Name
+	vol.BackupDir = vol.Mountpoint + "/" + backupDir
+	vol.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
+	vol.FullIfOlderThan = fullIfOlderThan
+	vol.RemoveOlderThan = removeOlderThan
 
 	var newMetrics []string
 
-	newMetrics, err = d.duplicityBackup(v)
+	newMetrics, err = d.duplicityBackup(vol)
 	util.CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", "fatal")
 	metrics = append(metrics, newMetrics...)
 
-	_, err = d.removeOld(v)
+	_, err = d.removeOld(vol)
 	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", "fatal")
 
-	_, err = d.cleanup(v)
+	_, err = d.cleanup(vol)
 	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", "fatal")
 
-	noVerifyLbl, _ := util.GetVolumeLabel(vol, ".no_verify")
+	noVerifyLbl, _ := util.GetVolumeLabel(vol.Volume, ".no_verify")
 	noVerify := d.Config.NoVerify || (noVerifyLbl == "true")
 	if noVerify {
 		log.WithFields(log.Fields{
 			"volume": vol.Name,
 		}).Info("Skipping verification")
 	} else {
-		newMetrics, err = d.verify(v)
+		newMetrics, err = d.verify(vol)
 		util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", "fatal")
 		metrics = append(metrics, newMetrics...)
 	}
 
-	newMetrics, err = d.status(v)
+	newMetrics, err = d.status(vol)
 	util.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", "fatal")
 	metrics = append(metrics, newMetrics...)
 
