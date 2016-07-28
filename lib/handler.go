@@ -22,7 +22,6 @@ import (
 // Config stores the handler's configuration and UI interface parameters
 type Config struct {
 	Version          bool     `short:"V" long:"version" description:"Display version."`
-	Image            string   `short:"i" long:"image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
 	Loglevel         string   `short:"l" long:"loglevel" description:"Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic')." env:"CONPLICITY_LOG_LEVEL" default:"info"`
 	VolumesBlacklist []string `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"CONPLICITY_VOLUMES_BLACKLIST" env-delim:","`
 	Manpage          bool     `short:"m" long:"manpage" description:"Output manpage."`
@@ -30,6 +29,7 @@ type Config struct {
 	JSON             bool     `short:"j" long:"json" description:"Log as JSON (to stderr)." env:"CONPLICITY_JSON_OUTPUT"`
 
 	Duplicity struct {
+		Image           string `short:"i" long:"duplicity-image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
 		TargetURL       string `short:"u" long:"url" description:"The duplicity target URL to push to." env:"DUPLICITY_TARGET_URL"`
 		FullIfOlderThan string `long:"full-if-older-than" description:"The number of days after which a full backup must be performed." env:"CONPLICITY_FULL_IF_OLDER_THAN" default:"15D"`
 		RemoveOlderThan string `long:"remove-older-than" description:"The number days after which backups must be removed." env:"CONPLICITY_REMOVE_OLDER_THAN" default:"30D"`
@@ -142,12 +142,12 @@ func (c *Conplicity) setupLoglevel() (err error) {
 }
 
 func (c *Conplicity) pullImage() (err error) {
-	if _, _, err = c.ImageInspectWithRaw(context.Background(), c.Config.Image, false); err != nil {
+	if _, _, err = c.ImageInspectWithRaw(context.Background(), c.Config.Duplicity.Image, false); err != nil {
 		// TODO: output pull to logs
 		log.WithFields(log.Fields{
-			"image": c.Config.Image,
+			"image": c.Config.Duplicity.Image,
 		}).Info("Pulling image")
-		resp, err := c.Client.ImagePull(context.Background(), c.Config.Image, types.ImagePullOptions{})
+		resp, err := c.Client.ImagePull(context.Background(), c.Config.Duplicity.Image, types.ImagePullOptions{})
 		if err != nil {
 			log.Errorf("ImagePull returned an error: %v", err)
 			return err
@@ -161,7 +161,7 @@ func (c *Conplicity) pullImage() (err error) {
 		log.Debugf("Pull image response body: %v", body)
 	} else {
 		log.WithFields(log.Fields{
-			"image": c.Config.Image,
+			"image": c.Config.Duplicity.Image,
 		}).Debug("Image already pulled, not pulling")
 	}
 
@@ -182,7 +182,7 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state int, s
 	}
 
 	log.WithFields(log.Fields{
-		"image":       c.Config.Image,
+		"image":       c.Config.Duplicity.Image,
 		"command":     strings.Join(cmd, " "),
 		"environment": strings.Join(env, ", "),
 		"binds":       strings.Join(binds, ", "),
@@ -193,7 +193,7 @@ func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state int, s
 		&container.Config{
 			Cmd:          cmd,
 			Env:          env,
-			Image:        c.Config.Image,
+			Image:        c.Config.Duplicity.Image,
 			OpenStdin:    true,
 			StdinOnce:    true,
 			AttachStdin:  true,
