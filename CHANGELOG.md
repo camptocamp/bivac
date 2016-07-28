@@ -1,11 +1,22 @@
+# [0.21.0](https://github.com/camptocamp/conplicity/releases/tag/0.21.0) (2016-07-28)
+
+* Internals:
+
+  - Rename lib/ as handler/
+  - Add NewConplicity() method
+  - Don't use panic
+  - Inspect volumes in GetVolumes()
+  - Propagate errors instead of crashing (fix #65)
+  - Add metrics.go
+
 # [0.20.0](https://github.com/camptocamp/conplicity/releases/tag/0.20.0) (2016-07-28)
 
 * Features:
 
   - Output version in logs
   - Make backup engine pluggable
-  - Add RClone engine
-  - Add option to get host name from Rancher metadata
+  - Add RClone engine (fix #71, #76)
+  - Add option to get host name from Rancher metadata (fix #73)
 
 * Internals:
 
