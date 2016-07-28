@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	log "github.com/Sirupsen/logrus"
@@ -52,7 +53,10 @@ func backupVolume(c *handler.Conplicity, vol *volume.Volume) (metrics []string, 
 		"provider": p.GetName(),
 	}).Info("Found data provider")
 	err = providers.PrepareBackup(p)
-	util.CheckErr(err, "Failed to prepare backup for volume "+vol.Name+": %v", "fatal")
+	if err != nil {
+		err = fmt.Errorf("failed to prepare backup: %v", err)
+		return
+	}
 
 	e := engines.GetEngine(c, vol)
 	log.WithFields(log.Fields{
@@ -61,6 +65,9 @@ func backupVolume(c *handler.Conplicity, vol *volume.Volume) (metrics []string, 
 	}).Info("Found backup engine")
 
 	metrics, err = e.Backup()
-	util.CheckErr(err, "Failed to backup volume "+vol.Name+": %v", "fatal")
+	if err != nil {
+		err = fmt.Errorf("failed to backup volume: %v", err)
+		return
+	}
 	return
 }
