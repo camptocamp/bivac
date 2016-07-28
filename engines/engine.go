@@ -27,6 +27,12 @@ func GetEngine(c *conplicity.Conplicity, v *volume.Volume) Engine {
 			Docker: c.Client,
 			Volume: v,
 		}
+	case "rclone":
+		return &RCloneEngine{
+			Config: c.Config,
+			Docker: c.Client,
+			Volume: v,
+		}
 	}
 
 	log.Fatalf("Unknown engine %s", engine)
