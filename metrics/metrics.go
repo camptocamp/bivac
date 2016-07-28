@@ -11,6 +11,7 @@ import (
 	"github.com/camptocamp/conplicity/handler"
 )
 
+// PrometheusMetrics is a struct to push metrics to Prometheus
 type PrometheusMetrics struct {
 	Handler *handler.Conplicity
 }
@@ -22,7 +23,7 @@ func NewMetrics(c *handler.Conplicity) *PrometheusMetrics {
 	}
 }
 
-// PushToPrometheus sends metrics to a Prometheus push gateway
+// Push sends metrics to a Prometheus push gateway
 func (p *PrometheusMetrics) Push() (err error) {
 	c := p.Handler
 	if len(c.Metrics) == 0 || c.Config.Metrics.PushgatewayURL == "" {
