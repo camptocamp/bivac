@@ -69,14 +69,14 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 
 	var newMetrics []string
 
-	newMetrics, err = d.duplicityBackup(vol)
+	newMetrics, err = d.duplicityBackup()
 	util.CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", "fatal")
 	metrics = append(metrics, newMetrics...)
 
-	_, err = d.removeOld(vol)
+	_, err = d.removeOld()
 	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", "fatal")
 
-	_, err = d.cleanup(vol)
+	_, err = d.cleanup()
 	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", "fatal")
 
 	noVerifyLbl, _ := util.GetVolumeLabel(vol.Volume, ".no_verify")
@@ -86,12 +86,12 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 			"volume": vol.Name,
 		}).Info("Skipping verification")
 	} else {
-		newMetrics, err = d.verify(vol)
+		newMetrics, err = d.verify()
 		util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", "fatal")
 		metrics = append(metrics, newMetrics...)
 	}
 
-	newMetrics, err = d.status(vol)
+	newMetrics, err = d.status()
 	util.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", "fatal")
 	metrics = append(metrics, newMetrics...)
 
@@ -99,7 +99,8 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 }
 
 // removeOld cleans up old backup data
-func (d *DuplicityEngine) removeOld(v *volume.Volume) (metrics []string, err error) {
+func (d *DuplicityEngine) removeOld() (metrics []string, err error) {
+	v := d.Volume
 	_, _, err = d.launchDuplicity(
 		[]string{
 			"remove-older-than", v.RemoveOlderThan,
@@ -119,7 +120,8 @@ func (d *DuplicityEngine) removeOld(v *volume.Volume) (metrics []string, err err
 }
 
 // cleanup removes old index data from duplicity
-func (d *DuplicityEngine) cleanup(v *volume.Volume) (metrics []string, err error) {
+func (d *DuplicityEngine) cleanup() (metrics []string, err error) {
+	v := d.Volume
 	_, _, err = d.launchDuplicity(
 		[]string{
 			"cleanup",
@@ -140,7 +142,8 @@ func (d *DuplicityEngine) cleanup(v *volume.Volume) (metrics []string, err error
 }
 
 // verify checks that the backup is usable
-func (d *DuplicityEngine) verify(v *volume.Volume) (metrics []string, err error) {
+func (d *DuplicityEngine) verify() (metrics []string, err error) {
+	v := d.Volume
 	state, _, err := d.launchDuplicity(
 		[]string{
 			"verify",
@@ -167,7 +170,8 @@ func (d *DuplicityEngine) verify(v *volume.Volume) (metrics []string, err error)
 }
 
 // status gets the latest backup date info from duplicity
-func (d *DuplicityEngine) status(v *volume.Volume) (metrics []string, err error) {
+func (d *DuplicityEngine) status() (metrics []string, err error) {
+	v := d.Volume
 	_, stdout, err := d.launchDuplicity(
 		[]string{
 			"collection-status",
@@ -304,7 +308,8 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state i
 }
 
 // duplicityBackup performs the backup of a volume with duplicity
-func (d *DuplicityEngine) duplicityBackup(v *volume.Volume) (metrics []string, err error) {
+func (d *DuplicityEngine) duplicityBackup() (metrics []string, err error) {
+	v := d.Volume
 	log.WithFields(log.Fields{
 		"name":               v.Name,
 		"backup_dir":         v.BackupDir,
