@@ -20,7 +20,7 @@ func main() {
 
 	c := &conplicity.Conplicity{}
 	err = c.Setup(version)
-	conplicity.CheckErr(err, "Failed to setup Conplicity handler: %v", "panic")
+	conplicity.CheckErr(err, "Failed to setup Conplicity handler: %v", "fatal")
 
 	log.Infof("Conplity v%s starting backup...", version)
 

@@ -71,10 +71,10 @@ func (c *Conplicity) Setup(version string) (err error) {
 	c.getEnv(version)
 
 	err = c.setupLoglevel()
-	CheckErr(err, "Failed to setup log level: %v", "panic")
+	CheckErr(err, "Failed to setup log level: %v", "fatal")
 
 	c.Hostname, err = os.Hostname()
-	CheckErr(err, "Failed to get hostname: %v", "panic")
+	CheckErr(err, "Failed to get hostname: %v", "fatal")
 
 	err = c.SetupDocker()
 	CheckErr(err, "Failed to setup docker: %v", "fatal")
