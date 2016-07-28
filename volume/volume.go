@@ -9,8 +9,7 @@ type Handler interface {
 
 // Volume provides backup methods for a single Docker volume
 type Volume struct {
-	Name            string
-	Volume          *types.Volume
+	*types.Volume
 	Target          string
 	BackupDir       string
 	Mount           string
@@ -20,7 +19,6 @@ type Volume struct {
 
 func NewVolume(v *types.Volume) *Volume {
 	return &Volume{
-		Name:   v.Name,
 		Volume: v,
 	}
 }
