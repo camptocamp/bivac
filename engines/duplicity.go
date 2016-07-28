@@ -266,18 +266,6 @@ func (d *DuplicityEngine) Backup(v *volume.Volume) (metrics []string, err error)
 	v.BackupDir = vol.Mountpoint + "/" + backupDir
 	v.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
 
-	/*
-		volume := &volume.Volume{
-			Name:            vol.Name,
-			Target:          fullTarget,
-			BackupDir:       fullBackupDir,
-			Mount:           roMount,
-			FullIfOlderThan: fullIfOlderThan,
-			RemoveOlderThan: removeOlderThan,
-			Client:          c,
-		}
-	*/
-
 	var newMetrics []string
 
 	newMetrics, err = d.DuplicityBackup(v)
