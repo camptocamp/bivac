@@ -2,7 +2,7 @@ package engines
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/lib"
+	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 )
@@ -14,7 +14,7 @@ type Engine interface {
 }
 
 // GetEngine returns the engine for passed volume
-func GetEngine(c *conplicity.Conplicity, v *volume.Volume) Engine {
+func GetEngine(c *handler.Conplicity, v *volume.Volume) Engine {
 	engine, _ := util.GetVolumeLabel(v.Volume, ".engine")
 	if engine == "" {
 		engine = c.Config.Engine

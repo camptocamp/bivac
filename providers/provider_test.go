@@ -7,7 +7,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/config"
-	"github.com/camptocamp/conplicity/lib"
+	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/engine-api/types"
 )
@@ -22,7 +22,7 @@ func TestGetProvider(t *testing.T) {
 	defer os.RemoveAll(dir)
 	ioutil.WriteFile(dir+"/PG_VERSION", []byte{}, 0644)
 
-	p = GetProvider(&conplicity.Conplicity{}, &volume.Volume{
+	p = GetProvider(&handler.Conplicity{}, &volume.Volume{
 		Volume: &types.Volume{
 			Mountpoint: dir,
 		}})
@@ -37,7 +37,7 @@ func TestGetProvider(t *testing.T) {
 	defer os.RemoveAll(dir)
 	os.Mkdir(dir+"/mysql", 0755)
 
-	p = GetProvider(&conplicity.Conplicity{}, &volume.Volume{
+	p = GetProvider(&handler.Conplicity{}, &volume.Volume{
 		Volume: &types.Volume{
 			Mountpoint: dir,
 		}})
@@ -52,7 +52,7 @@ func TestGetProvider(t *testing.T) {
 	defer os.RemoveAll(dir)
 	ioutil.WriteFile(dir+"/DB_CONFIG", []byte{}, 0644)
 
-	p = GetProvider(&conplicity.Conplicity{}, &volume.Volume{
+	p = GetProvider(&handler.Conplicity{}, &volume.Volume{
 		Volume: &types.Volume{
 			Mountpoint: dir,
 		}})
@@ -66,7 +66,7 @@ func TestGetProvider(t *testing.T) {
 	dir, _ = ioutil.TempDir("", "test_get_provider_default")
 	defer os.RemoveAll(dir)
 
-	p = GetProvider(&conplicity.Conplicity{}, &volume.Volume{
+	p = GetProvider(&handler.Conplicity{}, &volume.Volume{
 		Volume: &types.Volume{
 			Mountpoint: dir,
 		}})
@@ -83,7 +83,7 @@ func TestPrepareBackup(t *testing.T) {
 
 	p := &DefaultProvider{
 		BaseProvider: &BaseProvider{
-			handler: &conplicity.Conplicity{},
+			handler: &handler.Conplicity{},
 			vol: &volume.Volume{
 				Volume: &types.Volume{
 					Name:       dir,
@@ -114,7 +114,7 @@ func TestBaseGetHandler(t *testing.T) {
 	expected := ""
 
 	p := &BaseProvider{
-		handler: &conplicity.Conplicity{},
+		handler: &handler.Conplicity{},
 	}
 	got := p.GetHandler().Hostname
 	if expected != got {

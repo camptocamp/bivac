@@ -8,7 +8,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/engines"
-	"github.com/camptocamp/conplicity/lib"
+	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/providers"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
@@ -21,7 +21,7 @@ var version = "undefined"
 func main() {
 	var err error
 
-	c := &conplicity.Conplicity{}
+	c := &handler.Conplicity{}
 	err = c.Setup(version)
 	util.CheckErr(err, "Failed to setup Conplicity handler: %v", "fatal")
 
@@ -45,7 +45,7 @@ func main() {
 	log.Infof("End backup...")
 }
 
-func backupVolume(c *conplicity.Conplicity, vol *types.Volume) (metrics []string, err error) {
+func backupVolume(c *handler.Conplicity, vol *types.Volume) (metrics []string, err error) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" || vol.Name == "lost+found" {
 		log.WithFields(log.Fields{
 			"volume": vol.Name,

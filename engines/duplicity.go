@@ -9,7 +9,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/lib"
+	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/engine-api/types"
@@ -19,7 +19,7 @@ import (
 
 // DuplicityEngine implements a backup engine with Duplicity
 type DuplicityEngine struct {
-	Handler *conplicity.Conplicity
+	Handler *handler.Conplicity
 	Volume  *volume.Volume
 }
 

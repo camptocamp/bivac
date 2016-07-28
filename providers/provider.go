@@ -6,7 +6,7 @@ import (
 	"golang.org/x/net/context"
 
 	log "github.com/Sirupsen/logrus"
-	conplicity "github.com/camptocamp/conplicity/lib"
+	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 	docker "github.com/docker/engine-api/client"
@@ -17,7 +17,7 @@ import (
 type Provider interface {
 	GetName() string
 	GetPrepareCommand(*types.MountPoint) []string
-	GetHandler() *conplicity.Conplicity
+	GetHandler() *handler.Conplicity
 	GetVolume() *volume.Volume
 	GetBackupDir() string
 	SetVolumeBackupDir()
@@ -25,13 +25,13 @@ type Provider interface {
 
 // BaseProvider is a struct implementing the Provider interface
 type BaseProvider struct {
-	handler   *conplicity.Conplicity
+	handler   *handler.Conplicity
 	vol       *volume.Volume
 	backupDir string
 }
 
 // GetProvider detects which provider suits the passed volume and returns it
-func GetProvider(c *conplicity.Conplicity, vol *volume.Volume) Provider {
+func GetProvider(c *handler.Conplicity, vol *volume.Volume) Provider {
 	v := vol
 	log.WithFields(log.Fields{
 		"volume": v.Name,
@@ -116,7 +116,7 @@ func PrepareBackup(p Provider) (err error) {
 }
 
 // GetHandler returns the handler associated with the provider
-func (p *BaseProvider) GetHandler() *conplicity.Conplicity {
+func (p *BaseProvider) GetHandler() *handler.Conplicity {
 	return p.handler
 }
 
