@@ -21,8 +21,7 @@ var version = "undefined"
 func main() {
 	var err error
 
-	c := &handler.Conplicity{}
-	err = c.Setup(version)
+	c, err := handler.NewConplicity(version)
 	util.CheckErr(err, "Failed to setup Conplicity handler: %v", "fatal")
 
 	log.Infof("Conplity v%s starting backup...", version)

@@ -23,6 +23,13 @@ type Conplicity struct {
 	Metrics  []string
 }
 
+// NewConplicity returns a new Conplicity handler
+func NewConplicity(version string) (*Conplicity, error) {
+	c := &Conplicity{}
+	err := c.Setup(version)
+	return c, err
+}
+
 // Setup sets up a Conplicity struct
 func (c *Conplicity) Setup(version string) (err error) {
 	c.Config = config.LoadConfig(version)
