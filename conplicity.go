@@ -7,6 +7,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/engines"
 	"github.com/camptocamp/conplicity/handler"
+	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/providers"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
@@ -36,7 +37,8 @@ func main() {
 		c.Metrics = append(c.Metrics, metrics...)
 	}
 
-	err = c.PushToPrometheus()
+	m := metrics.NewMetrics(c)
+	err = m.Push()
 	if err != nil {
 		log.Errorf("Failed to post data to Prometheus Pushgateway: %v", err)
 		exitCode = 2

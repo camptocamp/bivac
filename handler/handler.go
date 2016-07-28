@@ -1,14 +1,12 @@
 package handler
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"sort"
-	"strings"
 	"unicode/utf8"
 
 	"golang.org/x/net/context"
@@ -147,49 +145,6 @@ func (c *Conplicity) setupLoglevel() (err error) {
 	if c.Config.JSON {
 		log.SetFormatter(&log.JSONFormatter{})
 	}
-
-	return
-}
-
-// PushToPrometheus sends metrics to a Prometheus push gateway
-func (c *Conplicity) PushToPrometheus() (err error) {
-	if len(c.Metrics) == 0 || c.Config.Metrics.PushgatewayURL == "" {
-		return
-	}
-
-	url := c.Config.Metrics.PushgatewayURL + "/metrics/job/conplicity/instance/" + c.Hostname
-	data := strings.Join(c.Metrics, "\n") + "\n"
-
-	log.WithFields(log.Fields{
-		"data": data,
-		"url":  url,
-	}).Debug("Sending metrics to Prometheus Pushgateway")
-
-	req, err := http.NewRequest("PUT", url, bytes.NewBufferString(data))
-	if err != nil {
-		err = fmt.Errorf("failed to create HTTP request: %v", err)
-		return
-	}
-
-	req.Header.Set("Content-Type", "text/plain; version=0.0.4")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		err = fmt.Errorf("failed to get HTTP response: %v", err)
-		return
-	}
-
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		err = fmt.Errorf("failed to read HTTP response: %v", err)
-		return
-	}
-
-	log.WithFields(log.Fields{
-		"resp": body,
-	}).Debug("Received Prometheus response")
 
 	return
 }
