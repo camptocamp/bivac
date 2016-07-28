@@ -114,3 +114,13 @@ Conplicity supports various engines for performing the backup:
 
 * Duplicity
 * RClone: use for heavy data that Duplicity cannot manage efficiently
+
+
+## Return code
+
+Conplicity returns:
+
+* `0` if nothing failed
+* `1` if a backup failed
+* `2` if pushing metrics to Prometheus failed
+
