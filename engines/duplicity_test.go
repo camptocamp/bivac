@@ -5,19 +5,18 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/camptocamp/conplicity/config"
-	"github.com/camptocamp/conplicity/lib"
 	"github.com/camptocamp/conplicity/volume"
-	docker "github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
 )
 
-// Set up mocked Conplicity handler
-type fakeHandler struct{}
+// Set up mocked Engine
+type fakeEngine struct {
+	*DuplicityEngine
+}
 
 var fakeStdout string
 
-func (h *fakeHandler) LaunchDuplicity(c, m []string) (state int, stdout string, err error) {
+func (h *fakeEngine) launchDuplicity(c, m []string) (state int, stdout string, err error) {
 	fmt.Printf("Command: %s\n", strings.Join(c, " "))
 	fmt.Printf("Mounts: %s\n", strings.Join(m, " "))
 
@@ -39,13 +38,16 @@ var fakeVol = &volume.Volume{
 	RemoveOlderThan: "1Y",
 }
 
+/*
 var client, _ = docker.NewClient("unix:///var/run/docker.sock", "", nil, nil)
 var fakeEngine = &DuplicityEngine{
 	Handler: &conplicity.Conplicity{
 		Config: &config.Config{},
 		Client: client,
 	},
+	Volume: fakeVol,
 }
+*/
 
 // ExampleBackup checks the launching of a volume backup
 func ExampleBackup() {
@@ -109,7 +111,6 @@ func ExampleStatusNoFullBackup() {
 
 // TestStatusNoFullBackupDate checks the status of a backup
 func TestStatusNoFullBackupDate(t *testing.T) {
-	fakeEngine.Handler.Config.Duplicity.Image = "camptocamp/duplicity:latest"
 	fakeStdout = "Wrong stdout"
 	_, err := fakeEngine.status(fakeVol)
 
