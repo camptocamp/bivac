@@ -4,15 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"regexp"
 	"strings"
 	"time"
 
-	docker "github.com/docker/engine-api/client"
-
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/config"
+	"github.com/camptocamp/conplicity/lib"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/engine-api/types"
@@ -22,9 +19,8 @@ import (
 
 // DuplicityEngine implements a backup engine with Duplicity
 type DuplicityEngine struct {
-	Config *config.Config
-	Docker *docker.Client
-	Volume *volume.Volume
+	Handler *conplicity.Conplicity
+	Volume  *volume.Volume
 }
 
 // Constants
@@ -50,23 +46,22 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 
 	fullIfOlderThan, _ := util.GetVolumeLabel(vol.Volume, ".full_if_older_than")
 	if fullIfOlderThan == "" {
-		fullIfOlderThan = d.Config.Duplicity.FullIfOlderThan
+		fullIfOlderThan = d.Handler.Config.Duplicity.FullIfOlderThan
 	}
 
 	removeOlderThan, _ := util.GetVolumeLabel(vol.Volume, ".remove_older_than")
 	if removeOlderThan == "" {
-		removeOlderThan = d.Config.Duplicity.RemoveOlderThan
+		removeOlderThan = d.Handler.Config.Duplicity.RemoveOlderThan
 	}
 
 	pathSeparator := "/"
-	if strings.HasPrefix(d.Config.Duplicity.TargetURL, "swift://") {
+	if strings.HasPrefix(d.Handler.Config.Duplicity.TargetURL, "swift://") {
 		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity
 		pathSeparator = "_"
 	}
 
 	backupDir := vol.BackupDir
-	hostname, _ := os.Hostname()
-	vol.Target = d.Config.Duplicity.TargetURL + pathSeparator + hostname + pathSeparator + vol.Name
+	vol.Target = d.Handler.Config.Duplicity.TargetURL + pathSeparator + d.Handler.Hostname + pathSeparator + vol.Name
 	vol.BackupDir = vol.Mountpoint + "/" + backupDir
 	vol.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
 	vol.FullIfOlderThan = fullIfOlderThan
@@ -85,7 +80,7 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", "fatal")
 
 	noVerifyLbl, _ := util.GetVolumeLabel(vol.Volume, ".no_verify")
-	noVerify := d.Config.NoVerify || (noVerifyLbl == "true")
+	noVerify := d.Handler.Config.NoVerify || (noVerifyLbl == "true")
 	if noVerify {
 		log.WithFields(log.Fields{
 			"volume": vol.Name,
@@ -232,33 +227,33 @@ func (d *DuplicityEngine) status(v *volume.Volume) (metrics []string, err error)
 
 // launchDuplicity starts a duplicity container with given command and binds
 func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state int, stdout string, err error) {
-	util.PullImage(d.Docker, d.Config.Duplicity.Image)
+	util.PullImage(d.Handler.Client, d.Handler.Config.Duplicity.Image)
 	util.CheckErr(err, "Failed to pull image: %v", "fatal")
 
 	env := []string{
-		"AWS_ACCESS_KEY_ID=" + d.Config.AWS.AccessKeyID,
-		"AWS_SECRET_ACCESS_KEY=" + d.Config.AWS.SecretAccessKey,
-		"SWIFT_USERNAME=" + d.Config.Swift.Username,
-		"SWIFT_PASSWORD=" + d.Config.Swift.Password,
-		"SWIFT_AUTHURL=" + d.Config.Swift.AuthURL,
-		"SWIFT_TENANTNAME=" + d.Config.Swift.TenantName,
-		"SWIFT_REGIONNAME=" + d.Config.Swift.RegionName,
+		"AWS_ACCESS_KEY_ID=" + d.Handler.Config.AWS.AccessKeyID,
+		"AWS_SECRET_ACCESS_KEY=" + d.Handler.Config.AWS.SecretAccessKey,
+		"SWIFT_USERNAME=" + d.Handler.Config.Swift.Username,
+		"SWIFT_PASSWORD=" + d.Handler.Config.Swift.Password,
+		"SWIFT_AUTHURL=" + d.Handler.Config.Swift.AuthURL,
+		"SWIFT_TENANTNAME=" + d.Handler.Config.Swift.TenantName,
+		"SWIFT_REGIONNAME=" + d.Handler.Config.Swift.RegionName,
 		"SWIFT_AUTHVERSION=2",
 	}
 
 	log.WithFields(log.Fields{
-		"image":       d.Config.Duplicity.Image,
+		"image":       d.Handler.Config.Duplicity.Image,
 		"command":     strings.Join(cmd, " "),
 		"environment": strings.Join(env, ", "),
 		"binds":       strings.Join(binds, ", "),
 	}).Debug("Creating container")
 
-	container, err := d.Docker.ContainerCreate(
+	container, err := d.Handler.ContainerCreate(
 		context.Background(),
 		&container.Config{
 			Cmd:          cmd,
 			Env:          env,
-			Image:        d.Config.Duplicity.Image,
+			Image:        d.Handler.Config.Duplicity.Image,
 			OpenStdin:    true,
 			StdinOnce:    true,
 			AttachStdin:  true,
@@ -271,16 +266,16 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state i
 		}, nil, "",
 	)
 	util.CheckErr(err, "Failed to create container: %v", "fatal")
-	defer util.RemoveContainer(d.Docker, container.ID)
+	defer util.RemoveContainer(d.Handler.Client, container.ID)
 
 	log.Debugf("Launching 'duplicity %v'...", strings.Join(cmd, " "))
-	err = d.Docker.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
+	err = d.Handler.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
 	util.CheckErr(err, "Failed to start container: %v", "fatal")
 
 	var exited bool
 
 	for !exited {
-		cont, err := d.Docker.ContainerInspect(context.Background(), container.ID)
+		cont, err := d.Handler.ContainerInspect(context.Background(), container.ID)
 		util.CheckErr(err, "Failed to inspect container: %v", "error")
 
 		if cont.State.Status == "exited" {
@@ -289,7 +284,7 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state i
 		}
 	}
 
-	body, err := d.Docker.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
+	body, err := d.Handler.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Details:    true,

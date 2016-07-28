@@ -23,15 +23,13 @@ func GetEngine(c *conplicity.Conplicity, v *volume.Volume) Engine {
 	switch engine {
 	case "duplicity":
 		return &DuplicityEngine{
-			Config: c.Config,
-			Docker: c.Client,
-			Volume: v,
+			Handler: c,
+			Volume:  v,
 		}
 	case "rclone":
 		return &RCloneEngine{
-			Config: c.Config,
-			Docker: c.Client,
-			Volume: v,
+			Handler: c,
+			Volume:  v,
 		}
 	}
 
