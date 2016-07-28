@@ -88,7 +88,7 @@ func TestPrepareBackup(t *testing.T) {
 
 	// Fill Config manually
 	p.handler.Config = &conplicity.Config{} // Init Config
-	p.handler.Config.Image = "camptocamp/duplicity:latest"
+	p.handler.Config.Duplicity.Image = "camptocamp/duplicity:latest"
 	p.handler.Config.Docker.Endpoint = "unix:///var/run/docker.sock"
 	p.handler.Hostname, _ = os.Hostname()
 	p.handler.SetupDocker()
@@ -118,7 +118,7 @@ func TestBackupVolume(t *testing.T) {
 	p.handler.Config.Duplicity.FullIfOlderThan = "314D"
 	p.handler.Config.Duplicity.RemoveOlderThan = "1Y"
 	p.handler.Config.Duplicity.TargetURL = "file:///tmp/backup"
-	p.handler.Config.Image = "camptocamp/duplicity:latest"
+	p.handler.Config.Duplicity.Image = "camptocamp/duplicity:latest"
 	p.handler.Config.Docker.Endpoint = "unix:///var/run/docker.sock"
 	p.handler.Hostname, _ = os.Hostname()
 	p.handler.SetupDocker()
