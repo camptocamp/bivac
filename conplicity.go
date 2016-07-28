@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/engines"
 	"github.com/camptocamp/conplicity/handler"
@@ -13,6 +15,7 @@ var version = "undefined"
 
 func main() {
 	var err error
+	var exitCode int = 0
 
 	c, err := handler.NewConplicity(version)
 	util.CheckErr(err, "Failed to setup Conplicity handler: %v", "fatal")
@@ -26,6 +29,7 @@ func main() {
 		metrics, err := backupVolume(c, vol)
 		if err != nil {
 			log.Errorf("Failed to backup volume %s: %v", vol.Name, err)
+			exitCode = 1
 			continue
 		}
 		c.Metrics = append(c.Metrics, metrics...)
@@ -35,6 +39,7 @@ func main() {
 	util.CheckErr(err, "Failed post data to Prometheus Pushgateway: %v", "fatal")
 
 	log.Infof("End backup...")
+	os.Exit(exitCode)
 }
 
 func backupVolume(c *handler.Conplicity, vol *volume.Volume) (metrics []string, err error) {
