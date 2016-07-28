@@ -33,7 +33,7 @@ test: lint vet imports
 coverage:
 	rm -rf *.out
 	go test -coverprofile=coverage.out
-	for i in config engines handler providers util volume; do \
+	for i in config engines handler metrics providers util volume; do \
 	 	go test -coverprofile=$$i.coverage.out github.com/camptocamp/conplicity/$$i; \
 		tail -n +2 $$i.coverage.out >> coverage.out; \
 		done
