@@ -34,9 +34,79 @@ const timeFormat = "Mon Jan 2 15:04:05 2006"
 var fullBackupRx = regexp.MustCompile("Last full backup date: (.+)")
 var chainEndTimeRx = regexp.MustCompile("Chain end time: (.+)")
 
-// RemoveOld cleans up old backup data
-func (d *DuplicityEngine) RemoveOld(v *volume.Volume) (metrics []string, err error) {
-	_, _, err = d.LaunchDuplicity(
+// GetName returns the engine name
+func (*DuplicityEngine) GetName() string {
+	return "Duplicity"
+}
+
+// Backup performs the backup of the passed volume
+func (d *DuplicityEngine) Backup() (metrics []string, err error) {
+	v := d.Volume
+	vol := v.Volume
+	log.WithFields(log.Fields{
+		"volume":     vol.Name,
+		"driver":     vol.Driver,
+		"mountpoint": vol.Mountpoint,
+	}).Info("Creating duplicity container")
+
+	fullIfOlderThan, _ := util.GetVolumeLabel(vol, ".full_if_older_than")
+	if fullIfOlderThan == "" {
+		fullIfOlderThan = d.Config.Duplicity.FullIfOlderThan
+	}
+
+	removeOlderThan, _ := util.GetVolumeLabel(vol, ".remove_older_than")
+	if removeOlderThan == "" {
+		removeOlderThan = d.Config.Duplicity.RemoveOlderThan
+	}
+
+	pathSeparator := "/"
+	if strings.HasPrefix(d.Config.Duplicity.TargetURL, "swift://") {
+		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity
+		pathSeparator = "_"
+	}
+
+	backupDir := v.BackupDir
+	hostname, _ := os.Hostname()
+	v.Target = d.Config.Duplicity.TargetURL + pathSeparator + hostname + pathSeparator + vol.Name
+	v.BackupDir = vol.Mountpoint + "/" + backupDir
+	v.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
+	v.FullIfOlderThan = fullIfOlderThan
+	v.RemoveOlderThan = removeOlderThan
+
+	var newMetrics []string
+
+	newMetrics, err = d.duplicityBackup(v)
+	util.CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", "fatal")
+	metrics = append(metrics, newMetrics...)
+
+	_, err = d.removeOld(v)
+	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", "fatal")
+
+	_, err = d.cleanup(v)
+	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", "fatal")
+
+	noVerifyLbl, _ := util.GetVolumeLabel(vol, ".no_verify")
+	noVerify := d.Config.NoVerify || (noVerifyLbl == "true")
+	if noVerify {
+		log.WithFields(log.Fields{
+			"volume": vol.Name,
+		}).Info("Skipping verification")
+	} else {
+		newMetrics, err = d.verify(v)
+		util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", "fatal")
+		metrics = append(metrics, newMetrics...)
+	}
+
+	newMetrics, err = d.status(v)
+	util.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", "fatal")
+	metrics = append(metrics, newMetrics...)
+
+	return
+}
+
+// removeOld cleans up old backup data
+func (d *DuplicityEngine) removeOld(v *volume.Volume) (metrics []string, err error) {
+	_, _, err = d.launchDuplicity(
 		[]string{
 			"remove-older-than", v.RemoveOlderThan,
 			"--s3-use-new-style",
@@ -54,9 +124,9 @@ func (d *DuplicityEngine) RemoveOld(v *volume.Volume) (metrics []string, err err
 	return
 }
 
-// Cleanup removes old index data from duplicity
-func (d *DuplicityEngine) Cleanup(v *volume.Volume) (metrics []string, err error) {
-	_, _, err = d.LaunchDuplicity(
+// cleanup removes old index data from duplicity
+func (d *DuplicityEngine) cleanup(v *volume.Volume) (metrics []string, err error) {
+	_, _, err = d.launchDuplicity(
 		[]string{
 			"cleanup",
 			"--s3-use-new-style",
@@ -75,9 +145,9 @@ func (d *DuplicityEngine) Cleanup(v *volume.Volume) (metrics []string, err error
 	return
 }
 
-// Verify checks that the backup is usable
-func (d *DuplicityEngine) Verify(v *volume.Volume) (metrics []string, err error) {
-	state, _, err := d.LaunchDuplicity(
+// verify checks that the backup is usable
+func (d *DuplicityEngine) verify(v *volume.Volume) (metrics []string, err error) {
+	state, _, err := d.launchDuplicity(
 		[]string{
 			"verify",
 			"--s3-use-new-style",
@@ -102,9 +172,9 @@ func (d *DuplicityEngine) Verify(v *volume.Volume) (metrics []string, err error)
 	return
 }
 
-// Status gets the latest backup date info from duplicity
-func (d *DuplicityEngine) Status(v *volume.Volume) (metrics []string, err error) {
-	_, stdout, err := d.LaunchDuplicity(
+// status gets the latest backup date info from duplicity
+func (d *DuplicityEngine) status(v *volume.Volume) (metrics []string, err error) {
+	_, stdout, err := d.launchDuplicity(
 		[]string{
 			"collection-status",
 			"--s3-use-new-style",
@@ -161,8 +231,8 @@ func (d *DuplicityEngine) Status(v *volume.Volume) (metrics []string, err error)
 	return
 }
 
-// LaunchDuplicity starts a duplicity container with given command and binds
-func (d *DuplicityEngine) LaunchDuplicity(cmd []string, binds []string) (state int, stdout string, err error) {
+// launchDuplicity starts a duplicity container with given command and binds
+func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state int, stdout string, err error) {
 	util.PullImage(d.Docker, d.Config.Duplicity.Image)
 	util.CheckErr(err, "Failed to pull image: %v", "fatal")
 
@@ -239,78 +309,8 @@ func (d *DuplicityEngine) LaunchDuplicity(cmd []string, binds []string) (state i
 	return
 }
 
-// GetName returns the engine name
-func (*DuplicityEngine) GetName() string {
-	return "Duplicity"
-}
-
-// Backup performs the backup of the passed volume
-func (d *DuplicityEngine) Backup() (metrics []string, err error) {
-	v := d.Volume
-	vol := v.Volume
-	log.WithFields(log.Fields{
-		"volume":     vol.Name,
-		"driver":     vol.Driver,
-		"mountpoint": vol.Mountpoint,
-	}).Info("Creating duplicity container")
-
-	fullIfOlderThan, _ := util.GetVolumeLabel(vol, ".full_if_older_than")
-	if fullIfOlderThan == "" {
-		fullIfOlderThan = d.Config.Duplicity.FullIfOlderThan
-	}
-
-	removeOlderThan, _ := util.GetVolumeLabel(vol, ".remove_older_than")
-	if removeOlderThan == "" {
-		removeOlderThan = d.Config.Duplicity.RemoveOlderThan
-	}
-
-	pathSeparator := "/"
-	if strings.HasPrefix(d.Config.Duplicity.TargetURL, "swift://") {
-		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity
-		pathSeparator = "_"
-	}
-
-	backupDir := v.BackupDir
-	hostname, _ := os.Hostname()
-	v.Target = d.Config.Duplicity.TargetURL + pathSeparator + hostname + pathSeparator + vol.Name
-	v.BackupDir = vol.Mountpoint + "/" + backupDir
-	v.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
-	v.FullIfOlderThan = fullIfOlderThan
-	v.RemoveOlderThan = removeOlderThan
-
-	var newMetrics []string
-
-	newMetrics, err = d.DuplicityBackup(v)
-	util.CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", "fatal")
-	metrics = append(metrics, newMetrics...)
-
-	_, err = d.RemoveOld(v)
-	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", "fatal")
-
-	_, err = d.Cleanup(v)
-	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", "fatal")
-
-	noVerifyLbl, _ := util.GetVolumeLabel(vol, ".no_verify")
-	noVerify := d.Config.NoVerify || (noVerifyLbl == "true")
-	if noVerify {
-		log.WithFields(log.Fields{
-			"volume": vol.Name,
-		}).Info("Skipping verification")
-	} else {
-		newMetrics, err = d.Verify(v)
-		util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", "fatal")
-		metrics = append(metrics, newMetrics...)
-	}
-
-	newMetrics, err = d.Status(v)
-	util.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", "fatal")
-	metrics = append(metrics, newMetrics...)
-
-	return
-}
-
-// DuplicityBackup performs the backup of a volume with duplicity
-func (d *DuplicityEngine) DuplicityBackup(v *volume.Volume) (metrics []string, err error) {
+// duplicityBackup performs the backup of a volume with duplicity
+func (d *DuplicityEngine) duplicityBackup(v *volume.Volume) (metrics []string, err error) {
 	log.WithFields(log.Fields{
 		"name":               v.Name,
 		"backup_dir":         v.BackupDir,
@@ -322,7 +322,7 @@ func (d *DuplicityEngine) DuplicityBackup(v *volume.Volume) (metrics []string, e
 	// TODO
 	// Init engine
 
-	state, _, err := d.LaunchDuplicity(
+	state, _, err := d.launchDuplicity(
 		[]string{
 			"--full-if-older-than", v.FullIfOlderThan,
 			"--s3-use-new-style",
