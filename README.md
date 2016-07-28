@@ -115,6 +115,11 @@ Conplicity supports various engines for performing the backup:
 * Duplicity
 * RClone: use for heavy data that Duplicity cannot manage efficiently
 
+You can set the engine with either:
+
+* an `io.conplicity.engine` volume label (requires Docker 1.11.0 or great)
+* a global setting using the `CONPLICITY_ENGINE` environment variable
+
 
 ## Return code
 
