@@ -1,3 +1,16 @@
+# [0.20.0](https://github.com/camptocamp/conplicity/releases/tag/0.20.0) (2016-07-28)
+
+* Features:
+
+  - Output version in logs
+  - Make backup engine pluggable
+  - Add RClone engine
+
+* Internals:
+
+  - Check errors in PushToPrometheus
+  - Read response from Prometheus
+
 # [0.13.3](https://github.com/camptocamp/conplicity/releases/tag/0.13.3) (2016-07-05)
 
 * Bugfix:

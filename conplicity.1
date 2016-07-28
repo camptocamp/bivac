@@ -1,4 +1,4 @@
-.TH conplicity 1 "29 June 2016"
+.TH conplicity 1 "28 July 2016"
 .SH NAME
 conplicity \- 
 .SH SYNOPSIS
@@ -10,9 +10,6 @@ conplicity \-
 .TP
 \fB\fB\-V\fR, \fB\-\-version\fR\fP
 Display version.
-.TP
-\fB\fB\-i\fR, \fB\-\-image\fR <default: \fI"camptocamp/duplicity:latest"\fR>\fP
-The duplicity docker image.
 .TP
 \fB\fB\-l\fR, \fB\-\-loglevel\fR <default: \fI"info"\fR>\fP
 Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic').
@@ -28,9 +25,18 @@ Do not verify backup.
 .TP
 \fB\fB\-j\fR, \fB\-\-json\fR <default: \fI$CONPLICITY_JSON_OUTPUT\fR>\fP
 Log as JSON (to stderr).
+.TP
+\fB\fB\-E\fR, \fB\-\-engine\fR <default: \fI"duplicity"\fR>\fP
+Backup engine to use.
+.TP
+\fB\fB\-H\fR, \fB\-\-hostname-from-rancher\fR <default: \fI$CONPLICITY_HOSTNAME_FROM_RANCHER\fR>\fP
+Retrieve hostname from Rancher metadata.
 .SS Duplicity Options
 .TP
-\fB\fB\-u\fR, \fB\-\-url\fR <default: \fI$DUPLICITY_TARGET_URL\fR>\fP
+\fB\fB\-\-duplicity-image\fR <default: \fI"camptocamp/duplicity:latest"\fR>\fP
+The duplicity docker image.
+.TP
+\fB\fB\-\-duplicity-url\fR <default: \fI$DUPLICITY_TARGET_URL\fR>\fP
 The duplicity target URL to push to.
 .TP
 \fB\fB\-\-full-if-older-than\fR <default: \fI"15D"\fR>\fP
@@ -38,6 +44,13 @@ The number of days after which a full backup must be performed.
 .TP
 \fB\fB\-\-remove-older-than\fR <default: \fI"30D"\fR>\fP
 The number days after which backups must be removed.
+.SS RClone Options
+.TP
+\fB\fB\-\-rclone-image\fR <default: \fI"camptocamp/rclone:latest"\fR>\fP
+The rclone docker image.
+.TP
+\fB\fB\-\-rclone-url\fR <default: \fI$RCLONE_TARGET_URL\fR>\fP
+The RClone target URL to push to.
 .SS Metrics Options
 .TP
 \fB\fB\-g\fR, \fB\-\-gateway-url\fR <default: \fI$PUSHGATEWAY_URL\fR>\fP
