@@ -36,7 +36,10 @@ func main() {
 	}
 
 	err = c.PushToPrometheus()
-	util.CheckErr(err, "Failed post data to Prometheus Pushgateway: %v", "fatal")
+	if err != nil {
+		log.Errorf("Failed to post data to Prometheus Pushgateway: %v", err)
+		exitCode = 2
+	}
 
 	log.Infof("End backup...")
 	os.Exit(exitCode)
