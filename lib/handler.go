@@ -30,12 +30,31 @@ func (c *Conplicity) Setup(version string) (err error) {
 	err = c.setupLoglevel()
 	util.CheckErr(err, "Failed to setup log level: %v", "fatal")
 
-	c.Hostname, err = os.Hostname()
+	err = c.GetHostname()
 	util.CheckErr(err, "Failed to get hostname: %v", "fatal")
 
 	err = c.SetupDocker()
 	util.CheckErr(err, "Failed to setup docker: %v", "fatal")
 
+	return
+}
+
+// GetHostname gets the host name
+func (c *Conplicity) GetHostname() (err error) {
+	if c.Config.HostnameFromRancher {
+		resp, err := http.Get("http://rancher-metadata/latest/self/host/name")
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		c.Hostname = string(body)
+	} else {
+		c.Hostname, err = os.Hostname()
+	}
 	return
 }
 
