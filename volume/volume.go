@@ -12,6 +12,7 @@ type Volume struct {
 	RemoveOlderThan string
 }
 
+// NewVolume returns a new Volume for a given types.Volume struct
 func NewVolume(v *types.Volume) *Volume {
 	return &Volume{
 		Volume: v,
