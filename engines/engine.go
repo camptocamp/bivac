@@ -22,13 +22,18 @@ type Engine interface {
 	// Status gets the latest backup date info
 	Status(*volume.Volume) ([]string, error)
 
-	Backup(*volume.Volume) ([]string, error)
+	Backup() ([]string, error)
 
 	GetName() string
 }
 
 // GetEngine returns the engine for passed volume
 func GetEngine(c *conplicity.Conplicity, vol *types.Volume) Engine {
+	v := &volume.Volume{
+		Config: c.Config,
+		Volume: vol,
+	}
+
 	engine, _ := util.GetVolumeLabel(vol, ".engine")
 	if engine == "" {
 		engine = c.Config.Engine
@@ -39,6 +44,7 @@ func GetEngine(c *conplicity.Conplicity, vol *types.Volume) Engine {
 		return &DuplicityEngine{
 			Config: c.Config,
 			Docker: c.Client,
+			Volume: v,
 		}
 	}
 

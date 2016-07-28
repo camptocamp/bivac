@@ -24,6 +24,7 @@ import (
 type DuplicityEngine struct {
 	Config *config.Config
 	Docker *docker.Client
+	Volume *volume.Volume
 }
 
 // Constants
@@ -244,7 +245,8 @@ func (*DuplicityEngine) GetName() string {
 }
 
 // Backup performs the backup of the passed volume
-func (d *DuplicityEngine) Backup(v *volume.Volume) (metrics []string, err error) {
+func (d *DuplicityEngine) Backup() (metrics []string, err error) {
+	v := d.Volume
 	vol := v.Volume
 	log.WithFields(log.Fields{
 		"volume":     vol.Name,

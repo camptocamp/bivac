@@ -11,7 +11,6 @@ import (
 	"github.com/camptocamp/conplicity/lib"
 	"github.com/camptocamp/conplicity/providers"
 	"github.com/camptocamp/conplicity/util"
-	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/engine-api/types/filters"
 )
@@ -73,10 +72,6 @@ func backupVolume(c *conplicity.Conplicity, vol *types.Volume) (metrics []string
 		}).Info("Ignoring volume")
 		return
 	}
-	v := &volume.Volume{
-		Config: c.Config,
-		Volume: vol,
-	}
 
 	p := providers.GetProvider(c, vol)
 	log.WithFields(log.Fields{
@@ -92,7 +87,7 @@ func backupVolume(c *conplicity.Conplicity, vol *types.Volume) (metrics []string
 		"engine": e.GetName(),
 	}).Info("Found backup engine")
 
-	metrics, err = e.Backup(v)
+	metrics, err = e.Backup()
 	util.CheckErr(err, "Failed to backup volume "+vol.Name+": %v", "fatal")
 	return
 }
