@@ -27,6 +27,7 @@ type Config struct {
 	Manpage          bool     `short:"m" long:"manpage" description:"Output manpage."`
 	NoVerify         bool     `long:"no-verify" description:"Do not verify backup." env:"CONPLICITY_NO_VERIFY"`
 	JSON             bool     `short:"j" long:"json" description:"Log as JSON (to stderr)." env:"CONPLICITY_JSON_OUTPUT"`
+	Engine           string   `short:"E" long:"engine" description:"Backup engine to use." env:"CONPLICITY_ENGINE" default:"duplicity"`
 
 	Duplicity struct {
 		Image           string `short:"i" long:"duplicity-image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
