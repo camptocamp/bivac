@@ -9,10 +9,14 @@ import (
 	"os"
 	"strings"
 
+	"golang.org/x/net/context"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/config"
 	"github.com/camptocamp/conplicity/util"
 	docker "github.com/docker/engine-api/client"
+	"github.com/docker/engine-api/types"
+	"github.com/docker/engine-api/types/filters"
 )
 
 // Conplicity is the main handler struct
@@ -69,6 +73,25 @@ func (c *Conplicity) GetHostname() (err error) {
 func (c *Conplicity) SetupDocker() (err error) {
 	c.Client, err = docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
 	util.CheckErr(err, "Failed to create Docker client: %v", "fatal")
+	return
+}
+
+// GetVolumes returns the Docker volumes, inspected and filtered
+func (c *Conplicity) GetVolumes() (volumes []*types.Volume, err error) {
+	vols, err := c.VolumeList(context.Background(), filters.NewArgs())
+	if err != nil {
+		err = fmt.Errorf("Failed to list Docker volumes: %v", err)
+		return
+	}
+	for _, vol := range vols.Volumes {
+		var voll types.Volume
+		voll, err = c.VolumeInspect(context.Background(), vol.Name)
+		if err != nil {
+			err = fmt.Errorf("Failed to inspect volume %s: %v", vol.Name, err)
+			return
+		}
+		volumes = append(volumes, &voll)
+	}
 	return
 }
 

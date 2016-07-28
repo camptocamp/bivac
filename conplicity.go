@@ -4,8 +4,6 @@ import (
 	"sort"
 	"unicode/utf8"
 
-	"golang.org/x/net/context"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/engines"
 	"github.com/camptocamp/conplicity/handler"
@@ -13,7 +11,6 @@ import (
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/engine-api/types"
-	"github.com/docker/engine-api/types/filters"
 )
 
 var version = "undefined"
@@ -26,14 +23,11 @@ func main() {
 
 	log.Infof("Conplity v%s starting backup...", version)
 
-	vols, err := c.VolumeList(context.Background(), filters.NewArgs())
-	util.CheckErr(err, "Failed to list Docker volumes: %v", "fatal")
+	vols, err := c.GetVolumes()
+	util.CheckErr(err, "Failed to get Docker volumes: %v", "fatal")
 
-	for _, vol := range vols.Volumes {
-		voll, err := c.VolumeInspect(context.Background(), vol.Name)
-		util.CheckErr(err, "Failed to inspect volume "+vol.Name+": %v", "fatal")
-
-		metrics, err := backupVolume(c, &voll)
+	for _, vol := range vols {
+		metrics, err := backupVolume(c, vol)
 		util.CheckErr(err, "Failed to process volume "+vol.Name+": %v", "fatal")
 		c.Metrics = append(c.Metrics, metrics...)
 	}
