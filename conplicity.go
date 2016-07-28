@@ -1,9 +1,6 @@
 package main
 
 import (
-	"sort"
-	"unicode/utf8"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/engines"
 	"github.com/camptocamp/conplicity/handler"
@@ -39,34 +36,6 @@ func main() {
 }
 
 func backupVolume(c *handler.Conplicity, vol *types.Volume) (metrics []string, err error) {
-	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" || vol.Name == "lost+found" {
-		log.WithFields(log.Fields{
-			"volume": vol.Name,
-			"reason": "unnamed",
-		}).Info("Ignoring volume")
-		return
-	}
-
-	list := c.Config.VolumesBlacklist
-	i := sort.SearchStrings(list, vol.Name)
-	if i < len(list) && list[i] == vol.Name {
-		log.WithFields(log.Fields{
-			"volume": vol.Name,
-			"reason": "blacklisted",
-			"source": "blacklist config",
-		}).Info("Ignoring volume")
-		return
-	}
-
-	if ignoreLbl, _ := util.GetVolumeLabel(vol, ".ignore"); ignoreLbl == "true" {
-		log.WithFields(log.Fields{
-			"volume": vol.Name,
-			"reason": "blacklisted",
-			"source": "volume label",
-		}).Info("Ignoring volume")
-		return
-	}
-
 	v := volume.NewVolume(vol)
 
 	p := providers.GetProvider(c, v)

@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
+	"unicode/utf8"
 
 	"golang.org/x/net/context"
 
@@ -90,9 +92,35 @@ func (c *Conplicity) GetVolumes() (volumes []*types.Volume, err error) {
 			err = fmt.Errorf("Failed to inspect volume %s: %v", vol.Name, err)
 			return
 		}
+		if b, r, s := c.blacklistedVolume(&voll); b {
+			log.WithFields(log.Fields{
+				"volume": vol.Name,
+				"reason": r,
+				"source": s,
+			}).Info("Ignoring volume")
+			continue
+		}
 		volumes = append(volumes, &voll)
 	}
 	return
+}
+
+func (c *Conplicity) blacklistedVolume(vol *types.Volume) (bool, string, string) {
+	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" || vol.Name == "lost+found" {
+		return true, "unnamed", ""
+	}
+
+	list := c.Config.VolumesBlacklist
+	i := sort.SearchStrings(list, vol.Name)
+	if i < len(list) && list[i] == vol.Name {
+		return true, "blacklisted", "blacklist config"
+	}
+
+	if ignoreLbl, _ := util.GetVolumeLabel(vol, ".ignore"); ignoreLbl == "true" {
+		return true, "blacklisted", "volume label"
+	}
+
+	return false, "", ""
 }
 
 func (c *Conplicity) setupLoglevel() (err error) {
