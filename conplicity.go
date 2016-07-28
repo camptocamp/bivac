@@ -17,7 +17,7 @@ var version = "undefined"
 
 func main() {
 	var err error
-	var exitCode int = 0
+	var exitCode int
 
 	c, err := handler.NewConplicity(version)
 	util.CheckErr(err, "Failed to setup Conplicity handler: %v", "fatal")
