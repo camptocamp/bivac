@@ -27,7 +27,7 @@ func main() {
 	log.Infof("Conplity v%s starting backup...", version)
 
 	vols, err := c.VolumeList(context.Background(), filters.NewArgs())
-	util.CheckErr(err, "Failed to list Docker volumes: %v", "panic")
+	util.CheckErr(err, "Failed to list Docker volumes: %v", "fatal")
 
 	for _, vol := range vols.Volumes {
 		voll, err := c.VolumeInspect(context.Background(), vol.Name)
