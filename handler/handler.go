@@ -166,17 +166,26 @@ func (c *Conplicity) PushToPrometheus() (err error) {
 	}).Debug("Sending metrics to Prometheus Pushgateway")
 
 	req, err := http.NewRequest("PUT", url, bytes.NewBufferString(data))
-	util.CheckErr(err, "Failed to create HTTP request to send metrics to Prometheus: %v", "error")
+	if err != nil {
+		err = fmt.Errorf("failed to create HTTP request: %v", err)
+		return
+	}
 
 	req.Header.Set("Content-Type", "text/plain; version=0.0.4")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	util.CheckErr(err, "Failed to get HTTP response from sending metrics to Prometheus: %v", "error")
+	if err != nil {
+		err = fmt.Errorf("failed to get HTTP response: %v", err)
+		return
+	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	util.CheckErr(err, "Failed to read HTTP response from sending metrics to Prometheus: %v", "error")
+	if err != nil {
+		err = fmt.Errorf("failed to read HTTP response: %v", err)
+		return
+	}
 
 	log.WithFields(log.Fields{
 		"resp": body,
