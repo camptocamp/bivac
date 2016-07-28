@@ -17,3 +17,10 @@ type Volume struct {
 	FullIfOlderThan string
 	RemoveOlderThan string
 }
+
+func NewVolume(v *types.Volume) *Volume {
+	return &Volume{
+		Name:   v.Name,
+		Volume: v,
+	}
+}

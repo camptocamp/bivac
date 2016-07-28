@@ -5,7 +5,6 @@ import (
 	"github.com/camptocamp/conplicity/lib"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
-	"github.com/docker/engine-api/types"
 )
 
 // Engine implements a backup engine interface
@@ -15,12 +14,8 @@ type Engine interface {
 }
 
 // GetEngine returns the engine for passed volume
-func GetEngine(c *conplicity.Conplicity, vol *types.Volume) Engine {
-	v := &volume.Volume{
-		Volume: vol,
-	}
-
-	engine, _ := util.GetVolumeLabel(vol, ".engine")
+func GetEngine(c *conplicity.Conplicity, v *volume.Volume) Engine {
+	engine, _ := util.GetVolumeLabel(v.Volume, ".engine")
 	if engine == "" {
 		engine = c.Config.Engine
 	}

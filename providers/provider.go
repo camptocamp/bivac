@@ -8,6 +8,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	conplicity "github.com/camptocamp/conplicity/lib"
 	"github.com/camptocamp/conplicity/util"
+	"github.com/camptocamp/conplicity/volume"
 	docker "github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
 )
@@ -29,7 +30,8 @@ type BaseProvider struct {
 }
 
 // GetProvider detects which provider suits the passed volume and returns it
-func GetProvider(c *conplicity.Conplicity, v *types.Volume) Provider {
+func GetProvider(c *conplicity.Conplicity, vol *volume.Volume) Provider {
+	v := vol.Volume
 	log.WithFields(log.Fields{
 		"volume": v.Name,
 	}).Info("Detecting provider")
