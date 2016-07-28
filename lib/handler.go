@@ -86,10 +86,6 @@ func (c *Conplicity) Setup(version string) (err error) {
 func (c *Conplicity) SetupDocker() (err error) {
 	c.Client, err = docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
 	CheckErr(err, "Failed to create Docker client: %v", "fatal")
-
-	err = c.pullImage(c.Config.Duplicity.Image)
-	CheckErr(err, "Failed to pull image: %v", "fatal")
-
 	return
 }
 
@@ -171,6 +167,9 @@ func (c *Conplicity) pullImage(image string) (err error) {
 
 // LaunchDuplicity starts a duplicity container with given command and binds
 func (c *Conplicity) LaunchDuplicity(cmd []string, binds []string) (state int, stdout string, err error) {
+	c.pullImage(c.Config.Duplicity.Image)
+	CheckErr(err, "Failed to pull image: %v", "fatal")
+
 	env := []string{
 		"AWS_ACCESS_KEY_ID=" + c.Config.AWS.AccessKeyID,
 		"AWS_SECRET_ACCESS_KEY=" + c.Config.AWS.SecretAccessKey,
