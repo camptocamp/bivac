@@ -33,10 +33,10 @@ test: lint vet imports
 coverage:
 	rm -rf *.out
 	go test -coverprofile=coverage.out
-	go test -coverprofile=lib.coverage.out github.com/camptocamp/conplicity/lib
-	tail -n +2 lib.coverage.out >> coverage.out;
-	go test -coverprofile=providers.coverage.out github.com/camptocamp/conplicity/providers
-	tail -n +2 providers.coverage.out >> coverage.out;
+	for i in config engines lib providers util volume; do \
+	 	go test -coverprofile=$$i.coverage.out github.com/camptocamp/conplicity/$$i; \
+		tail -n +2 $$i.coverage.out >> coverage.out; \
+		done
 
 clean:
 	rm -f conplicity conplicity.1
