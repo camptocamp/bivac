@@ -5,6 +5,7 @@
   - Output version in logs
   - Make backup engine pluggable
   - Add RClone engine
+  - Add option to get host name from Rancher metadata
 
 * Internals:
 
