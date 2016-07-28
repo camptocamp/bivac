@@ -87,7 +87,7 @@ func (c *Conplicity) SetupDocker() (err error) {
 	c.Client, err = docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
 	CheckErr(err, "Failed to create Docker client: %v", "fatal")
 
-	err = c.pullImage()
+	err = c.pullImage(c.Config.Duplicity.Image)
 	CheckErr(err, "Failed to pull image: %v", "fatal")
 
 	return
@@ -142,13 +142,13 @@ func (c *Conplicity) setupLoglevel() (err error) {
 	return
 }
 
-func (c *Conplicity) pullImage() (err error) {
-	if _, _, err = c.ImageInspectWithRaw(context.Background(), c.Config.Duplicity.Image, false); err != nil {
+func (c *Conplicity) pullImage(image string) (err error) {
+	if _, _, err = c.ImageInspectWithRaw(context.Background(), image, false); err != nil {
 		// TODO: output pull to logs
 		log.WithFields(log.Fields{
-			"image": c.Config.Duplicity.Image,
+			"image": image,
 		}).Info("Pulling image")
-		resp, err := c.Client.ImagePull(context.Background(), c.Config.Duplicity.Image, types.ImagePullOptions{})
+		resp, err := c.Client.ImagePull(context.Background(), image, types.ImagePullOptions{})
 		if err != nil {
 			log.Errorf("ImagePull returned an error: %v", err)
 			return err
@@ -162,7 +162,7 @@ func (c *Conplicity) pullImage() (err error) {
 		log.Debugf("Pull image response body: %v", body)
 	} else {
 		log.WithFields(log.Fields{
-			"image": c.Config.Duplicity.Image,
+			"image": image,
 		}).Debug("Image already pulled, not pulling")
 	}
 
