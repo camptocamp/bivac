@@ -10,20 +10,7 @@ import (
 
 // Engine implements a backup engine interface
 type Engine interface {
-	// RemoveOld cleans up old backup data
-	RemoveOld(*volume.Volume) ([]string, error)
-
-	// Cleanup removes old index data
-	Cleanup(*volume.Volume) ([]string, error)
-
-	// Verify checks that the backup is usable
-	Verify(*volume.Volume) ([]string, error)
-
-	// Status gets the latest backup date info
-	Status(*volume.Volume) ([]string, error)
-
 	Backup() ([]string, error)
-
 	GetName() string
 }
 
