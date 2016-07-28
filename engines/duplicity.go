@@ -252,6 +252,16 @@ func (d *DuplicityEngine) Backup(v *volume.Volume) (metrics []string, err error)
 		"mountpoint": vol.Mountpoint,
 	}).Info("Creating duplicity container")
 
+	fullIfOlderThan, _ := util.GetVolumeLabel(vol, ".full_if_older_than")
+	if fullIfOlderThan == "" {
+		fullIfOlderThan = v.Config.Duplicity.FullIfOlderThan
+	}
+
+	removeOlderThan, _ := util.GetVolumeLabel(vol, ".remove_older_than")
+	if removeOlderThan == "" {
+		removeOlderThan = v.Config.Duplicity.RemoveOlderThan
+	}
+
 	pathSeparator := "/"
 	if strings.HasPrefix(v.Config.Duplicity.TargetURL, "swift://") {
 		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity

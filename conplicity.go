@@ -73,22 +73,9 @@ func backupVolume(c *conplicity.Conplicity, vol *types.Volume) (metrics []string
 		}).Info("Ignoring volume")
 		return
 	}
-
-	fullIfOlderThan, _ := util.GetVolumeLabel(vol, ".full_if_older_than")
-	if fullIfOlderThan == "" {
-		fullIfOlderThan = c.Config.Duplicity.FullIfOlderThan
-	}
-
-	removeOlderThan, _ := util.GetVolumeLabel(vol, ".remove_older_than")
-	if removeOlderThan == "" {
-		removeOlderThan = c.Config.Duplicity.RemoveOlderThan
-	}
-
 	v := &volume.Volume{
-		Config:          c.Config,
-		Volume:          vol,
-		FullIfOlderThan: fullIfOlderThan,
-		RemoveOlderThan: removeOlderThan,
+		Config: c.Config,
+		Volume: vol,
 	}
 
 	p := providers.GetProvider(c, vol)
