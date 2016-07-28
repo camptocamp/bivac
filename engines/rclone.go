@@ -1,18 +1,20 @@
 package engines
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	"golang.org/x/net/context"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/config"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 	docker "github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/engine-api/types/container"
-	"github.com/vmware/harbor/utils/log"
 )
 
 // RCloneEngine implements a backup engine with RClone
@@ -29,19 +31,27 @@ func (*RCloneEngine) GetName() string {
 
 // Backup performs the backup of the passed volume
 func (r *RCloneEngine) Backup() (metrics []string, err error) {
-	vol := r.Volume
+	v := r.Volume
+	hostname, _ := os.Hostname()
 
-	_, _, err = r.launchRClone(
+	target := r.Config.RClone.TargetURL + "/" + hostname + "/" + v.Name
+	backupDir := v.Mountpoint + "/" + v.BackupDir
+
+	state, _, err := r.launchRClone(
 		[]string{
 			"sync",
-			"/data",
-			"swift:backup",
+			backupDir,
+			target,
 		},
 		[]string{
-			vol.Name + ":" + vol.Mountpoint + ":ro",
+			v.Name + ":" + v.Mountpoint + ":ro",
 		},
 	)
 	util.CheckErr(err, "Failed to launch RClone: %v", "fatal")
+
+	if state != 0 {
+		err = fmt.Errorf("RClone exited with state %v", state)
+	}
 
 	return
 }
@@ -60,6 +70,13 @@ func (r *RCloneEngine) launchRClone(cmd []string, binds []string) (state int, st
 		"OS_TENANT_NAME=" + r.Config.Swift.TenantName,
 		"OS_REGION_NAME=" + r.Config.Swift.RegionName,
 	}
+
+	log.WithFields(log.Fields{
+		"image":       r.Config.RClone.Image,
+		"command":     strings.Join(cmd, " "),
+		"environment": strings.Join(env, ", "),
+		"binds":       strings.Join(binds, ", "),
+	}).Debug("Creating container")
 
 	container, err := r.Docker.ContainerCreate(
 		context.Background(),
