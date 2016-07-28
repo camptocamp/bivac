@@ -6,7 +6,9 @@ import (
 	"testing"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/camptocamp/conplicity/config"
 	"github.com/camptocamp/conplicity/lib"
+	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/engine-api/types"
 )
 
@@ -20,9 +22,10 @@ func TestGetProvider(t *testing.T) {
 	defer os.RemoveAll(dir)
 	ioutil.WriteFile(dir+"/PG_VERSION", []byte{}, 0644)
 
-	p = GetProvider(&conplicity.Conplicity{}, &types.Volume{
-		Mountpoint: dir,
-	})
+	p = GetProvider(&conplicity.Conplicity{}, &volume.Volume{
+		Volume: &types.Volume{
+			Mountpoint: dir,
+		}})
 	got = p.GetName()
 	if got != expected {
 		t.Fatalf("Expected provider %s, got %s", expected, got)
@@ -34,9 +37,10 @@ func TestGetProvider(t *testing.T) {
 	defer os.RemoveAll(dir)
 	os.Mkdir(dir+"/mysql", 0755)
 
-	p = GetProvider(&conplicity.Conplicity{}, &types.Volume{
-		Mountpoint: dir,
-	})
+	p = GetProvider(&conplicity.Conplicity{}, &volume.Volume{
+		Volume: &types.Volume{
+			Mountpoint: dir,
+		}})
 	got = p.GetName()
 	if got != expected {
 		t.Fatalf("Expected provider %s, got %s", expected, got)
@@ -48,9 +52,10 @@ func TestGetProvider(t *testing.T) {
 	defer os.RemoveAll(dir)
 	ioutil.WriteFile(dir+"/DB_CONFIG", []byte{}, 0644)
 
-	p = GetProvider(&conplicity.Conplicity{}, &types.Volume{
-		Mountpoint: dir,
-	})
+	p = GetProvider(&conplicity.Conplicity{}, &volume.Volume{
+		Volume: &types.Volume{
+			Mountpoint: dir,
+		}})
 	got = p.GetName()
 	if got != expected {
 		t.Fatalf("Expected provider %s, got %s", expected, got)
@@ -61,9 +66,10 @@ func TestGetProvider(t *testing.T) {
 	dir, _ = ioutil.TempDir("", "test_get_provider_default")
 	defer os.RemoveAll(dir)
 
-	p = GetProvider(&conplicity.Conplicity{}, &types.Volume{
-		Mountpoint: dir,
-	})
+	p = GetProvider(&conplicity.Conplicity{}, &volume.Volume{
+		Volume: &types.Volume{
+			Mountpoint: dir,
+		}})
 	got = p.GetName()
 	if got != expected {
 		t.Fatalf("Expected provider %s, got %s", expected, got)
@@ -78,16 +84,18 @@ func TestPrepareBackup(t *testing.T) {
 	p := &DefaultProvider{
 		BaseProvider: &BaseProvider{
 			handler: &conplicity.Conplicity{},
-			vol: &types.Volume{
-				Name:       dir,
-				Driver:     "local",
-				Mountpoint: "/mnt",
+			vol: &volume.Volume{
+				Volume: &types.Volume{
+					Name:       dir,
+					Driver:     "local",
+					Mountpoint: "/mnt",
+				},
 			},
 		},
 	}
 
 	// Fill Config manually
-	p.handler.Config = &conplicity.Config{} // Init Config
+	p.handler.Config = &config.Config{} // Init Config
 	p.handler.Config.Duplicity.Image = "camptocamp/duplicity:latest"
 	p.handler.Config.Docker.Endpoint = "unix:///var/run/docker.sock"
 	p.handler.Hostname, _ = os.Hostname()
@@ -96,40 +104,6 @@ func TestPrepareBackup(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 
 	err := PrepareBackup(p)
-
-	if err != nil {
-		t.Fatalf("Expected no error, got error: %v", err)
-	}
-}
-
-func TestBackupVolume(t *testing.T) {
-	t.Skip("Skipping as it hangs forever on Travis CI")
-
-	// Use Base provider
-	dir, _ := ioutil.TempDir("", "test_backup_volume")
-	defer os.RemoveAll(dir)
-
-	p := &BaseProvider{
-		handler: &conplicity.Conplicity{},
-	}
-
-	// Fill Config manually
-	p.handler.Config = &conplicity.Config{} // Init Config
-	p.handler.Config.Duplicity.FullIfOlderThan = "314D"
-	p.handler.Config.Duplicity.RemoveOlderThan = "1Y"
-	p.handler.Config.Duplicity.TargetURL = "file:///tmp/backup"
-	p.handler.Config.Duplicity.Image = "camptocamp/duplicity:latest"
-	p.handler.Config.Docker.Endpoint = "unix:///var/run/docker.sock"
-	p.handler.Hostname, _ = os.Hostname()
-	p.handler.SetupDocker()
-
-	log.SetLevel(log.DebugLevel)
-
-	err := p.BackupVolume(&types.Volume{
-		Name:       dir,
-		Driver:     "local",
-		Mountpoint: "/mnt",
-	})
 
 	if err != nil {
 		t.Fatalf("Expected no error, got error: %v", err)
