@@ -1,13 +1,13 @@
 package providers
 
 import (
+	"fmt"
 	"os"
 
 	"golang.org/x/net/context"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
-	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 	docker "github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
@@ -75,15 +75,21 @@ func PrepareBackup(p Provider) (err error) {
 	c := p.GetHandler()
 	vol := p.GetVolume()
 	containers, err := c.ContainerList(context.Background(), types.ContainerListOptions{})
-	util.CheckErr(err, "Failed to list containers: %v", "fatal")
+	if err != nil {
+		return fmt.Errorf("failed to list containers: %v", err)
+	}
 
 	// Work around https://github.com/docker/engine-api/issues/303
 	client, err := docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
-	util.CheckErr(err, "Failed to create new Docker client: %v", "fatal")
+	if err != nil {
+		return fmt.Errorf("failed to create new Docker client: %v", err)
+	}
 
 	for _, container := range containers {
 		container, err := client.ContainerInspect(context.Background(), container.ID)
-		util.CheckErr(err, "Failed to inspect container "+container.ID+": %v", "fatal")
+		if err != nil {
+			return fmt.Errorf("failed to inspect container %v: %v", container.ID, err)
+		}
 		for _, mount := range container.Mounts {
 			if mount.Name == vol.Name {
 				log.WithFields(log.Fields{
@@ -97,12 +103,14 @@ func PrepareBackup(p Provider) (err error) {
 						Cmd: p.GetPrepareCommand(&mount),
 					},
 					)
-
-					util.CheckErr(err, "Failed to create exec: %v", "fatal")
+					if err != nil {
+						return fmt.Errorf("failed to create exec: %v", err)
+					}
 
 					err = client.ContainerExecStart(context.Background(), exec.ID, types.ExecStartCheck{})
-
-					util.CheckErr(err, "Failed to start exec: %v", "fatal")
+					if err != nil {
+						return fmt.Errorf("failed to start exec: %v", err)
+					}
 				} else {
 					log.WithFields(log.Fields{
 						"volume":    vol.Name,

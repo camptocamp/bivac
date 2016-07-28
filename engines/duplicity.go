@@ -1,7 +1,6 @@
 package engines
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -70,14 +69,23 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 	var newMetrics []string
 
 	newMetrics, err = d.duplicityBackup()
-	util.CheckErr(err, "Failed to backup volume "+vol.Name+" : %v", "fatal")
+	if err != nil {
+		err = fmt.Errorf("failed to backup volume with duplicity: %v", err)
+		return
+	}
 	metrics = append(metrics, newMetrics...)
 
 	_, err = d.removeOld()
-	util.CheckErr(err, "Failed to remove old backups for volume "+vol.Name+" : %v", "fatal")
+	if err != nil {
+		err = fmt.Errorf("failed to remove old backups: %v", err)
+		return
+	}
 
 	_, err = d.cleanup()
-	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", "fatal")
+	if err != nil {
+		err = fmt.Errorf("failed to cleanup extraneous duplicity files: %v", err)
+		return
+	}
 
 	noVerifyLbl, _ := util.GetVolumeLabel(vol.Volume, ".no_verify")
 	noVerify := d.Handler.Config.NoVerify || (noVerifyLbl == "true")
@@ -87,12 +95,18 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 		}).Info("Skipping verification")
 	} else {
 		newMetrics, err = d.verify()
-		util.CheckErr(err, "Failed to verify backup for volume "+vol.Name+" : %v", "fatal")
+		if err != nil {
+			err = fmt.Errorf("failed to verify backup: %v", err)
+			return
+		}
 		metrics = append(metrics, newMetrics...)
 	}
 
 	newMetrics, err = d.status()
-	util.CheckErr(err, "Failed to retrieve last backup info for volume "+vol.Name+" : %v", "fatal")
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve last backup info: %v", err)
+		return
+	}
 	metrics = append(metrics, newMetrics...)
 
 	return
@@ -115,7 +129,10 @@ func (d *DuplicityEngine) removeOld() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
-	util.CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
+	if err != nil {
+		err = fmt.Errorf("failed to launch Duplicity: %v", err)
+		return
+	}
 	return
 }
 
@@ -137,7 +154,9 @@ func (d *DuplicityEngine) cleanup() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
-	util.CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
+	if err != nil {
+		err = fmt.Errorf("failed to launch duplicity: %v", err)
+	}
 	return
 }
 
@@ -160,8 +179,10 @@ func (d *DuplicityEngine) verify() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
-	util.CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
-
+	if err != nil {
+		err = fmt.Errorf("failed to launch duplicity: %v", err)
+		return
+	}
 	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"verifyExitCode\"} %v", v.Name, state)
 	metrics = []string{
 		metric,
@@ -186,7 +207,10 @@ func (d *DuplicityEngine) status() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
-	util.CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
+	if err != nil {
+		err = fmt.Errorf("failed to launch duplicity: %v", err)
+		return
+	}
 
 	fullBackup := fullBackupRx.FindStringSubmatch(stdout)
 	var fullBackupDate time.Time
@@ -199,21 +223,25 @@ func (d *DuplicityEngine) status() (metrics []string, err error) {
 			chainEndTimeDate = time.Unix(0, 0)
 		} else {
 			fullBackupDate, err = time.Parse(timeFormat, strings.TrimSpace(fullBackup[1]))
-			util.CheckErr(err, "Failed to parse full backup date: %v", "error")
+			if err != nil {
+				err = fmt.Errorf("failed to parse full backup data: %v", err)
+				return
+			}
 
 			if len(chainEndTime) > 0 {
 				chainEndTimeDate, err = time.Parse(timeFormat, strings.TrimSpace(chainEndTime[1]))
-				util.CheckErr(err, "Failed to parse chain end time date: %v", "error")
+				if err != nil {
+					err = fmt.Errorf("failed to parse chain end time date: %v", err)
+					return
+				}
 			} else {
-				errMsg := fmt.Sprintf("Failed to parse Duplicity output for chain end time of %v", v.Name)
-				err = errors.New(errMsg)
+				err = fmt.Errorf("failed to parse Duplicity output for chain end time of %v", v.Name)
 				return
 			}
 
 		}
 	} else {
-		errMsg := fmt.Sprintf("Failed to parse Duplicity output for last full backup date of %v", v.Name)
-		err = errors.New(errMsg)
+		err = fmt.Errorf("failed to parse Duplicity output for last full backup date of %v", v.Name)
 		return
 	}
 
@@ -231,8 +259,11 @@ func (d *DuplicityEngine) status() (metrics []string, err error) {
 
 // launchDuplicity starts a duplicity container with given command and binds
 func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state int, stdout string, err error) {
-	util.PullImage(d.Handler.Client, d.Handler.Config.Duplicity.Image)
-	util.CheckErr(err, "Failed to pull image: %v", "fatal")
+	err = util.PullImage(d.Handler.Client, d.Handler.Config.Duplicity.Image)
+	if err != nil {
+		err = fmt.Errorf("failed to pull image: %v", err)
+		return
+	}
 
 	env := []string{
 		"AWS_ACCESS_KEY_ID=" + d.Handler.Config.AWS.AccessKeyID,
@@ -269,18 +300,27 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state i
 			Binds: binds,
 		}, nil, "",
 	)
-	util.CheckErr(err, "Failed to create container: %v", "fatal")
+	if err != nil {
+		err = fmt.Errorf("failed to create container: %v", err)
+		return
+	}
 	defer util.RemoveContainer(d.Handler.Client, container.ID)
 
 	log.Debugf("Launching 'duplicity %v'...", strings.Join(cmd, " "))
 	err = d.Handler.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
-	util.CheckErr(err, "Failed to start container: %v", "fatal")
+	if err != nil {
+		err = fmt.Errorf("failed to start container: %v", err)
+	}
 
 	var exited bool
 
 	for !exited {
-		cont, err := d.Handler.ContainerInspect(context.Background(), container.ID)
-		util.CheckErr(err, "Failed to inspect container: %v", "error")
+		var cont types.ContainerJSON
+		cont, err = d.Handler.ContainerInspect(context.Background(), container.ID)
+		if err != nil {
+			err = fmt.Errorf("failed to inspect container: %v", err)
+			return
+		}
 
 		if cont.State.Status == "exited" {
 			exited = true
@@ -294,14 +334,19 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state i
 		Details:    true,
 		Follow:     true,
 	})
-	util.CheckErr(err, "Failed to retrieve logs: %v", "error")
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve logs: %v", err)
+		return
+	}
 
 	defer body.Close()
 	content, err := ioutil.ReadAll(body)
-	util.CheckErr(err, "Failed to read logs from response: %v", "error")
+	if err != nil {
+		err = fmt.Errorf("failed to read logs from response: %v", err)
+		return
+	}
 
 	stdout = string(content)
-
 	log.Debug(stdout)
 
 	return
@@ -337,7 +382,10 @@ func (d *DuplicityEngine) duplicityBackup() (metrics []string, err error) {
 			cacheMount,
 		},
 	)
-	util.CheckErr(err, "Failed to launch Duplicity: %v", "fatal")
+	if err != nil {
+		err = fmt.Errorf("failed to launch duplicity: %v", err)
+		return
+	}
 
 	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"backupExitCode\"} %v", v.Name, state)
 	metrics = []string{
