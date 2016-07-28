@@ -17,7 +17,6 @@ type Engine interface {
 // GetEngine returns the engine for passed volume
 func GetEngine(c *conplicity.Conplicity, vol *types.Volume) Engine {
 	v := &volume.Volume{
-		Config: c.Config,
 		Volume: vol,
 	}
 

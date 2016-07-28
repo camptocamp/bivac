@@ -1,9 +1,6 @@
 package volume
 
-import (
-	"github.com/camptocamp/conplicity/config"
-	"github.com/docker/engine-api/types"
-)
+import "github.com/docker/engine-api/types"
 
 // Handler is an interface providing a mean of launching Duplicity
 type Handler interface {
@@ -19,5 +16,4 @@ type Volume struct {
 	Mount           string
 	FullIfOlderThan string
 	RemoveOlderThan string
-	Config          *config.Config
 }

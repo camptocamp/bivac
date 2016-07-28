@@ -256,16 +256,16 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 
 	fullIfOlderThan, _ := util.GetVolumeLabel(vol, ".full_if_older_than")
 	if fullIfOlderThan == "" {
-		fullIfOlderThan = v.Config.Duplicity.FullIfOlderThan
+		fullIfOlderThan = d.Config.Duplicity.FullIfOlderThan
 	}
 
 	removeOlderThan, _ := util.GetVolumeLabel(vol, ".remove_older_than")
 	if removeOlderThan == "" {
-		removeOlderThan = v.Config.Duplicity.RemoveOlderThan
+		removeOlderThan = d.Config.Duplicity.RemoveOlderThan
 	}
 
 	pathSeparator := "/"
-	if strings.HasPrefix(v.Config.Duplicity.TargetURL, "swift://") {
+	if strings.HasPrefix(d.Config.Duplicity.TargetURL, "swift://") {
 		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity
 		pathSeparator = "_"
 	}
@@ -274,7 +274,7 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 	//backupDir := p.GetBackupDir()
 	backupDir := v.BackupDir
 	hostname, _ := os.Hostname()
-	v.Target = v.Config.Duplicity.TargetURL + pathSeparator + hostname + pathSeparator + vol.Name
+	v.Target = d.Config.Duplicity.TargetURL + pathSeparator + hostname + pathSeparator + vol.Name
 	v.BackupDir = vol.Mountpoint + "/" + backupDir
 	v.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
 
@@ -291,7 +291,7 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 	util.CheckErr(err, "Failed to cleanup extraneous duplicity files for volume "+vol.Name+" : %v", "fatal")
 
 	noVerifyLbl, _ := util.GetVolumeLabel(vol, ".no_verify")
-	noVerify := v.Config.NoVerify || (noVerifyLbl == "true")
+	noVerify := d.Config.NoVerify || (noVerifyLbl == "true")
 	if noVerify {
 		log.WithFields(log.Fields{
 			"volume": vol.Name,
