@@ -7,7 +7,7 @@ Conplicity
 [![By Camptocamp](https://img.shields.io/badge/by-camptocamp-fb7047.svg)](http://www.camptocamp.com)
 
 
-Conplicity lets you backup all your named docker volumes using duplicity.
+Conplicity lets you backup all your named Docker volumes using Duplicity or RClone.
 
 ![Conplicity](img/conplicity_small.png)
 
