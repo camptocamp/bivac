@@ -1,4 +1,4 @@
-package conplicity
+package config
 
 import (
 	"bytes"
@@ -48,6 +48,7 @@ type Config struct {
 	} `group:"Docker Options"`
 }
 
+// LoadConfig loads the config from flags & environment
 func LoadConfig(version string) *Config {
 	var c Config
 	parser := flags.NewParser(&c, flags.Default)

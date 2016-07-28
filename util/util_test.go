@@ -1,4 +1,4 @@
-package conplicity
+package util
 
 import (
 	"errors"
