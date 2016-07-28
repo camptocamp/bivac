@@ -277,6 +277,8 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 	v.Target = d.Config.Duplicity.TargetURL + pathSeparator + hostname + pathSeparator + vol.Name
 	v.BackupDir = vol.Mountpoint + "/" + backupDir
 	v.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
+	v.FullIfOlderThan = fullIfOlderThan
+	v.RemoveOlderThan = removeOlderThan
 
 	var newMetrics []string
 
