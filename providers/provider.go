@@ -20,6 +20,7 @@ type Provider interface {
 	GetHandler() *conplicity.Conplicity
 	GetVolume() *volume.Volume
 	GetBackupDir() string
+	SetVolumeBackupDir()
 }
 
 // BaseProvider is a struct implementing the Provider interface
@@ -69,6 +70,8 @@ func GetProvider(c *conplicity.Conplicity, vol *volume.Volume) Provider {
 
 // PrepareBackup sets up the data before backup
 func PrepareBackup(p Provider) (err error) {
+	p.SetVolumeBackupDir()
+
 	c := p.GetHandler()
 	vol := p.GetVolume()
 	containers, err := c.ContainerList(context.Background(), types.ContainerListOptions{})
@@ -125,4 +128,9 @@ func (p *BaseProvider) GetVolume() *volume.Volume {
 // GetBackupDir returns the backup directory used by the provider
 func (p *BaseProvider) GetBackupDir() string {
 	return p.backupDir
+}
+
+// SetVolumeBackupDir sets the backup dir for the volume
+func (p *BaseProvider) SetVolumeBackupDir() {
+	p.vol.BackupDir = p.backupDir
 }

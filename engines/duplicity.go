@@ -270,8 +270,6 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 		pathSeparator = "_"
 	}
 
-	// TODO
-	//backupDir := p.GetBackupDir()
 	backupDir := v.BackupDir
 	hostname, _ := os.Hostname()
 	v.Target = d.Config.Duplicity.TargetURL + pathSeparator + hostname + pathSeparator + vol.Name
