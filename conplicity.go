@@ -7,7 +7,6 @@ import (
 	"github.com/camptocamp/conplicity/providers"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
-	"github.com/docker/engine-api/types"
 )
 
 var version = "undefined"
@@ -35,10 +34,8 @@ func main() {
 	log.Infof("End backup...")
 }
 
-func backupVolume(c *handler.Conplicity, vol *types.Volume) (metrics []string, err error) {
-	v := volume.NewVolume(vol)
-
-	p := providers.GetProvider(c, v)
+func backupVolume(c *handler.Conplicity, vol *volume.Volume) (metrics []string, err error) {
+	p := providers.GetProvider(c, vol)
 	log.WithFields(log.Fields{
 		"volume":   vol.Name,
 		"provider": p.GetName(),
@@ -46,7 +43,7 @@ func backupVolume(c *handler.Conplicity, vol *types.Volume) (metrics []string, e
 	err = providers.PrepareBackup(p)
 	util.CheckErr(err, "Failed to prepare backup for volume "+vol.Name+": %v", "fatal")
 
-	e := engines.GetEngine(c, v)
+	e := engines.GetEngine(c, vol)
 	log.WithFields(log.Fields{
 		"volume": vol.Name,
 		"engine": e.GetName(),

@@ -16,6 +16,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/config"
 	"github.com/camptocamp/conplicity/util"
+	"github.com/camptocamp/conplicity/volume"
 	docker "github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/engine-api/types/filters"
@@ -79,7 +80,7 @@ func (c *Conplicity) SetupDocker() (err error) {
 }
 
 // GetVolumes returns the Docker volumes, inspected and filtered
-func (c *Conplicity) GetVolumes() (volumes []*types.Volume, err error) {
+func (c *Conplicity) GetVolumes() (volumes []*volume.Volume, err error) {
 	vols, err := c.VolumeList(context.Background(), filters.NewArgs())
 	if err != nil {
 		err = fmt.Errorf("Failed to list Docker volumes: %v", err)
@@ -100,7 +101,8 @@ func (c *Conplicity) GetVolumes() (volumes []*types.Volume, err error) {
 			}).Info("Ignoring volume")
 			continue
 		}
-		volumes = append(volumes, &voll)
+		v := volume.NewVolume(vol)
+		volumes = append(volumes, v)
 	}
 	return
 }
