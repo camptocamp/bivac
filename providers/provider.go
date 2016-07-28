@@ -18,20 +18,20 @@ type Provider interface {
 	GetName() string
 	GetPrepareCommand(*types.MountPoint) []string
 	GetHandler() *conplicity.Conplicity
-	GetVolume() *types.Volume
+	GetVolume() *volume.Volume
 	GetBackupDir() string
 }
 
 // BaseProvider is a struct implementing the Provider interface
 type BaseProvider struct {
 	handler   *conplicity.Conplicity
-	vol       *types.Volume
+	vol       *volume.Volume
 	backupDir string
 }
 
 // GetProvider detects which provider suits the passed volume and returns it
 func GetProvider(c *conplicity.Conplicity, vol *volume.Volume) Provider {
-	v := vol.Volume
+	v := vol
 	log.WithFields(log.Fields{
 		"volume": v.Name,
 	}).Info("Detecting provider")
@@ -39,21 +39,21 @@ func GetProvider(c *conplicity.Conplicity, vol *volume.Volume) Provider {
 		handler: c,
 		vol:     v,
 	}
-	if f, err := os.Stat(v.Mountpoint + "/PG_VERSION"); err == nil && f.Mode().IsRegular() {
+	if f, err := os.Stat(v.Volume.Mountpoint + "/PG_VERSION"); err == nil && f.Mode().IsRegular() {
 		log.WithFields(log.Fields{
 			"volume": v.Name,
 		}).Debug("PG_VERSION file found, this should be a PostgreSQL datadir")
 		return &PostgreSQLProvider{
 			BaseProvider: p,
 		}
-	} else if f, err := os.Stat(v.Mountpoint + "/mysql"); err == nil && f.Mode().IsDir() {
+	} else if f, err := os.Stat(v.Volume.Mountpoint + "/mysql"); err == nil && f.Mode().IsDir() {
 		log.WithFields(log.Fields{
 			"volume": v.Name,
 		}).Debug("mysql directory found, this should be MySQL datadir")
 		return &MySQLProvider{
 			BaseProvider: p,
 		}
-	} else if f, err := os.Stat(v.Mountpoint + "/DB_CONFIG"); err == nil && f.Mode().IsRegular() {
+	} else if f, err := os.Stat(v.Volume.Mountpoint + "/DB_CONFIG"); err == nil && f.Mode().IsRegular() {
 		log.WithFields(log.Fields{
 			"volume": v.Name,
 		}).Debug("DB_CONFIG file found, this should be and OpenLDAP datadir")
@@ -118,7 +118,7 @@ func (p *BaseProvider) GetHandler() *conplicity.Conplicity {
 }
 
 // GetVolume returns the volume associated with the provider
-func (p *BaseProvider) GetVolume() *types.Volume {
+func (p *BaseProvider) GetVolume() *volume.Volume {
 	return p.vol
 }
 
