@@ -71,7 +71,7 @@ Help Options:
 
 ```shell
 $ conplicity \
-  -u s3://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
+  -u s3+http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
   --aws-access-key-id=<my_key_id> \
   --aws-secret-key-id=<my_secret_key>
 ```
@@ -81,7 +81,7 @@ $ conplicity \
 
 ```shell
 $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
-   -e DUPLICITY_TARGET_URL=s3://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
+   -e DUPLICITY_TARGET_URL=s3+http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
    -e AWS_ACCESS_KEY_ID=<my_key_id> \
    -e AWS_SECRET_ACCESS_KEY=<my_secret_key> \
      camptocamp/conplicity
