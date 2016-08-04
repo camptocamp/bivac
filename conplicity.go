@@ -38,9 +38,9 @@ func main() {
 	}
 
 	m := metrics.NewMetrics(c)
-	err = m.Push()
+	err = m.Push(true)
 	if err != nil {
-		log.Errorf("Failed to post data to Prometheus Pushgateway: %v", err)
+		log.Errorf("Failed to put data to Prometheus Pushgateway: %v", err)
 		exitCode = 2
 	}
 
