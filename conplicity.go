@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/engines"
@@ -30,6 +31,15 @@ func main() {
 	m := metrics.NewMetrics(c)
 
 	for _, vol := range vols {
+		startTimeMetric := fmt.Sprintf("conplicity_backupStartTime{volume=\"%v\"} %v", vol.Name, time.Now().Unix())
+		c.Metrics = append(c.Metrics, []string{startTimeMetric}...)
+
+		err = m.Push(false)
+		if err != nil {
+			log.Errorf("Failed to post data to Prometheus Pushgateway: %v", err)
+			exitCode = 2
+		}
+
 		metrics, err := backupVolume(c, vol)
 		if err != nil {
 			log.Errorf("Failed to backup volume %s: %v", vol.Name, err)
