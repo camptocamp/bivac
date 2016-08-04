@@ -183,7 +183,7 @@ func (d *DuplicityEngine) verify() (metrics []string, err error) {
 		err = fmt.Errorf("failed to launch duplicity: %v", err)
 		return
 	}
-	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"verifyExitCode\"} %v", v.Name, state)
+	metric := fmt.Sprintf("conplicity_verifyExitCode{volume=\"%v\"} %v", v.Name, state)
 	metrics = []string{
 		metric,
 	}
@@ -245,9 +245,9 @@ func (d *DuplicityEngine) status() (metrics []string, err error) {
 		return
 	}
 
-	lastBackupMetric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"lastBackup\"} %v", v.Name, chainEndTimeDate.Unix())
+	lastBackupMetric := fmt.Sprintf("conplicity_lastBackup{volume=\"%v\"} %v", v.Name, chainEndTimeDate.Unix())
 
-	lastFullBackupMetric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"lastFullBackup\"} %v", v.Name, fullBackupDate.Unix())
+	lastFullBackupMetric := fmt.Sprintf("conplicity_lastFullBackup{volume=\"%v\"} %v", v.Name, fullBackupDate.Unix())
 
 	metrics = []string{
 		lastBackupMetric,
@@ -387,7 +387,7 @@ func (d *DuplicityEngine) duplicityBackup() (metrics []string, err error) {
 		return
 	}
 
-	metric := fmt.Sprintf("conplicity{volume=\"%v\",what=\"backupExitCode\"} %v", v.Name, state)
+	metric := fmt.Sprintf("conplicity_backupExitCode{volume=\"%v\"} %v", v.Name, state)
 	metrics = []string{
 		metric,
 	}
