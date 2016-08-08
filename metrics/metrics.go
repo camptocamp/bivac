@@ -24,7 +24,14 @@ func NewMetrics(c *handler.Conplicity) *PrometheusMetrics {
 }
 
 // Push sends metrics to a Prometheus push gateway
-func (p *PrometheusMetrics) Push() (err error) {
+func (p *PrometheusMetrics) Push(replace bool) (err error) {
+	var verb string
+	if replace {
+		verb = "PUT"
+	} else {
+		verb = "POST"
+	}
+
 	c := p.Handler
 	if len(c.Metrics) == 0 || c.Config.Metrics.PushgatewayURL == "" {
 		return
@@ -35,10 +42,11 @@ func (p *PrometheusMetrics) Push() (err error) {
 
 	log.WithFields(log.Fields{
 		"data": data,
+		"verb": verb,
 		"url":  url,
 	}).Debug("Sending metrics to Prometheus Pushgateway")
 
-	req, err := http.NewRequest("PUT", url, bytes.NewBufferString(data))
+	req, err := http.NewRequest(verb, url, bytes.NewBufferString(data))
 	if err != nil {
 		err = fmt.Errorf("failed to create HTTP request: %v", err)
 		return
