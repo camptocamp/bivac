@@ -68,12 +68,21 @@ func (m *Metric) UpdateEvent(event *Event) {
 	var found bool
 	for _, e := range m.Events {
 		if e.Equals(event) {
+			log.WithFields(log.Fields{
+				"metric":    m.Name,
+				"old_event": e.String(),
+				"new_event": event.String(),
+			}).Debug("Replacing event")
 			e = event
 			found = true
 			break
 		}
 	}
 	if !found {
+		log.WithFields(log.Fields{
+			"metric": m.Name,
+			"event":  event.String(),
+		}).Debug("Adding event")
 		m.Events = append(m.Events, event)
 	}
 }
