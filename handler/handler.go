@@ -99,7 +99,7 @@ func (c *Conplicity) GetVolumes() (volumes []*volume.Volume, err error) {
 			}).Info("Ignoring volume")
 			continue
 		}
-		v := volume.NewVolume(vol)
+		v := volume.NewVolume(&voll)
 		volumes = append(volumes, v)
 	}
 	return
