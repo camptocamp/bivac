@@ -3,7 +3,6 @@ package engines
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
-	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 )
 
@@ -15,10 +14,8 @@ type Engine interface {
 
 // GetEngine returns the engine for passed volume
 func GetEngine(c *handler.Conplicity, v *volume.Volume) Engine {
-	engine, _ := util.GetVolumeLabel(v.Volume, ".engine")
-	if engine == "" {
-		engine = c.Config.Engine
-	}
+	engine := v.Config.Engine
+	log.Debugf("engine=%s", engine)
 
 	switch engine {
 	case "duplicity":

@@ -93,8 +93,20 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
 The parameters used to backup each volume can be fine-tuned using volume labels (requires Docker 1.11.0 or greater):
 
 - `io.conplicity.ignore=true` ignores the volume
-- `io.conplicity.full_if_older_than=<value>` sets the time period after which a full backup is performed. Defaults to the `CONPLICITY_FULL_IF_OLDER_THAN` environment variable value
 - `io.conplicity.no_verify=true` skips verification of the volume's backup (faster)
+- `io.conplicity.duplicity.full_if_older_than=<value>` sets the time period after which a full backup is performed. Defaults to the `CONPLICITY_FULL_IF_OLDER_THAN` environment variable value
+- `io.conplicity.duplicity.remove_older_than=<value>` sets the time period after which to remove older backups. Defaults to the `CONPLICITY_REMOVE_OLDER_THAN` environment variable value
+
+If you cannot use volume labels, you can drop a `.conplicity.overrides` file at the root of the volume:
+
+```ini
+engine = "rclone"
+no_verify = true
+
+[duplicity]
+full_if_older_than = "3D"
+remove_older_than = "5D"
+```
 
 
 ## Providers

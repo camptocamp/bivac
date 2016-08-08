@@ -45,16 +45,6 @@ func (d *DuplicityEngine) Backup() (err error) {
 		"mountpoint": vol.Mountpoint,
 	}).Info("Creating duplicity container")
 
-	fullIfOlderThan, _ := util.GetVolumeLabel(vol.Volume, ".full_if_older_than")
-	if fullIfOlderThan == "" {
-		fullIfOlderThan = d.Handler.Config.Duplicity.FullIfOlderThan
-	}
-
-	removeOlderThan, _ := util.GetVolumeLabel(vol.Volume, ".remove_older_than")
-	if removeOlderThan == "" {
-		removeOlderThan = d.Handler.Config.Duplicity.RemoveOlderThan
-	}
-
 	pathSeparator := "/"
 	if strings.HasPrefix(d.Handler.Config.Duplicity.TargetURL, "swift://") {
 		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity
@@ -65,8 +55,6 @@ func (d *DuplicityEngine) Backup() (err error) {
 	vol.Target = d.Handler.Config.Duplicity.TargetURL + pathSeparator + d.Handler.Hostname + pathSeparator + vol.Name
 	vol.BackupDir = vol.Mountpoint + "/" + backupDir
 	vol.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
-	vol.FullIfOlderThan = fullIfOlderThan
-	vol.RemoveOlderThan = removeOlderThan
 
 	err = d.duplicityBackup()
 	if err != nil {
@@ -86,9 +74,7 @@ func (d *DuplicityEngine) Backup() (err error) {
 		return
 	}
 
-	noVerifyLbl, _ := util.GetVolumeLabel(vol.Volume, ".no_verify")
-	noVerify := d.Handler.Config.NoVerify || (noVerifyLbl == "true")
-	if noVerify {
+	if vol.Config.NoVerify {
 		log.WithFields(log.Fields{
 			"volume": vol.Name,
 		}).Info("Skipping verification")
@@ -114,7 +100,7 @@ func (d *DuplicityEngine) removeOld() (err error) {
 	v := d.Volume
 	_, _, err = d.launchDuplicity(
 		[]string{
-			"remove-older-than", v.RemoveOlderThan,
+			"remove-older-than", v.Config.RemoveOlderThan,
 			"--s3-use-new-style",
 			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",
@@ -372,7 +358,7 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 	log.WithFields(log.Fields{
 		"name":               v.Name,
 		"backup_dir":         v.BackupDir,
-		"full_if_older_than": v.FullIfOlderThan,
+		"full_if_older_than": v.Config.FullIfOlderThan,
 		"target":             v.Target,
 		"mount":              v.Mount,
 	}).Debug("Starting volume backup")
@@ -382,7 +368,7 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 
 	state, _, err := d.launchDuplicity(
 		[]string{
-			"--full-if-older-than", v.FullIfOlderThan,
+			"--full-if-older-than", v.Config.FullIfOlderThan,
 			"--s3-use-new-style",
 			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",

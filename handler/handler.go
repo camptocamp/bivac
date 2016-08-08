@@ -112,7 +112,7 @@ func (c *Conplicity) GetVolumes() (volumes []*volume.Volume, err error) {
 			}).Info("Ignoring volume")
 			continue
 		}
-		v := volume.NewVolume(&voll)
+		v := volume.NewVolume(&voll, c.Config)
 		volumes = append(volumes, v)
 	}
 	return
@@ -145,7 +145,7 @@ func (c *Conplicity) blacklistedVolume(vol *types.Volume) (bool, string, string)
 		return true, "blacklisted", "blacklist config"
 	}
 
-	if ignoreLbl, _ := util.GetVolumeLabel(vol, ".ignore"); ignoreLbl == "true" {
+	if ignoreLbl, _ := util.GetVolumeLabel(vol, "ignore"); ignoreLbl == "true" {
 		return true, "blacklisted", "volume label"
 	}
 
