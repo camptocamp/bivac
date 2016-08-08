@@ -30,7 +30,9 @@ func main() {
 	util.CheckErr(err, "Failed to get exiting Prometheus metrics: %v", "fatal")
 
 	for _, vol := range vols {
+		c.LogTime(vol, "backupStartTime")
 		err = backupVolume(c, vol)
+		c.LogTime(vol, "backupEndTime")
 		if err != nil {
 			log.Errorf("Failed to backup volume %s: %v", vol.Name, err)
 			exitCode = 1
