@@ -3,13 +3,14 @@ package engines
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
+	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 )
 
 // Engine implements a backup engine interface
 type Engine interface {
-	Backup() ([]string, error)
+	Backup() ([]*metrics.Event, error)
 	GetName() string
 }
 

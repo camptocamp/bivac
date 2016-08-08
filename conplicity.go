@@ -28,17 +28,18 @@ func main() {
 	util.CheckErr(err, "Failed to get Docker volumes: %v", "fatal")
 
 	for _, vol := range vols {
-		metrics, err := backupVolume(c, vol)
+		events, err := backupVolume(c, vol)
 		if err != nil {
 			log.Errorf("Failed to backup volume %s: %v", vol.Name, err)
 			exitCode = 1
 			continue
 		}
-		c.Metrics = append(c.Metrics, metrics...)
+		for _, e := range events {
+			c.UpdateEvent(e)
+		}
 	}
 
-	m := metrics.NewMetrics(c)
-	err = m.Push()
+	err = c.MetricsHandler.Push()
 	if err != nil {
 		log.Errorf("Failed to post data to Prometheus Pushgateway: %v", err)
 		exitCode = 2
@@ -48,7 +49,7 @@ func main() {
 	os.Exit(exitCode)
 }
 
-func backupVolume(c *handler.Conplicity, vol *volume.Volume) (metrics []string, err error) {
+func backupVolume(c *handler.Conplicity, vol *volume.Volume) (metrics []*metrics.Event, err error) {
 	p := providers.GetProvider(c, vol)
 	log.WithFields(log.Fields{
 		"volume":   vol.Name,
