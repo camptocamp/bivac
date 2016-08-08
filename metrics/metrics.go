@@ -21,6 +21,7 @@ type PrometheusMetrics struct {
 type Metric struct {
 	Name   string
 	Events []*Event
+	Type   string
 }
 
 // Event is a Prometheus Metric Event
@@ -82,6 +83,19 @@ func (p *PrometheusMetrics) GetMetrics() (err error) {
 	}
 	log.Debug(string(body))
 	for _, l := range strings.Split(string(body), "\n") {
+		if strings.HasPrefix(l, "# TYPE ") {
+			lSplit := strings.Fields(l)
+			mName := lSplit[2]
+			mType := lSplit[3]
+			m, ok := p.Metrics[mName]
+			if !ok {
+				m = &Metric{
+					Name: mName,
+				}
+			}
+			m.Type = mType
+			continue
+		}
 		e := parseEvent(l)
 		if e == nil {
 			continue
@@ -152,6 +166,9 @@ func (p *PrometheusMetrics) Push() (err error) {
 
 	var data string
 	for _, m := range metrics {
+		if m.Type != "" {
+			data += fmt.Sprintf("# TYPE %s %s\n", m.Name, m.Type)
+		}
 		for _, e := range m.Events {
 			data += fmt.Sprintf("%s\n", e)
 		}
