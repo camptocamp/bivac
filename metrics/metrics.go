@@ -157,11 +157,6 @@ func (p *PrometheusMetrics) Push() (err error) {
 		return
 	}
 	metrics := p.Metrics
-	if len(metrics) == 0 {
-		log.Debug("No metrics to push")
-		return
-	}
-
 	url := p.PushgatewayURL + "/metrics/job/conplicity/instance/" + p.Instance
 
 	var data string
