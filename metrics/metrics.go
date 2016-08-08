@@ -85,10 +85,10 @@ func (p *PrometheusMetrics) NewMetric(name, mType string) (m *Metric) {
 	if !ok {
 		m = &Metric{
 			Name: name,
-			Type: mType,
 		}
 		p.Metrics[name] = m
 	}
+	m.Type = mType
 	return
 }
 
