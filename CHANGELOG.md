@@ -1,3 +1,24 @@
+# [0.22.0](https://github.com/camptocamp/conplicity/releases/tag/0.22.0) (2016-08-08)
+
+* Internals:
+
+  - Fix volume labels fetching (fix #83)
+  - Refactor metrics, using Metric and Event structs
+
+* Metrics:
+
+  - Change metric names according to Prometheus docs
+  - Fetch existing metrics from Prometheus gateway (fix #84)
+
+* Testing:
+
+  - Add metrics to coverage
+
+* Documentation:
+
+  - Add return codes to README
+  - Document engines in README
+
 # [0.21.0](https://github.com/camptocamp/conplicity/releases/tag/0.21.0) (2016-07-28)
 
 * Internals:
