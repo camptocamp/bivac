@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
+	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/engine-api/types"
@@ -35,7 +37,7 @@ func (*DuplicityEngine) GetName() string {
 }
 
 // Backup performs the backup of the passed volume
-func (d *DuplicityEngine) Backup() (metrics []string, err error) {
+func (d *DuplicityEngine) Backup() (events []*metrics.Event, err error) {
 	vol := d.Volume
 	log.WithFields(log.Fields{
 		"volume":     vol.Name,
@@ -66,14 +68,14 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 	vol.FullIfOlderThan = fullIfOlderThan
 	vol.RemoveOlderThan = removeOlderThan
 
-	var newMetrics []string
+	var newEvents []*metrics.Event
 
-	newMetrics, err = d.duplicityBackup()
+	newEvents, err = d.duplicityBackup()
 	if err != nil {
 		err = fmt.Errorf("failed to backup volume with duplicity: %v", err)
 		return
 	}
-	metrics = append(metrics, newMetrics...)
+	events = append(events, newEvents...)
 
 	_, err = d.removeOld()
 	if err != nil {
@@ -94,26 +96,26 @@ func (d *DuplicityEngine) Backup() (metrics []string, err error) {
 			"volume": vol.Name,
 		}).Info("Skipping verification")
 	} else {
-		newMetrics, err = d.verify()
+		newEvents, err = d.verify()
 		if err != nil {
 			err = fmt.Errorf("failed to verify backup: %v", err)
 			return
 		}
-		metrics = append(metrics, newMetrics...)
+		events = append(events, newEvents...)
 	}
 
-	newMetrics, err = d.status()
+	newEvents, err = d.status()
 	if err != nil {
 		err = fmt.Errorf("failed to retrieve last backup info: %v", err)
 		return
 	}
-	metrics = append(metrics, newMetrics...)
+	events = append(events, newEvents...)
 
 	return
 }
 
 // removeOld cleans up old backup data
-func (d *DuplicityEngine) removeOld() (metrics []string, err error) {
+func (d *DuplicityEngine) removeOld() (events []*metrics.Event, err error) {
 	v := d.Volume
 	_, _, err = d.launchDuplicity(
 		[]string{
@@ -137,7 +139,7 @@ func (d *DuplicityEngine) removeOld() (metrics []string, err error) {
 }
 
 // cleanup removes old index data from duplicity
-func (d *DuplicityEngine) cleanup() (metrics []string, err error) {
+func (d *DuplicityEngine) cleanup() (events []*metrics.Event, err error) {
 	v := d.Volume
 	_, _, err = d.launchDuplicity(
 		[]string{
@@ -161,7 +163,7 @@ func (d *DuplicityEngine) cleanup() (metrics []string, err error) {
 }
 
 // verify checks that the backup is usable
-func (d *DuplicityEngine) verify() (metrics []string, err error) {
+func (d *DuplicityEngine) verify() (events []*metrics.Event, err error) {
 	v := d.Volume
 	state, _, err := d.launchDuplicity(
 		[]string{
@@ -183,15 +185,20 @@ func (d *DuplicityEngine) verify() (metrics []string, err error) {
 		err = fmt.Errorf("failed to launch duplicity: %v", err)
 		return
 	}
-	metric := fmt.Sprintf("conplicity_verifyExitCode{volume=\"%v\"} %v", v.Name, state)
-	metrics = []string{
-		metric,
+	events = []*metrics.Event{
+		{
+			Name: "conplicity_verifyExitCode",
+			Labels: map[string]string{
+				"volume": v.Name,
+			},
+			Value: strconv.Itoa(state),
+		},
 	}
 	return
 }
 
 // status gets the latest backup date info from duplicity
-func (d *DuplicityEngine) status() (metrics []string, err error) {
+func (d *DuplicityEngine) status() (events []*metrics.Event, err error) {
 	v := d.Volume
 	_, stdout, err := d.launchDuplicity(
 		[]string{
@@ -245,13 +252,24 @@ func (d *DuplicityEngine) status() (metrics []string, err error) {
 		return
 	}
 
-	lastBackupMetric := fmt.Sprintf("conplicity_lastBackup{volume=\"%v\"} %v", v.Name, chainEndTimeDate.Unix())
+	lastBackupEvent := &metrics.Event{
+		Name: "conplicity_lastBackup",
+		Labels: map[string]string{
+			"volume": v.Name,
+		},
+		Value: strconv.FormatInt(chainEndTimeDate.Unix(), 10),
+	}
+	lastFullBackupEvent := &metrics.Event{
+		Name: "conplicity_lastFullBackup",
+		Labels: map[string]string{
+			"volume": v.Name,
+		},
+		Value: strconv.FormatInt(fullBackupDate.Unix(), 10),
+	}
 
-	lastFullBackupMetric := fmt.Sprintf("conplicity_lastFullBackup{volume=\"%v\"} %v", v.Name, fullBackupDate.Unix())
-
-	metrics = []string{
-		lastBackupMetric,
-		lastFullBackupMetric,
+	events = []*metrics.Event{
+		lastBackupEvent,
+		lastFullBackupEvent,
 	}
 
 	return
@@ -353,7 +371,7 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state i
 }
 
 // duplicityBackup performs the backup of a volume with duplicity
-func (d *DuplicityEngine) duplicityBackup() (metrics []string, err error) {
+func (d *DuplicityEngine) duplicityBackup() (events []*metrics.Event, err error) {
 	v := d.Volume
 	log.WithFields(log.Fields{
 		"name":               v.Name,
@@ -387,9 +405,14 @@ func (d *DuplicityEngine) duplicityBackup() (metrics []string, err error) {
 		return
 	}
 
-	metric := fmt.Sprintf("conplicity_backupExitCode{volume=\"%v\"} %v", v.Name, state)
-	metrics = []string{
-		metric,
+	events = []*metrics.Event{
+		&metrics.Event{
+			Name: "conplicity_backupExitCode",
+			Labels: map[string]string{
+				"volume": v.Name,
+			},
+			Value: strconv.Itoa(state),
+		},
 	}
 	return
 }

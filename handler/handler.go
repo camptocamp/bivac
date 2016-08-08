@@ -13,6 +13,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/config"
+	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 	docker "github.com/docker/engine-api/client"
@@ -23,9 +24,9 @@ import (
 // Conplicity is the main handler struct
 type Conplicity struct {
 	*docker.Client
-	Config   *config.Config
-	Hostname string
-	Metrics  []string
+	Config         *config.Config
+	Hostname       string
+	MetricsHandler *metrics.PrometheusMetrics
 }
 
 // NewConplicity returns a new Conplicity handler
@@ -48,6 +49,15 @@ func (c *Conplicity) Setup(version string) (err error) {
 	err = c.SetupDocker()
 	util.CheckErr(err, "Failed to setup docker: %v", "fatal")
 
+	err = c.SetupMetrics()
+	util.CheckErr(err, "Failed to setup metrics: %v", "fatal")
+
+	return
+}
+
+// SetupMetrics for the client
+func (c *Conplicity) SetupMetrics() (err error) {
+	c.MetricsHandler = metrics.NewMetrics(c.Hostname, c.Config.Metrics.PushgatewayURL)
 	return
 }
 
@@ -103,6 +113,32 @@ func (c *Conplicity) GetVolumes() (volumes []*volume.Volume, err error) {
 		volumes = append(volumes, v)
 	}
 	return
+}
+
+// UpdateEvent updates a metric event
+func (c *Conplicity) UpdateEvent(event *metrics.Event) {
+	m, ok := c.MetricsHandler.Metrics[event.Name]
+	if !ok {
+		log.WithFields(log.Fields{
+			"metric": event.Name,
+		}).Debug("Adding new metric")
+		m = &metrics.Metric{
+			Name: event.Name,
+		}
+		c.MetricsHandler.Metrics[event.Name] = m
+	}
+
+	var found bool
+	for _, e := range m.Events {
+		if e.Equals(event) {
+			e = event
+			found = true
+			break
+		}
+	}
+	if !found {
+		m.Events = append(m.Events, event)
+	}
 }
 
 func (c *Conplicity) blacklistedVolume(vol *types.Volume) (bool, string, string) {
