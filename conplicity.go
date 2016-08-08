@@ -27,6 +27,9 @@ func main() {
 	vols, err := c.GetVolumes()
 	util.CheckErr(err, "Failed to get Docker volumes: %v", "fatal")
 
+	err = c.MetricsHandler.GetMetrics()
+	util.CheckErr(err, "Failed to get exiting Prometheus metrics: %v", "fatal")
+
 	for _, vol := range vols {
 		events, err := backupVolume(c, vol)
 		if err != nil {

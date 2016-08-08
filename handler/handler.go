@@ -55,12 +55,6 @@ func (c *Conplicity) Setup(version string) (err error) {
 	return
 }
 
-// SetupMetrics for the client
-func (c *Conplicity) SetupMetrics() (err error) {
-	c.MetricsHandler = metrics.NewMetrics(c.Hostname, c.Config.Metrics.PushgatewayURL)
-	return
-}
-
 // GetHostname gets the host name
 func (c *Conplicity) GetHostname() (err error) {
 	if c.Config.HostnameFromRancher {
@@ -84,6 +78,13 @@ func (c *Conplicity) GetHostname() (err error) {
 func (c *Conplicity) SetupDocker() (err error) {
 	c.Client, err = docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
 	util.CheckErr(err, "Failed to create Docker client: %v", "fatal")
+	return
+}
+
+// SetupMetrics for the client
+func (c *Conplicity) SetupMetrics() (err error) {
+	c.MetricsHandler = metrics.NewMetrics(c.Hostname, c.Config.Metrics.PushgatewayURL)
+	util.CheckErr(err, "Failed to set up metrics: %v", "fatal")
 	return
 }
 
