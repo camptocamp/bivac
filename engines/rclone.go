@@ -9,7 +9,6 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
-	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/engine-api/types"
@@ -28,7 +27,7 @@ func (*RCloneEngine) GetName() string {
 }
 
 // Backup performs the backup of the passed volume
-func (r *RCloneEngine) Backup() (events []*metrics.Event, err error) {
+func (r *RCloneEngine) Backup() (err error) {
 	v := r.Volume
 	target := r.Handler.Config.RClone.TargetURL + "/" + r.Handler.Hostname + "/" + v.Name
 	backupDir := v.Mountpoint + "/" + v.BackupDir
