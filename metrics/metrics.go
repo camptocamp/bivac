@@ -62,6 +62,36 @@ func (e *Event) Equals(newEvent *Event) bool {
 	return true
 }
 
+// UpdateEvent adds an event, or updates it if the event already exists
+func (m *Metric) UpdateEvent(event *Event) {
+	event.Name = m.Name
+	var found bool
+	for _, e := range m.Events {
+		if e.Equals(event) {
+			e = event
+			found = true
+			break
+		}
+	}
+	if !found {
+		m.Events = append(m.Events, event)
+	}
+}
+
+// NewMetric adds a new metric if it doesn't exist yet
+// or returns the existing matching metric otherwise
+func (p *PrometheusMetrics) NewMetric(name, mType string) (m *Metric) {
+	m, ok := p.Metrics[name]
+	if !ok {
+		m = &Metric{
+			Name: name,
+			Type: mType,
+		}
+		p.Metrics[name] = m
+	}
+	return
+}
+
 // GetMetrics returns a map of existing metrics
 func (p *PrometheusMetrics) GetMetrics() (err error) {
 	if p.PushgatewayURL == "" {

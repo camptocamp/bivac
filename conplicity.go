@@ -7,7 +7,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/engines"
 	"github.com/camptocamp/conplicity/handler"
-	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/providers"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
@@ -31,14 +30,11 @@ func main() {
 	util.CheckErr(err, "Failed to get exiting Prometheus metrics: %v", "fatal")
 
 	for _, vol := range vols {
-		events, err := backupVolume(c, vol)
+		err = backupVolume(c, vol)
 		if err != nil {
 			log.Errorf("Failed to backup volume %s: %v", vol.Name, err)
 			exitCode = 1
 			continue
-		}
-		for _, e := range events {
-			c.UpdateEvent(e)
 		}
 	}
 
@@ -52,7 +48,7 @@ func main() {
 	os.Exit(exitCode)
 }
 
-func backupVolume(c *handler.Conplicity, vol *volume.Volume) (metrics []*metrics.Event, err error) {
+func backupVolume(c *handler.Conplicity, vol *volume.Volume) (err error) {
 	p := providers.GetProvider(c, vol)
 	log.WithFields(log.Fields{
 		"volume":   vol.Name,
@@ -70,7 +66,7 @@ func backupVolume(c *handler.Conplicity, vol *volume.Volume) (metrics []*metrics
 		"engine": e.GetName(),
 	}).Info("Found backup engine")
 
-	metrics, err = e.Backup()
+	err = e.Backup()
 	if err != nil {
 		err = fmt.Errorf("failed to backup volume: %v", err)
 		return

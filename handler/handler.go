@@ -116,32 +116,6 @@ func (c *Conplicity) GetVolumes() (volumes []*volume.Volume, err error) {
 	return
 }
 
-// UpdateEvent updates a metric event
-func (c *Conplicity) UpdateEvent(event *metrics.Event) {
-	m, ok := c.MetricsHandler.Metrics[event.Name]
-	if !ok {
-		log.WithFields(log.Fields{
-			"metric": event.Name,
-		}).Debug("Adding new metric")
-		m = &metrics.Metric{
-			Name: event.Name,
-		}
-		c.MetricsHandler.Metrics[event.Name] = m
-	}
-
-	var found bool
-	for _, e := range m.Events {
-		if e.Equals(event) {
-			e = event
-			found = true
-			break
-		}
-	}
-	if !found {
-		m.Events = append(m.Events, event)
-	}
-}
-
 func (c *Conplicity) blacklistedVolume(vol *types.Volume) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" || vol.Name == "lost+found" {
 		return true, "unnamed", ""
