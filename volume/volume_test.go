@@ -4,11 +4,13 @@ import "testing"
 
 // Set up fake volume
 var fakeVol = Volume{
-	Target:          "/foo",
-	BackupDir:       "/back",
-	Mount:           "/mnt",
-	FullIfOlderThan: "3W",
-	RemoveOlderThan: "1Y",
+	Target:    "/foo",
+	BackupDir: "/back",
+	Mount:     "/mnt",
+	Config: &Config{
+		FullIfOlderThan: "3W",
+		RemoveOlderThan: "1Y",
+	},
 }
 
 // TestNewVolume checks the creation of a new volume
@@ -25,11 +27,11 @@ func TestNewVolume(t *testing.T) {
 		t.Fatalf("Volume mount dir is wrong. Expected /mnt, got %v", fakeVol.Mount)
 	}
 
-	if fakeVol.FullIfOlderThan != "3W" {
-		t.Fatalf("Volume FullIfOlderThan is wrong. Expected 3W, got %v", fakeVol.FullIfOlderThan)
+	if fakeVol.Config.FullIfOlderThan != "3W" {
+		t.Fatalf("Volume FullIfOlderThan is wrong. Expected 3W, got %v", fakeVol.Config.FullIfOlderThan)
 	}
 
-	if fakeVol.RemoveOlderThan != "1Y" {
-		t.Fatalf("Volume RemoveOlderThan is wrong. Expected 1Y, got %v", fakeVol.RemoveOlderThan)
+	if fakeVol.Config.RemoveOlderThan != "1Y" {
+		t.Fatalf("Volume RemoveOlderThan is wrong. Expected 1Y, got %v", fakeVol.Config.RemoveOlderThan)
 	}
 }
