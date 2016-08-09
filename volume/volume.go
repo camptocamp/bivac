@@ -28,8 +28,10 @@ type Config struct {
 	NoVerify bool   `label:"no_verify" ini:"no_verify" config:"NoVerify"`
 
 	// Duplicity config
-	FullIfOlderThan string `label:"full_if_older_than" ini-section:"duplicity" ini:"duplicity.full_if_older_than" config-section:"Duplicity" config:"FullIfOlderThan"`
-	RemoveOlderThan string `label:"remove_older_than" ini-section:"duplicity" ini:"duplicity.remove_older_than" config-section:"Duplicity" config:"RemoveOlderThan"`
+	Duplicity struct {
+		FullIfOlderThan string `label:"full_if_older_than" ini:"full_if_older_than" config:"FullIfOlderThan"`
+		RemoveOlderThan string `label:"remove_older_than" ini:"duplicity.remove_older_than" config:"RemoveOlderThan"`
+	} `label:"duplicity" ini:"duplicity" config:"Duplicity"`
 }
 
 // NewVolume returns a new Volume for a given types.Volume struct
@@ -58,17 +60,29 @@ func (v *Volume) getConfig(c *config.Config) error {
 	}
 
 	ptrRef := reflect.ValueOf(v.Config)
-	if ptrRef.Kind() != reflect.Ptr {
-		return fmt.Errorf("not a ptr")
-	}
 	ref := ptrRef.Elem()
+
+	return v.getStructConfig(ref, c, iniOverrides, "")
+}
+
+func (v *Volume) getStructConfig(ref reflect.Value, c *config.Config, iniOverrides *ini.File, structTag reflect.StructTag) error {
 	if ref.Kind() != reflect.Struct {
 		return fmt.Errorf("not a struct ptr")
 	}
 
 	refType := ref.Type()
 	for i := 0; i < refType.NumField(); i++ {
-		value := v.getField(refType.Field(i), c, iniOverrides)
+		if ref.Field(i).Kind() == reflect.Struct {
+			log.Debugf("Found a struct %s", refType.Field(i).Name)
+			err := v.getStructConfig(ref.Field(i), c, iniOverrides, refType.Field(i).Tag)
+			if err != nil {
+				return err
+			}
+			continue
+		}
+
+		log.Debugf("Getting value for field %s", refType.Field(i).Name)
+		value := v.getField(refType.Field(i), c, iniOverrides, structTag)
 		log.Debugf("Got volume config: %s=%v", refType.Field(i).Name, value)
 		if err := setField(ref.Field(i), refType.Field(i), value); err != nil {
 			return err
@@ -77,21 +91,26 @@ func (v *Volume) getConfig(c *config.Config) error {
 	return nil
 }
 
-func (v *Volume) getField(field reflect.StructField, c *config.Config, iniOverrides *ini.File) (value interface{}) {
+func (v *Volume) getField(field reflect.StructField, c *config.Config, iniOverrides *ini.File, structTag reflect.StructTag) (value interface{}) {
 	log.Debugf("Getting field %s from docker label", field.Name)
-	value, _ = util.GetVolumeLabel(v.Volume, field.Tag.Get("label"))
+	var label string
+	if prefix := structTag.Get("label"); prefix != "" {
+		label = fmt.Sprintf("%s.", prefix)
+	}
+	label += field.Tag.Get("label")
+	value, _ = util.GetVolumeLabel(v.Volume, label)
 	if value != "" {
 		return
 	}
 
 	log.Debugf("Getting field %s from ini overrides", field.Name)
-	value = getIniValue(iniOverrides, field.Tag.Get("ini-section"), field.Tag.Get("ini"))
+	value = getIniValue(iniOverrides, structTag.Get("ini"), field.Tag.Get("ini"))
 	if value != "" {
 		return
 	}
 
 	log.Debugf("Getting field %s from general config", field.Name)
-	value = getConfigKey(c, field.Tag.Get("config-section"), field.Tag.Get("config"))
+	value = getConfigKey(c, structTag.Get("config"), field.Tag.Get("config"))
 
 	return
 }

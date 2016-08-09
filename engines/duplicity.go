@@ -100,7 +100,7 @@ func (d *DuplicityEngine) removeOld() (err error) {
 	v := d.Volume
 	_, _, err = d.launchDuplicity(
 		[]string{
-			"remove-older-than", v.Config.RemoveOlderThan,
+			"remove-older-than", v.Config.Duplicity.RemoveOlderThan,
 			"--s3-use-new-style",
 			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",
@@ -358,7 +358,7 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 	log.WithFields(log.Fields{
 		"name":               v.Name,
 		"backup_dir":         v.BackupDir,
-		"full_if_older_than": v.Config.FullIfOlderThan,
+		"full_if_older_than": v.Config.Duplicity.FullIfOlderThan,
 		"target":             v.Target,
 		"mount":              v.Mount,
 	}).Debug("Starting volume backup")
@@ -368,7 +368,7 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 
 	state, _, err := d.launchDuplicity(
 		[]string{
-			"--full-if-older-than", v.Config.FullIfOlderThan,
+			"--full-if-older-than", v.Config.Duplicity.FullIfOlderThan,
 			"--s3-use-new-style",
 			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",
