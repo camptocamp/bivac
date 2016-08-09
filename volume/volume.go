@@ -22,6 +22,7 @@ type Volume struct {
 	Config    *Config
 }
 
+// Config is the volume's configuration parameters
 type Config struct {
 	Engine   string `label:"engine" ini:"engine" config:"Engine"`
 	NoVerify bool   `label:"no_verify" ini:"no_verify" config:"NoVerify"`
