@@ -115,7 +115,11 @@ func (v *Volume) getField(field reflect.StructField, c *config.Config, iniOverri
 
 	log.Debugf("Getting field %s from general config", field.Name)
 	value = getConfigKey(c, structTag.Get("config"), field.Tag.Get("config"))
+	if value != nil {
+		return
+	}
 
+	value = field.Tag.Get("default")
 	return
 }
 
@@ -131,6 +135,9 @@ func getIniValue(file *ini.File, section, key string) (value string) {
 }
 
 func getConfigKey(s interface{}, section, key string) interface{} {
+	if key == "" {
+		return nil
+	}
 	r := reflect.ValueOf(s)
 	var f reflect.Value
 	if section == "" {
