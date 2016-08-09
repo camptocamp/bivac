@@ -69,6 +69,7 @@ func (v *Volume) getConfig(c *config.Config) error {
 	refType := ref.Type()
 	for i := 0; i < refType.NumField(); i++ {
 		value := v.getField(refType.Field(i), c, iniOverrides)
+		log.Debugf("Got volume config: %s=%v", refType.Field(i).Name, value)
 		if err := setField(ref.Field(i), refType.Field(i), value); err != nil {
 			return err
 		}
@@ -76,53 +77,74 @@ func (v *Volume) getConfig(c *config.Config) error {
 	return nil
 }
 
-func (v *Volume) getField(field reflect.StructField, c *config.Config, iniOverrides *ini.File) string {
-	log.Debugf("Attempting to get field from docker label")
-	value, _ := util.GetVolumeLabel(v.Volume, field.Tag.Get("label"))
-	if value == "" && iniOverrides != nil {
-		log.Debugf("Attempting to get field from ini overrides")
-		iniSection := field.Tag.Get("ini-section")
-		iniKey := field.Tag.Get("ini")
-		val, err := iniOverrides.Section(iniSection).GetKey(iniKey)
-		if err == nil {
-			value = val.String()
-		}
+func (v *Volume) getField(field reflect.StructField, c *config.Config, iniOverrides *ini.File) (value interface{}) {
+	log.Debugf("Getting field %s from docker label", field.Name)
+	value, _ = util.GetVolumeLabel(v.Volume, field.Tag.Get("label"))
+	if value != "" {
+		return
 	}
-	if value == "" {
-		log.Debugf("Attempting to get field from general config")
-		confSection := field.Tag.Get("config-section")
-		confKey := field.Tag.Get("config")
-		value = getConfigKey(c, confSection, confKey)
+
+	log.Debugf("Getting field %s from ini overrides", field.Name)
+	value = getIniValue(iniOverrides, field.Tag.Get("ini-section"), field.Tag.Get("ini"))
+	if value != "" {
+		return
 	}
-	log.Debugf("Volume config: %s=%s", field.Name, value)
-	return value
+
+	log.Debugf("Getting field %s from general config", field.Name)
+	value = getConfigKey(c, field.Tag.Get("config-section"), field.Tag.Get("config"))
+
+	return
 }
 
-func getConfigKey(s interface{}, section, key string) string {
+func getIniValue(file *ini.File, section, key string) (value string) {
+	if file == nil {
+		return ""
+	}
+	val, err := file.Section(section).GetKey(key)
+	if err == nil {
+		value = val.String()
+	}
+	return
+}
+
+func getConfigKey(s interface{}, section, key string) interface{} {
 	r := reflect.ValueOf(s)
-	var f interface{}
+	var f reflect.Value
 	if section == "" {
 		f = reflect.Indirect(r).FieldByName(key)
 	} else {
 		s := reflect.Indirect(r).FieldByName(section)
 		f = s.FieldByName(key)
 	}
-	// FIXME: This is UGLY!
-	return fmt.Sprintf("%v", f)
+	return f.Interface()
 }
 
-func setField(field reflect.Value, refType reflect.StructField, value string) error {
+func setField(field reflect.Value, fieldType reflect.StructField, value interface{}) error {
+	v := reflect.ValueOf(value)
+
+	log.Debugf("[%s] field: %s, value:%s", fieldType.Name, field.Kind(), v.Kind())
+
+	if field.Kind() == v.Kind() {
+		log.Debugf("field and value have the same kind: %v", field.Kind())
+		field.Set(v)
+		return nil
+	}
+
+	if v.Kind() != reflect.String {
+		return fmt.Errorf("mismatched value type and do not know how to convert from type %s", v.Kind())
+	}
+
 	switch field.Kind() {
 	case reflect.String:
-		field.SetString(value)
+		field.SetString(value.(string))
 	case reflect.Bool:
-		bvalue, err := strconv.ParseBool(value)
+		bvalue, err := strconv.ParseBool(value.(string))
 		if err != nil {
 			return err
 		}
 		field.SetBool(bvalue)
 	default:
-		return fmt.Errorf("unsupported type")
+		return fmt.Errorf("unsupported type %s", field.Kind())
 	}
 	return nil
 }
