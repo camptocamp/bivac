@@ -91,22 +91,21 @@ func (v *Volume) getField(field reflect.StructField, c *config.Config, iniOverri
 		log.Debugf("Attempting to get field from general config")
 		confSection := field.Tag.Get("config-section")
 		confKey := field.Tag.Get("config")
-		if confSection == "" {
-			value = getStructField(c, confKey)
-		} else {
-			r := reflect.ValueOf(c)
-			f := reflect.Indirect(r).FieldByName(confSection)
-			// FIXME: This is UGLY!
-			value = fmt.Sprintf("%v", f.FieldByName(confKey))
-		}
+		value = getConfigKey(c, confSection, confKey)
 	}
 	log.Debugf("Volume config: %s=%s", field.Name, value)
 	return value
 }
 
-func getStructField(s interface{}, field string) string {
+func getConfigKey(s interface{}, section, key string) string {
 	r := reflect.ValueOf(s)
-	f := reflect.Indirect(r).FieldByName(field)
+	var f interface{}
+	if section == "" {
+		f = reflect.Indirect(r).FieldByName(key)
+	} else {
+		s := reflect.Indirect(r).FieldByName(section)
+		f = s.FieldByName(key)
+	}
 	// FIXME: This is UGLY!
 	return fmt.Sprintf("%v", f)
 }
