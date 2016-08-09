@@ -27,11 +27,15 @@ type Config struct {
 	Engine   string `label:"engine" ini:"engine" config:"Engine"`
 	NoVerify bool   `label:"no_verify" ini:"no_verify" config:"NoVerify"`
 
-	// Duplicity config
 	Duplicity struct {
+		TargetURL       string `label:"target_url" ini:"target_url" config:"TargetURL"`
 		FullIfOlderThan string `label:"full_if_older_than" ini:"full_if_older_than" config:"FullIfOlderThan"`
 		RemoveOlderThan string `label:"remove_older_than" ini:"duplicity.remove_older_than" config:"RemoveOlderThan"`
 	} `label:"duplicity" ini:"duplicity" config:"Duplicity"`
+
+	RClone struct {
+		TargetURL string `label:"target_url" ini:"target_url" config:"TargetURL"`
+	} `label:"rclone" ini:"rclone" config:"RClone"`
 }
 
 // NewVolume returns a new Volume for a given types.Volume struct

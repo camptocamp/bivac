@@ -29,7 +29,7 @@ func (*RCloneEngine) GetName() string {
 // Backup performs the backup of the passed volume
 func (r *RCloneEngine) Backup() (err error) {
 	v := r.Volume
-	target := r.Handler.Config.RClone.TargetURL + "/" + r.Handler.Hostname + "/" + v.Name
+	target := v.Config.RClone.TargetURL + "/" + r.Handler.Hostname + "/" + v.Name
 	backupDir := v.Mountpoint + "/" + v.BackupDir
 
 	state, _, err := r.launchRClone(

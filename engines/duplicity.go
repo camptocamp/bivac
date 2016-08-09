@@ -46,13 +46,13 @@ func (d *DuplicityEngine) Backup() (err error) {
 	}).Info("Creating duplicity container")
 
 	pathSeparator := "/"
-	if strings.HasPrefix(d.Handler.Config.Duplicity.TargetURL, "swift://") {
+	if strings.HasPrefix(vol.Config.Duplicity.TargetURL, "swift://") {
 		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity
 		pathSeparator = "_"
 	}
 
 	backupDir := vol.BackupDir
-	vol.Target = d.Handler.Config.Duplicity.TargetURL + pathSeparator + d.Handler.Hostname + pathSeparator + vol.Name
+	vol.Target = vol.Config.Duplicity.TargetURL + pathSeparator + d.Handler.Hostname + pathSeparator + vol.Name
 	vol.BackupDir = vol.Mountpoint + "/" + backupDir
 	vol.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
 
