@@ -26,6 +26,7 @@ type Volume struct {
 type Config struct {
 	Engine   string `label:"engine" ini:"engine" config:"Engine"`
 	NoVerify bool   `label:"no_verify" ini:"no_verify" config:"NoVerify"`
+	Ignore   bool   `label:"ignore" ini:"ignore" default:"false"`
 
 	Duplicity struct {
 		TargetURL       string `label:"target_url" ini:"target_url" config:"TargetURL"`
