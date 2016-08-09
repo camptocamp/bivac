@@ -1,3 +1,17 @@
+# [0.23.0](https://github.com/camptocamp/conplicity/releases/tag/0.23.0) (2016-08-09)
+
+* Internals:
+
+  - Use reflect to compute Volume config (fix #87)
+
+* Configuration:
+
+  - Add a .conplicity.overrides file as a replacement for Docker labels (fix #87)
+
+* Metrics:
+
+  - Add backupStartTime and backupEndTime metrics for volumes
+
 # [0.22.0](https://github.com/camptocamp/conplicity/releases/tag/0.22.0) (2016-08-08)
 
 * Internals:
