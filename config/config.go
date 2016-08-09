@@ -69,6 +69,8 @@ func LoadConfig(version string) *Config {
 
 	if c.Manpage {
 		var buf bytes.Buffer
+		parser.ShortDescription = "Docker volumes backup"
+		parser.LongDescription = "Conplicity lets you backup all your names Docker volumes using Duplicity or RClone."
 		parser.WriteManPage(&buf)
 		fmt.Printf(buf.String())
 		os.Exit(0)
