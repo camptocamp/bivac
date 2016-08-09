@@ -33,7 +33,7 @@ func ExampleCheckErrExit() {
 
 func TestVolumeLabel(t *testing.T) {
 	expectedStr := "Fake label"
-	result, _ := GetVolumeLabel(&fakeDockerVol, ".test")
+	result, _ := GetVolumeLabel(&fakeDockerVol, "test")
 	if result != expectedStr {
 		t.Fatalf("Expected %s, got %s", expectedStr, result)
 	}
