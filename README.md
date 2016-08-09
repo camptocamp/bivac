@@ -131,6 +131,7 @@ You can set the engine with either:
 
 * an `io.conplicity.engine` volume label (requires Docker 1.11.0 or great)
 * a global setting using the `CONPLICITY_ENGINE` environment variable
+* the `engine` parameter in the `.conplicity.overrides` file at the root of the volume
 
 
 ## Return code
