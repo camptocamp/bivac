@@ -31,7 +31,7 @@ type Config struct {
 	Duplicity struct {
 		TargetURL       string `label:"target_url" ini:"target_url" config:"TargetURL"`
 		FullIfOlderThan string `label:"full_if_older_than" ini:"full_if_older_than" config:"FullIfOlderThan"`
-		RemoveOlderThan string `label:"remove_older_than" ini:"duplicity.remove_older_than" config:"RemoveOlderThan"`
+		RemoveOlderThan string `label:"remove_older_than" ini:"remove_older_than" config:"RemoveOlderThan"`
 	} `label:"duplicity" ini:"duplicity" config:"Duplicity"`
 
 	RClone struct {
