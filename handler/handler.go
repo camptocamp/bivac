@@ -104,7 +104,8 @@ func (c *Conplicity) GetVolumes() (volumes []*volume.Volume, err error) {
 			err = fmt.Errorf("Failed to inspect volume %s: %v", vol.Name, err)
 			return
 		}
-		if b, r, s := c.blacklistedVolume(&voll); b {
+		v := volume.NewVolume(&voll, c.Config)
+		if b, r, s := c.blacklistedVolume(v); b {
 			log.WithFields(log.Fields{
 				"volume": vol.Name,
 				"reason": r,
@@ -112,7 +113,6 @@ func (c *Conplicity) GetVolumes() (volumes []*volume.Volume, err error) {
 			}).Info("Ignoring volume")
 			continue
 		}
-		v := volume.NewVolume(&voll, c.Config)
 		volumes = append(volumes, v)
 	}
 	return
@@ -134,7 +134,7 @@ func (c *Conplicity) LogTime(vol *volume.Volume, event string) (err error) {
 	return
 }
 
-func (c *Conplicity) blacklistedVolume(vol *types.Volume) (bool, string, string) {
+func (c *Conplicity) blacklistedVolume(vol *volume.Volume) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" || vol.Name == "lost+found" {
 		return true, "unnamed", ""
 	}
