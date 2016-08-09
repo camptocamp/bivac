@@ -102,10 +102,15 @@ If you cannot use volume labels, you can drop a `.conplicity.overrides` file at 
 ```ini
 engine = "rclone"
 no_verify = true
+ignore = false
 
 [duplicity]
 full_if_older_than = "3D"
 remove_older_than = "5D"
+target_url = "s3+http://s3-us-east-1.amazonaws.com/foo/bar"
+
+[rclone]
+target_url = "s3+http://s3-us-east-1.amazonaws.com/r/clone"
 ```
 
 
