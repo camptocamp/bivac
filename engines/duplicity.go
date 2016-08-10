@@ -175,7 +175,7 @@ func (d *DuplicityEngine) verify() (err error) {
 	}
 
 	metric := d.Handler.MetricsHandler.NewMetric("conplicity_verifyExitCode", "gauge")
-	metric.UpdateEvent(
+	err = metric.UpdateEvent(
 		&metrics.Event{
 			Labels: map[string]string{
 				"volume": v.Name,

@@ -122,7 +122,7 @@ func (c *Conplicity) GetVolumes() (volumes []*volume.Volume, err error) {
 func (c *Conplicity) LogTime(vol *volume.Volume, event string) (err error) {
 	metricName := fmt.Sprintf("conplicity_%s", event)
 	startTimeMetric := c.MetricsHandler.NewMetric(metricName, "counter")
-	startTimeMetric.UpdateEvent(
+	err = startTimeMetric.UpdateEvent(
 		&metrics.Event{
 			Labels: map[string]string{
 				"volume": vol.Name,
@@ -130,6 +130,9 @@ func (c *Conplicity) LogTime(vol *volume.Volume, event string) (err error) {
 			Value: strconv.FormatInt(time.Now().Unix(), 10),
 		},
 	)
+	if err != nil {
+		return
+	}
 	err = c.MetricsHandler.Push()
 	return
 }

@@ -136,6 +136,7 @@ func TestParseEvent(t *testing.T) {
 }
 
 func TestMetricUpdateEvent(t *testing.T) {
+	var err error
 	m := &Metric{
 		Name: "foo",
 	}
@@ -150,7 +151,10 @@ func TestMetricUpdateEvent(t *testing.T) {
 		},
 		Value: "bar",
 	}
-	m.UpdateEvent(e1)
+	err = m.UpdateEvent(e1)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
 	if len(m.Events) != 1 {
 		t.Fatalf("Expected one event, got %v", len(m.Events))
 	}
@@ -168,7 +172,10 @@ func TestMetricUpdateEvent(t *testing.T) {
 		},
 		Value: "qux",
 	}
-	m.UpdateEvent(e2)
+	err = m.UpdateEvent(e2)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
 	if len(m.Events) != 1 {
 		t.Fatalf("Expected one event, got %v", len(m.Events))
 	}
@@ -186,7 +193,10 @@ func TestMetricUpdateEvent(t *testing.T) {
 		},
 		Value: "quxx",
 	}
-	m.UpdateEvent(e3)
+	err = m.UpdateEvent(e3)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
 	if len(m.Events) != 2 {
 		t.Fatalf("Expected two events, got %v", len(m.Events))
 	}
@@ -195,5 +205,21 @@ func TestMetricUpdateEvent(t *testing.T) {
 	}
 	if m.Events[1].Value != "quxx" {
 		t.Fatalf("Expected event value to be quxx, got %s", m.Events[1].Value)
+	}
+
+	// Add event with wrong name
+	e4 := &Event{
+		Name: "bar",
+		Labels: map[string]string{
+			"volume": "fooddd",
+		},
+		Value: "quxx",
+	}
+	err = m.UpdateEvent(e4)
+	if err == nil {
+		t.Fatal("Expected an error, got nil")
+	}
+	if len(m.Events) != 2 {
+		t.Fatalf("Expected two events, got %v", len(m.Events))
 	}
 }

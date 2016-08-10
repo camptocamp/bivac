@@ -63,8 +63,13 @@ func (e *Event) Equals(newEvent *Event) bool {
 }
 
 // UpdateEvent adds an event, or updates it if the event already exists
-func (m *Metric) UpdateEvent(event *Event) {
-	event.Name = m.Name
+func (m *Metric) UpdateEvent(event *Event) error {
+	if event.Name == "" {
+		event.Name = m.Name
+	}
+	if event.Name != m.Name {
+		return fmt.Errorf("cannot add event %s to metric %s", event.Name, m.Name)
+	}
 	for i, e := range m.Events {
 		if e.Equals(event) {
 			log.WithFields(log.Fields{
@@ -73,7 +78,7 @@ func (m *Metric) UpdateEvent(event *Event) {
 				"new_event": event.String(),
 			}).Debug("Replacing event")
 			m.Events[i] = event
-			return
+			return nil
 		}
 	}
 	log.WithFields(log.Fields{
@@ -81,6 +86,8 @@ func (m *Metric) UpdateEvent(event *Event) {
 		"event":  event.String(),
 	}).Debug("Adding event")
 	m.Events = append(m.Events, event)
+
+	return nil
 }
 
 // NewMetric adds a new metric if it doesn't exist yet
