@@ -63,6 +63,22 @@ func TestEventString(t *testing.T) {
 	}
 }
 
+func TestNewMetrics(t *testing.T) {
+	p := NewMetrics("foo", "http://foo:9091")
+
+	if p.Instance != "foo" {
+		t.Fatalf("Expected instance to be foo, got %s", p.Instance)
+	}
+
+	if p.PushgatewayURL != "http://foo:9091" {
+		t.Fatalf("Expected URL to be http://foo:9091, got %s", p.PushgatewayURL)
+	}
+
+	if len(p.Metrics) != 0 {
+		t.Fatal("Expected empty Metrics array, got size %i", len(p.Metrics))
+	}
+}
+
 func TestNewMetric(t *testing.T) {
 	p := NewMetrics("foo", "http://foo:9091")
 	m := p.NewMetric("bar", "qux")
