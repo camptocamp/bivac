@@ -1,3 +1,28 @@
+# [0.24.0](https://github.com/camptocamp/conplicity/releases/tag/0.24.0) (2016-08-10)
+
+* Internals:
+
+  - Linting
+  - Avoid asserting config params as strings (fix #89)
+  - Use a sub-struct for sub-config in Volumes (fix #90)
+  - Use net/url for targetURL, fix RClone URLs (fix #92)
+
+* Configuration:
+
+  - Add more volume configuration (fix #91)
+  - Use a global targetURL (fix #93)
+
+* Tests:
+
+  - Fix volume tests
+  - Fix util tests
+
+* Documentation:
+
+  - Update README
+  - Improve and update manpage
+
+
 # [0.23.0](https://github.com/camptocamp/conplicity/releases/tag/0.23.0) (2016-08-09)
 
 * Internals:
