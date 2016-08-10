@@ -66,14 +66,14 @@ func (e *Event) Equals(newEvent *Event) bool {
 func (m *Metric) UpdateEvent(event *Event) {
 	event.Name = m.Name
 	var found bool
-	for _, e := range m.Events {
+	for i, e := range m.Events {
 		if e.Equals(event) {
 			log.WithFields(log.Fields{
 				"metric":    m.Name,
 				"old_event": e.String(),
 				"new_event": event.String(),
 			}).Debug("Replacing event")
-			e = event
+			m.Events[i] = event
 			found = true
 			break
 		}

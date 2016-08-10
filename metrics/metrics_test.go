@@ -134,3 +134,69 @@ func TestParseEvent(t *testing.T) {
 		t.Fatalf("Expected event's bar label to be \"qux\", got %s", e.Labels["bar"])
 	}
 }
+
+func TestMetricUpdateEvent(t *testing.T) {
+	m := &Metric{
+		Name: "foo",
+	}
+	if len(m.Events) != 0 {
+		t.Fatal("Expected no events, got %i", len(m.Events))
+	}
+
+	// Add event
+	e1 := &Event{
+		Name: "foo",
+		Labels: map[string]string{
+			"volume": "baz",
+		},
+		Value: "bar",
+	}
+	m.UpdateEvent(e1)
+	if len(m.Events) != 1 {
+		t.Fatal("Expected one event, got %i", len(m.Events))
+	}
+	if m.Events[0].Name != "foo" {
+		t.Fatalf("Expected event name to be foo, got %s", m.Events[0].Name)
+	}
+	if m.Events[0].Value != "bar" {
+		t.Fatalf("Expected event value to be bar, got %s", m.Events[0].Value)
+	}
+
+	// Update event
+	e2 := &Event{
+		Name: "foo",
+		Labels: map[string]string{
+			"volume": "baz",
+		},
+		Value: "qux",
+	}
+	m.UpdateEvent(e2)
+	if len(m.Events) != 1 {
+		t.Fatal("Expected one event, got %i", len(m.Events))
+	}
+	if m.Events[0].Name != "foo" {
+		t.Fatalf("Expected event name to be foo, got %s", m.Events[0].Name)
+	}
+	if m.Events[0].Value != "qux" {
+		t.Fatalf("Expected event value to be qux, got %s", m.Events[0].Value)
+	}
+
+	// Add new event
+	e3 := &Event{
+		Name: "bar",
+		Labels: map[string]string{
+			"volume": "baz",
+		},
+		Value: "quxx",
+	}
+	m.UpdateEvent(e3)
+	if len(m.Events) != 2 {
+		t.Fatal("Expected two events, got %i", len(m.Events))
+	}
+	if m.Events[1].Name != "bar" {
+		t.Fatalf("Expected event name to be bar, got %s", m.Events[1].Name)
+	}
+	if m.Events[1].Value != "quxx" {
+		t.Fatalf("Expected event value to be quxx, got %s", m.Events[1].Value)
+	}
+}
