@@ -51,7 +51,7 @@ func (e *Event) String() string {
 
 // Equals checks if two Events refer to the same Prometheus event
 func (e *Event) Equals(newEvent *Event) bool {
-	if e.Name == newEvent.Name {
+	if e.Name != newEvent.Name {
 		return false
 	}
 
