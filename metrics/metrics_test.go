@@ -75,7 +75,7 @@ func TestNewMetrics(t *testing.T) {
 	}
 
 	if len(p.Metrics) != 0 {
-		t.Fatal("Expected empty Metrics array, got size %i", len(p.Metrics))
+		t.Fatal("Expected empty Metrics array, got size %v", len(p.Metrics))
 	}
 }
 
@@ -84,7 +84,7 @@ func TestNewMetric(t *testing.T) {
 	m := p.NewMetric("bar", "qux")
 
 	if len(p.Metrics) != 1 {
-		t.Fatalf("Expected 1 metric, got %i", len(p.Metrics))
+		t.Fatalf("Expected 1 metric, got %v", len(p.Metrics))
 	}
 
 	if p.Metrics["bar"] != m {
@@ -140,7 +140,7 @@ func TestMetricUpdateEvent(t *testing.T) {
 		Name: "foo",
 	}
 	if len(m.Events) != 0 {
-		t.Fatalf("Expected no events, got %i", len(m.Events))
+		t.Fatalf("Expected no events, got %v", len(m.Events))
 	}
 
 	// Add event
@@ -153,7 +153,7 @@ func TestMetricUpdateEvent(t *testing.T) {
 	}
 	m.UpdateEvent(e1)
 	if len(m.Events) != 1 {
-		t.Fatalf("Expected one event, got %i", len(m.Events))
+		t.Fatalf("Expected one event, got %v", len(m.Events))
 	}
 	if m.Events[0].Name != "foo" {
 		t.Fatalf("Expected event name to be foo, got %s", m.Events[0].Name)
@@ -172,7 +172,7 @@ func TestMetricUpdateEvent(t *testing.T) {
 	}
 	m.UpdateEvent(e2)
 	if len(m.Events) != 1 {
-		t.Fatalf("Expected one event, got %i", len(m.Events))
+		t.Fatalf("Expected one event, got %v", len(m.Events))
 	}
 	if m.Events[0].Name != "foo" {
 		t.Fatalf("Expected event name to be foo, got %s", m.Events[0].Name)
@@ -191,7 +191,7 @@ func TestMetricUpdateEvent(t *testing.T) {
 	}
 	m.UpdateEvent(e3)
 	if len(m.Events) != 2 {
-		t.Fatalf("Expected two events, got %i", len(m.Events))
+		t.Fatalf("Expected two events, got %v", len(m.Events))
 	}
 	if m.Events[1].Name != "bar" {
 		t.Fatalf("Expected event name to be bar, got %s", m.Events[1].Name)
