@@ -3,6 +3,7 @@ package engines
 import (
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -45,14 +46,20 @@ func (d *DuplicityEngine) Backup() (err error) {
 		"mountpoint": vol.Mountpoint,
 	}).Info("Creating duplicity container")
 
+	targetURL, err := url.Parse(vol.Config.Duplicity.TargetURL)
+	if err != nil {
+		err = fmt.Errorf("failed to parse target URL: %v", err)
+		return
+	}
+
 	pathSeparator := "/"
-	if strings.HasPrefix(vol.Config.Duplicity.TargetURL, "swift://") {
+	if targetURL.Scheme == "swift" {
 		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity
 		pathSeparator = "_"
 	}
 
 	backupDir := vol.BackupDir
-	vol.Target = vol.Config.Duplicity.TargetURL + pathSeparator + d.Handler.Hostname + pathSeparator + vol.Name
+	vol.Target = targetURL.String() + pathSeparator + d.Handler.Hostname + pathSeparator + vol.Name
 	vol.BackupDir = vol.Mountpoint + "/" + backupDir
 	vol.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
 

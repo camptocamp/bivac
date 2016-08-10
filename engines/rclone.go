@@ -3,6 +3,7 @@ package engines
 import (
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"strings"
 
 	"golang.org/x/net/context"
@@ -29,7 +30,14 @@ func (*RCloneEngine) GetName() string {
 // Backup performs the backup of the passed volume
 func (r *RCloneEngine) Backup() (err error) {
 	v := r.Volume
-	target := v.Config.RClone.TargetURL + "/" + r.Handler.Hostname + "/" + v.Name
+
+	targetURL, err := url.Parse(v.Config.RClone.TargetURL)
+	if err != nil {
+		err = fmt.Errorf("failed to parse target URL: %v", err)
+		return
+	}
+
+	target := targetURL.String() + "/" + r.Handler.Hostname + "/" + v.Name
 	backupDir := v.Mountpoint + "/" + v.BackupDir
 
 	state, _, err := r.launchRClone(
