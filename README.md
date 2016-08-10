@@ -26,23 +26,24 @@ Usage:
 
 Application Options:
   -V, --version                Display version.
-  -l, --loglevel=              Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic'). (default: info) [$CONPLICITY_LOG_LEVEL]
+  -l, --loglevel=              Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic'). (default: info)
+                               [$CONPLICITY_LOG_LEVEL]
   -b, --blacklist=             Volumes to blacklist in backups. [$CONPLICITY_VOLUMES_BLACKLIST]
   -m, --manpage                Output manpage.
       --no-verify              Do not verify backup. [$CONPLICITY_NO_VERIFY]
   -j, --json                   Log as JSON (to stderr). [$CONPLICITY_JSON_OUTPUT]
   -E, --engine=                Backup engine to use. (default: duplicity) [$CONPLICITY_ENGINE]
+  -u, --target-url=            The target URL to push to. [$CONPLICITY_TARGET_URL]
   -H, --hostname-from-rancher  Retrieve hostname from Rancher metadata. [$CONPLICITY_HOSTNAME_FROM_RANCHER]
 
 Duplicity Options:
       --duplicity-image=       The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
-      --duplicity-url=         The duplicity target URL to push to. [$DUPLICITY_TARGET_URL]
-      --full-if-older-than=    The number of days after which a full backup must be performed. (default: 15D) [$CONPLICITY_FULL_IF_OLDER_THAN]
+      --full-if-older-than=    The number of days after which a full backup must be performed. (default: 15D)
+                               [$CONPLICITY_FULL_IF_OLDER_THAN]
       --remove-older-than=     The number days after which backups must be removed. (default: 30D) [$CONPLICITY_REMOVE_OLDER_THAN]
 
 RClone Options:
       --rclone-image=          The rclone docker image. (default: camptocamp/rclone:latest) [$RCLONE_DOCKER_IMAGE]
-      --rclone-url=            The RClone target URL to push to. [$RCLONE_TARGET_URL]
 
 Metrics Options:
   -g, --gateway-url=           The prometheus push gateway URL to use. [$PUSHGATEWAY_URL]
@@ -81,7 +82,7 @@ $ conplicity \
 
 ```shell
 $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
-   -e DUPLICITY_TARGET_URL=s3+http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
+   -e CONPLICITY_TARGET_URL=s3+http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
    -e AWS_ACCESS_KEY_ID=<my_key_id> \
    -e AWS_SECRET_ACCESS_KEY=<my_secret_key> \
      camptocamp/conplicity
@@ -103,14 +104,11 @@ If you cannot use volume labels, you can drop a `.conplicity.overrides` file at 
 engine = "rclone"
 no_verify = true
 ignore = false
+target_url = "s3+http://s3-us-east-1.amazonaws.com/foo/bar"
 
 [duplicity]
 full_if_older_than = "3D"
 remove_older_than = "5D"
-target_url = "s3+http://s3-us-east-1.amazonaws.com/foo/bar"
-
-[rclone]
-target_url = "s3+http://s3-us-east-1.amazonaws.com/r/clone"
 ```
 
 

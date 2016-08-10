@@ -46,7 +46,7 @@ func (d *DuplicityEngine) Backup() (err error) {
 		"mountpoint": vol.Mountpoint,
 	}).Info("Creating duplicity container")
 
-	targetURL, err := url.Parse(vol.Config.Duplicity.TargetURL)
+	targetURL, err := url.Parse(vol.Config.TargetURL)
 	if err != nil {
 		err = fmt.Errorf("failed to parse target URL: %v", err)
 		return

@@ -24,18 +24,17 @@ type Volume struct {
 
 // Config is the volume's configuration parameters
 type Config struct {
-	Engine   string `label:"engine" ini:"engine" config:"Engine"`
-	NoVerify bool   `label:"no_verify" ini:"no_verify" config:"NoVerify"`
-	Ignore   bool   `label:"ignore" ini:"ignore" default:"false"`
+	Engine    string `label:"engine" ini:"engine" config:"Engine"`
+	NoVerify  bool   `label:"no_verify" ini:"no_verify" config:"NoVerify"`
+	Ignore    bool   `label:"ignore" ini:"ignore" default:"false"`
+	TargetURL string `label:"target_url" ini:"target_url" config:"TargetURL"`
 
 	Duplicity struct {
-		TargetURL       string `label:"target_url" ini:"target_url" config:"TargetURL"`
 		FullIfOlderThan string `label:"full_if_older_than" ini:"full_if_older_than" config:"FullIfOlderThan"`
 		RemoveOlderThan string `label:"remove_older_than" ini:"remove_older_than" config:"RemoveOlderThan"`
 	} `label:"duplicity" ini:"duplicity" config:"Duplicity"`
 
 	RClone struct {
-		TargetURL string `label:"target_url" ini:"target_url" config:"TargetURL"`
 	} `label:"rclone" ini:"rclone" config:"RClone"`
 }
 

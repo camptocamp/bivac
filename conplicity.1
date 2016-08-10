@@ -37,15 +37,15 @@ Log as JSON (to stderr).
 \fB\fB\-E\fR, \fB\-\-engine\fR <default: \fI"duplicity"\fR>\fP
 Backup engine to use.
 .TP
+\fB\fB\-u\fR, \fB\-\-target-url\fR <default: \fI$CONPLICITY_TARGET_URL\fR>\fP
+The target URL to push to.
+.TP
 \fB\fB\-H\fR, \fB\-\-hostname-from-rancher\fR <default: \fI$CONPLICITY_HOSTNAME_FROM_RANCHER\fR>\fP
 Retrieve hostname from Rancher metadata.
 .SS Duplicity Options
 .TP
 \fB\fB\-\-duplicity-image\fR <default: \fI"camptocamp/duplicity:latest"\fR>\fP
 The duplicity docker image.
-.TP
-\fB\fB\-\-duplicity-url\fR <default: \fI$DUPLICITY_TARGET_URL\fR>\fP
-The duplicity target URL to push to.
 .TP
 \fB\fB\-\-full-if-older-than\fR <default: \fI"15D"\fR>\fP
 The number of days after which a full backup must be performed.
@@ -56,9 +56,6 @@ The number days after which backups must be removed.
 .TP
 \fB\fB\-\-rclone-image\fR <default: \fI"camptocamp/rclone:latest"\fR>\fP
 The rclone docker image.
-.TP
-\fB\fB\-\-rclone-url\fR <default: \fI$RCLONE_TARGET_URL\fR>\fP
-The RClone target URL to push to.
 .SS Metrics Options
 .TP
 \fB\fB\-g\fR, \fB\-\-gateway-url\fR <default: \fI$PUSHGATEWAY_URL\fR>\fP

@@ -31,7 +31,7 @@ func (*RCloneEngine) GetName() string {
 func (r *RCloneEngine) Backup() (err error) {
 	v := r.Volume
 
-	targetURL, err := url.Parse(v.Config.RClone.TargetURL)
+	targetURL, err := url.Parse(v.Config.TargetURL)
 	if err != nil {
 		err = fmt.Errorf("failed to parse target URL: %v", err)
 		return

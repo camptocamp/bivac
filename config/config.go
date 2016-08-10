@@ -18,18 +18,17 @@ type Config struct {
 	NoVerify            bool     `long:"no-verify" description:"Do not verify backup." env:"CONPLICITY_NO_VERIFY"`
 	JSON                bool     `short:"j" long:"json" description:"Log as JSON (to stderr)." env:"CONPLICITY_JSON_OUTPUT"`
 	Engine              string   `short:"E" long:"engine" description:"Backup engine to use." env:"CONPLICITY_ENGINE" default:"duplicity"`
+	TargetURL           string   `short:"u" long:"target-url" description:"The target URL to push to." env:"CONPLICITY_TARGET_URL"`
 	HostnameFromRancher bool     `short:"H" long:"hostname-from-rancher" description:"Retrieve hostname from Rancher metadata." env:"CONPLICITY_HOSTNAME_FROM_RANCHER"`
 
 	Duplicity struct {
 		Image           string `long:"duplicity-image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
-		TargetURL       string `long:"duplicity-url" description:"The duplicity target URL to push to." env:"DUPLICITY_TARGET_URL"`
 		FullIfOlderThan string `long:"full-if-older-than" description:"The number of days after which a full backup must be performed." env:"CONPLICITY_FULL_IF_OLDER_THAN" default:"15D"`
 		RemoveOlderThan string `long:"remove-older-than" description:"The number days after which backups must be removed." env:"CONPLICITY_REMOVE_OLDER_THAN" default:"30D"`
 	} `group:"Duplicity Options"`
 
 	RClone struct {
-		Image     string `long:"rclone-image" description:"The rclone docker image." env:"RCLONE_DOCKER_IMAGE" default:"camptocamp/rclone:latest"`
-		TargetURL string `long:"rclone-url" description:"The RClone target URL to push to." env:"RCLONE_TARGET_URL"`
+		Image string `long:"rclone-image" description:"The rclone docker image." env:"RCLONE_DOCKER_IMAGE" default:"camptocamp/rclone:latest"`
 	} `group:"RClone Options"`
 
 	Metrics struct {
