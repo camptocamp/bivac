@@ -66,7 +66,7 @@ func (r *RCloneEngine) Backup() (err error) {
 func formatURL(u *url.URL) (env []string) {
 	// We have no way but to assume fqdns contain "."
 	// which is arguable very ugly
-	if strings.Contains(u.Host, ".") {
+	if strings.Contains(u.Host, ".") && strings.HasPrefix(u.Scheme, "s3") {
 		u.Opaque = strings.TrimPrefix(u.Path, "/")
 		env = append(env, "AWS_ENDPOINT="+u.Host)
 	} else {
