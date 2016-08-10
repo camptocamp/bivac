@@ -1,3 +1,13 @@
+# [0.24.1](https://github.com/camptocamp/conplicity/releases/tag/0.24.1) (2016-08-10)
+
+* Bugfix:
+
+  - Fix wrong condition checking on Event#Equals()
+
+* Tests:
+
+  - Add tests for Event#Equals()
+
 # [0.24.0](https://github.com/camptocamp/conplicity/releases/tag/0.24.0) (2016-08-10)
 
 * Internals:
