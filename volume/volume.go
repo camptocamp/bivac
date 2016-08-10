@@ -77,7 +77,7 @@ func (v *Volume) getStructConfig(ref reflect.Value, c *config.Config, iniOverrid
 	refType := ref.Type()
 	for i := 0; i < refType.NumField(); i++ {
 		if ref.Field(i).Kind() == reflect.Struct {
-			log.Debugf("Found a struct %s", refType.Field(i).Name)
+			//log.Debugf("Found a struct %s", refType.Field(i).Name)
 			err := v.getStructConfig(ref.Field(i), c, iniOverrides, refType.Field(i).Tag)
 			if err != nil {
 				return err
@@ -85,9 +85,9 @@ func (v *Volume) getStructConfig(ref reflect.Value, c *config.Config, iniOverrid
 			continue
 		}
 
-		log.Debugf("Getting value for field %s", refType.Field(i).Name)
+		//log.Debugf("Getting value for field %s", refType.Field(i).Name)
 		value := v.getField(refType.Field(i), c, iniOverrides, structTag)
-		log.Debugf("Got volume config: %s=%v", refType.Field(i).Name, value)
+		//log.Debugf("Got volume config: %s=%v", refType.Field(i).Name, value)
 		if err := setField(ref.Field(i), refType.Field(i), value); err != nil {
 			return err
 		}
@@ -96,7 +96,7 @@ func (v *Volume) getStructConfig(ref reflect.Value, c *config.Config, iniOverrid
 }
 
 func (v *Volume) getField(field reflect.StructField, c *config.Config, iniOverrides *ini.File, structTag reflect.StructTag) (value interface{}) {
-	log.Debugf("Getting field %s from docker label", field.Name)
+	//log.Debugf("Getting field %s from docker label", field.Name)
 	var label string
 	if prefix := structTag.Get("label"); prefix != "" {
 		label = fmt.Sprintf("%s.", prefix)
@@ -107,13 +107,13 @@ func (v *Volume) getField(field reflect.StructField, c *config.Config, iniOverri
 		return
 	}
 
-	log.Debugf("Getting field %s from ini overrides", field.Name)
+	//log.Debugf("Getting field %s from ini overrides", field.Name)
 	value = getIniValue(iniOverrides, structTag.Get("ini"), field.Tag.Get("ini"))
 	if value != "" {
 		return
 	}
 
-	log.Debugf("Getting field %s from general config", field.Name)
+	//log.Debugf("Getting field %s from general config", field.Name)
 	value = getConfigKey(c, structTag.Get("config"), field.Tag.Get("config"))
 	if value != nil {
 		return
@@ -152,10 +152,10 @@ func getConfigKey(s interface{}, section, key string) interface{} {
 func setField(field reflect.Value, fieldType reflect.StructField, value interface{}) error {
 	v := reflect.ValueOf(value)
 
-	log.Debugf("[%s] field: %s, value:%s", fieldType.Name, field.Kind(), v.Kind())
+	//log.Debugf("[%s] field: %s, value:%s", fieldType.Name, field.Kind(), v.Kind())
 
 	if field.Kind() == v.Kind() {
-		log.Debugf("field and value have the same kind: %v", field.Kind())
+		//log.Debugf("field and value have the same kind: %v", field.Kind())
 		field.Set(v)
 		return nil
 	}
