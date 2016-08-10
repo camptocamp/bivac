@@ -47,3 +47,18 @@ func TestEventEquals(t *testing.T) {
 		t.Fatal("Expected event e1 to not equal e4 (different volume)")
 	}
 }
+
+func TestEventString(t *testing.T) {
+	e := &Event{
+		Name: "foo",
+		Labels: map[string]string{
+			"volume":   "baz",
+			"instance": "qux",
+		},
+		Value: "bar",
+	}
+	expected := "foo{volume=\"baz\",instance=\"qux\"} bar"
+	if e.String() != expected {
+		t.Fatal("Expected %s, got %s", expected, e.String())
+	}
+}
