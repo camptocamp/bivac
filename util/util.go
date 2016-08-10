@@ -39,7 +39,7 @@ func CheckErr(err error, msg string, level string) {
 // GetVolumeLabel retrieves the value of given key in the io.conplicity
 // namespace of the volume labels
 func GetVolumeLabel(vol *types.Volume, key string) (value string, err error) {
-	log.Debugf("Getting value for label %s of volume %s", key, vol.Name)
+	//log.Debugf("Getting value for label %s of volume %s", key, vol.Name)
 	value, ok := vol.Labels[labelPrefix+"."+key]
 	if !ok {
 		errMsg := fmt.Sprintf("Key %v not found in labels for volume %v", key, vol.Name)
