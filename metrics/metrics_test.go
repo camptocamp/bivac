@@ -59,7 +59,7 @@ func TestEventString(t *testing.T) {
 	}
 	expected := "foo{volume=\"baz\",instance=\"qux\"} bar"
 	if e.String() != expected {
-		t.Fatal("Expected %s, got %s", expected, e.String())
+		t.Fatalf("Expected %s, got %s", expected, e.String())
 	}
 }
 
@@ -97,5 +97,40 @@ func TestNewMetric(t *testing.T) {
 
 	if m.Type != "qux" {
 		t.Fatalf("Expected type to be qux, got %s", m.Name)
+	}
+}
+
+func TestParseEvent(t *testing.T) {
+	if e := parseEvent(""); e != nil {
+		t.Fatalf("Expected empty line to return nil, got %v", e)
+	}
+
+	if e := parseEvent("# HELP foo Some foo metric"); e != nil {
+		t.Fatalf("Expected help line to return nil, got %v", e)
+	}
+
+	if e := parseEvent("# TYPE foo gauge"); e != nil {
+		t.Fatalf("Expected type line to return nil, got %v", e)
+	}
+
+	if e := parseEvent("foo{bar=\"qux\"} 0"); e != nil {
+		t.Fatalf("Expected non-conplicity event to return nil, got %v", e)
+	}
+
+	e := parseEvent("conplicity_foo{bar=\"qux\",baz=\"abc\"} 0")
+	if e == nil {
+		t.Fatal("Expected an event, got nil")
+	}
+	if e.Name != "conplicity_foo" {
+		t.Fatalf("Expected event name to be conplicity_foo, got %s", e.Name)
+	}
+	if e.Value != "0" {
+		t.Fatalf("Expected event value to be 0, got %s", e.Value)
+	}
+	if len(e.Labels) != 2 {
+		t.Fatalf("Expected event to have two labels, got %s", len(e.Labels))
+	}
+	if e.Labels["bar"] != "qux" {
+		t.Fatalf("Expected event's bar label to be \"qux\", got %s", e.Labels["bar"])
 	}
 }
