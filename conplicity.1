@@ -1,10 +1,18 @@
-.TH conplicity 1 "9 August 2016"
+.TH conplicity 1 "10 August 2016"
 .SH NAME
 conplicity \- Docker volumes backup
 .SH SYNOPSIS
 \fBconplicity\fP [OPTIONS]
 .SH DESCRIPTION
 Conplicity lets you backup all your names Docker volumes using Duplicity or RClone.
+
+Conplicity supports multiple engines for performing the backup:
+
+* Duplicity (default engine)
+
+* RClone: use for heavy data that Duplicity cannot manage efficiently
+
+
 .SH OPTIONS
 .SS Application Options
 .TP

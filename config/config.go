@@ -70,7 +70,15 @@ func LoadConfig(version string) *Config {
 	if c.Manpage {
 		var buf bytes.Buffer
 		parser.ShortDescription = "Docker volumes backup"
-		parser.LongDescription = "Conplicity lets you backup all your names Docker volumes using Duplicity or RClone."
+		parser.LongDescription = `Conplicity lets you backup all your names Docker volumes using Duplicity or RClone.
+
+Conplicity supports multiple engines for performing the backup:
+
+* Duplicity (default engine)
+
+* RClone: use for heavy data that Duplicity cannot manage efficiently
+
+`
 		parser.WriteManPage(&buf)
 		fmt.Printf(buf.String())
 		os.Exit(0)
