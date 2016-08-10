@@ -145,7 +145,6 @@ func TestMetricUpdateEvent(t *testing.T) {
 
 	// Add event
 	e1 := &Event{
-		Name: "foo",
 		Labels: map[string]string{
 			"volume": "baz",
 		},
@@ -164,7 +163,6 @@ func TestMetricUpdateEvent(t *testing.T) {
 
 	// Update event
 	e2 := &Event{
-		Name: "foo",
 		Labels: map[string]string{
 			"volume": "baz",
 		},
@@ -183,9 +181,8 @@ func TestMetricUpdateEvent(t *testing.T) {
 
 	// Add new event
 	e3 := &Event{
-		Name: "bar",
 		Labels: map[string]string{
-			"volume": "baz",
+			"volume": "foo",
 		},
 		Value: "quxx",
 	}
@@ -193,8 +190,8 @@ func TestMetricUpdateEvent(t *testing.T) {
 	if len(m.Events) != 2 {
 		t.Fatalf("Expected two events, got %v", len(m.Events))
 	}
-	if m.Events[1].Name != "bar" {
-		t.Fatalf("Expected event name to be bar, got %s", m.Events[1].Name)
+	if m.Events[1].Name != "foo" {
+		t.Fatalf("Expected event name to be foo, got %s", m.Events[1].Name)
 	}
 	if m.Events[1].Value != "quxx" {
 		t.Fatalf("Expected event value to be quxx, got %s", m.Events[1].Value)

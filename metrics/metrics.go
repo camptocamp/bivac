@@ -65,7 +65,6 @@ func (e *Event) Equals(newEvent *Event) bool {
 // UpdateEvent adds an event, or updates it if the event already exists
 func (m *Metric) UpdateEvent(event *Event) {
 	event.Name = m.Name
-	var found bool
 	for i, e := range m.Events {
 		if e.Equals(event) {
 			log.WithFields(log.Fields{
@@ -74,17 +73,14 @@ func (m *Metric) UpdateEvent(event *Event) {
 				"new_event": event.String(),
 			}).Debug("Replacing event")
 			m.Events[i] = event
-			found = true
-			break
+			return
 		}
 	}
-	if !found {
-		log.WithFields(log.Fields{
-			"metric": m.Name,
-			"event":  event.String(),
-		}).Debug("Adding event")
-		m.Events = append(m.Events, event)
-	}
+	log.WithFields(log.Fields{
+		"metric": m.Name,
+		"event":  event.String(),
+	}).Debug("Adding event")
+	m.Events = append(m.Events, event)
 }
 
 // NewMetric adds a new metric if it doesn't exist yet
