@@ -37,6 +37,9 @@ func (r *RCloneEngine) Backup() (err error) {
 		return
 	}
 
+	// Format targetURL for RClone
+	formatURL(targetURL)
+
 	target := targetURL.String() + "/" + r.Handler.Hostname + "/" + v.Name
 	backupDir := v.Mountpoint + "/" + v.BackupDir
 
@@ -57,6 +60,21 @@ func (r *RCloneEngine) Backup() (err error) {
 		err = fmt.Errorf("RClone exited with state %v", state)
 	}
 	return
+}
+
+func formatURL(u *url.URL) {
+	// We have no way but to assume fqdns contain "."
+	// which is arguable very ugly
+	if strings.Contains(u.Host, ".") {
+		u.Opaque = strings.TrimPrefix(u.Path, "/")
+	} else {
+		u.Opaque = strings.TrimPrefix(u.Host+u.Path, "/")
+	}
+
+	plusIndex := strings.Index(u.Scheme, "+")
+	if plusIndex >= 0 {
+		u.Scheme = u.Scheme[0:plusIndex]
+	}
 }
 
 // launchRClone starts an rclone container with a given command and binds
