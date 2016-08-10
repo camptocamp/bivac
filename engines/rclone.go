@@ -38,7 +38,7 @@ func (r *RCloneEngine) Backup() (err error) {
 	}
 
 	// Format targetURL for RClone
-	formatURL(targetURL)
+	extraEnv := formatURL(targetURL)
 
 	target := targetURL.String() + "/" + r.Handler.Hostname + "/" + v.Name
 	backupDir := v.Mountpoint + "/" + v.BackupDir
@@ -52,6 +52,7 @@ func (r *RCloneEngine) Backup() (err error) {
 		[]string{
 			v.Name + ":" + v.Mountpoint + ":ro",
 		},
+		extraEnv,
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch RClone: %v", err)
@@ -62,11 +63,12 @@ func (r *RCloneEngine) Backup() (err error) {
 	return
 }
 
-func formatURL(u *url.URL) {
+func formatURL(u *url.URL) (env []string) {
 	// We have no way but to assume fqdns contain "."
 	// which is arguable very ugly
 	if strings.Contains(u.Host, ".") {
 		u.Opaque = strings.TrimPrefix(u.Path, "/")
+		env = append(env, "AWS_ENDPOINT="+u.Host)
 	} else {
 		u.Opaque = strings.TrimPrefix(u.Host+u.Path, "/")
 	}
@@ -75,10 +77,11 @@ func formatURL(u *url.URL) {
 	if plusIndex >= 0 {
 		u.Scheme = u.Scheme[0:plusIndex]
 	}
+	return
 }
 
 // launchRClone starts an rclone container with a given command and binds
-func (r *RCloneEngine) launchRClone(cmd []string, binds []string) (state int, stdout string, err error) {
+func (r *RCloneEngine) launchRClone(cmd, binds, extraEnv []string) (state int, stdout string, err error) {
 	err = util.PullImage(r.Handler.Client, r.Handler.Config.RClone.Image)
 	if err != nil {
 		err = fmt.Errorf("failed to pull image: %v", err)
@@ -94,6 +97,7 @@ func (r *RCloneEngine) launchRClone(cmd []string, binds []string) (state int, st
 		"OS_TENANT_NAME=" + r.Handler.Config.Swift.TenantName,
 		"OS_REGION_NAME=" + r.Handler.Config.Swift.RegionName,
 	}
+	env = append(env, extraEnv...)
 
 	log.WithFields(log.Fields{
 		"image":       r.Handler.Config.RClone.Image,
