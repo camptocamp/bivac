@@ -1,3 +1,17 @@
+# [0.24.2](https://github.com/camptocamp/conplicity/releases/tag/0.24.2) (2016-08-10)
+
+* Bugfix:
+
+  - Fix UpdateEvent() not updating event
+
+* Logging:
+
+  - Make debug less verbose
+
+* Tests:
+
+  - Add tests
+
 # [0.24.1](https://github.com/camptocamp/conplicity/releases/tag/0.24.1) (2016-08-10)
 
 * Bugfix:
