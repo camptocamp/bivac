@@ -75,7 +75,7 @@ func TestNewMetrics(t *testing.T) {
 	}
 
 	if len(p.Metrics) != 0 {
-		t.Fatal("Expected empty Metrics array, got size %v", len(p.Metrics))
+		t.Fatalf("Expected empty Metrics array, got size %v", len(p.Metrics))
 	}
 }
 
