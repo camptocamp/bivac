@@ -1,3 +1,9 @@
+# [0.24.4](https://github.com/camptocamp/conplicity/releases/tag/0.24.4) (2016-08-17)
+
+* Bugfix:
+
+  - Fix c.ImageInspectWithRaw() call for new version of docker/engine-api
+
 # [0.24.3](https://github.com/camptocamp/conplicity/releases/tag/0.24.3) (2016-08-17)
 
 * Bugfix:
