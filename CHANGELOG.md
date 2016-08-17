@@ -1,3 +1,17 @@
+# [0.24.3](https://github.com/camptocamp/conplicity/releases/tag/0.24.3) (2016-08-17)
+
+* Bugfix:
+
+  - Take the last chainEndTime element (fix #96)
+
+* Tests:
+
+  - Fix some tests
+
+* Quality:
+
+  - Add go report badge
+
 # [0.24.2](https://github.com/camptocamp/conplicity/releases/tag/0.24.2) (2016-08-10)
 
 * Bugfix:
