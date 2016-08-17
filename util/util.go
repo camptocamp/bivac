@@ -50,7 +50,7 @@ func GetVolumeLabel(vol *types.Volume, key string) (value string, err error) {
 
 // PullImage pulls an image from the registry
 func PullImage(c *docker.Client, image string) (err error) {
-	if _, _, err = c.ImageInspectWithRaw(context.Background(), image, false); err != nil {
+	if _, _, err = c.ImageInspectWithRaw(context.Background(), image); err != nil {
 		// TODO: output pull to logs
 		log.WithFields(log.Fields{
 			"image": image,
