@@ -128,7 +128,7 @@ func TestParseEvent(t *testing.T) {
 		t.Fatalf("Expected event value to be 0, got %s", e.Value)
 	}
 	if len(e.Labels) != 2 {
-		t.Fatalf("Expected event to have two labels, got %s", len(e.Labels))
+		t.Fatalf("Expected event to have two labels, got %v", len(e.Labels))
 	}
 	if e.Labels["bar"] != "qux" {
 		t.Fatalf("Expected event's bar label to be \"qux\", got %s", e.Labels["bar"])

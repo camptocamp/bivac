@@ -34,7 +34,7 @@ func TestMySQLGetPrepareCommand(t *testing.T) {
 	}
 	got := (&MySQLProvider{}).GetPrepareCommand(mount)
 	if len(got) != 3 {
-		t.Fatalf("Expected command to have 3 elements, got %s", len(got))
+		t.Fatalf("Expected command to have 3 elements, got %v", len(got))
 	} else {
 		if expected[2] != got[2] {
 			t.Fatalf("Expected %s, got %s", expected, got)
