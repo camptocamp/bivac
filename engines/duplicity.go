@@ -210,10 +210,10 @@ func (d *DuplicityEngine) status() (err error) {
 
 	fullBackup := fullBackupRx.FindStringSubmatch(stdout)
 	var fullBackupDate time.Time
-	chainEndTime := chainEndTimeRx.FindStringSubmatch(stdout)
 	var chainEndTimeDate time.Time
 
 	if len(fullBackup) > 0 {
+		chainEndTime := chainEndTimeRx.FindAllStringSubmatch(stdout, -1)
 		if strings.TrimSpace(fullBackup[1]) == "none" {
 			fullBackupDate = time.Unix(0, 0)
 			chainEndTimeDate = time.Unix(0, 0)
@@ -225,7 +225,7 @@ func (d *DuplicityEngine) status() (err error) {
 			}
 
 			if len(chainEndTime) > 0 {
-				chainEndTimeDate, err = time.Parse(timeFormat, strings.TrimSpace(chainEndTime[len(chainEndTime)-1]))
+				chainEndTimeDate, err = time.Parse(timeFormat, strings.TrimSpace(chainEndTime[len(chainEndTime)-1][1]))
 				if err != nil {
 					err = fmt.Errorf("failed to parse chain end time date: %v", err)
 					return
