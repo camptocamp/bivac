@@ -225,7 +225,7 @@ func (d *DuplicityEngine) status() (err error) {
 			}
 
 			if len(chainEndTime) > 0 {
-				chainEndTimeDate, err = time.Parse(timeFormat, strings.TrimSpace(chainEndTime[len(chainEndTime)-1]))
+				chainEndTimeDate, err = time.Parse(timeFormat, strings.TrimSpace(chainEndTime[len(chainEndTime)]))
 				if err != nil {
 					err = fmt.Errorf("failed to parse chain end time date: %v", err)
 					return
