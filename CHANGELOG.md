@@ -1,3 +1,9 @@
+# [0.24.5](https://github.com/camptocamp/conplicity/releases/tag/0.24.5) (2016-08-18)
+
+* Bugfix:
+
+  - Really take the last chainEndTime element (fix #96)
+
 # [0.24.4](https://github.com/camptocamp/conplicity/releases/tag/0.24.4) (2016-08-17)
 
 * Bugfix:
