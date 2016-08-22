@@ -52,14 +52,8 @@ func (d *DuplicityEngine) Backup() (err error) {
 		return
 	}
 
-	pathSeparator := "/"
-	if targetURL.Scheme == "swift" {
-		// Looks like I'm not the one to fall on this issue: http://stackoverflow.com/questions/27991960/upload-to-swift-pseudo-folders-using-duplicity
-		pathSeparator = "_"
-	}
-
 	backupDir := vol.BackupDir
-	vol.Target = targetURL.String() + pathSeparator + d.Handler.Hostname + pathSeparator + vol.Name
+	vol.Target = targetURL.String() + "/" + d.Handler.Hostname + "/" + vol.Name
 	vol.BackupDir = vol.Mountpoint + "/" + backupDir
 	vol.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
 
