@@ -1,3 +1,9 @@
+# [0.25.0](https://github.com/camptocamp/conplicity/releases/tag/0.25.0) (2016-08-22)
+
+## Warning:
+
+We don't use a specific path separator when using the duplicity engine for swift anymore, as the bug that prevented to backup to a pseudo-folder is fixed in duplicity 0.7.08.
+
 # [0.24.5](https://github.com/camptocamp/conplicity/releases/tag/0.24.5) (2016-08-18)
 
 * Bugfix:
