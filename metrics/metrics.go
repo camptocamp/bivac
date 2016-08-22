@@ -123,7 +123,6 @@ func (p *PrometheusMetrics) GetMetrics() (err error) {
 		err = fmt.Errorf("failed to read HTTP response: %v", err)
 		return
 	}
-	log.Debug(string(body))
 	for _, l := range strings.Split(string(body), "\n") {
 		if strings.HasPrefix(l, "# TYPE ") {
 			lSplit := strings.Fields(l)
