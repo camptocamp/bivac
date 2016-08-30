@@ -30,7 +30,7 @@ func TestPostgreSQLGetPrepareCommand(t *testing.T) {
 	expected := []string{
 		"sh",
 		"-c",
-		"mkdir -p /mnt/backups && pg_dumpall -Upostgres > /mnt/backups/all.sql",
+		"mkdir -p /mnt/backups && pg_dumpall --clean -Upostgres > /mnt/backups/all.sql",
 	}
 	got := (&PostgreSQLProvider{}).GetPrepareCommand(mount)
 	if len(got) != 3 {
