@@ -111,6 +111,14 @@ func PrepareBackup(p Provider) (err error) {
 					if err != nil {
 						return fmt.Errorf("failed to start exec: %v", err)
 					}
+
+					inspect, err := client.ContainerExecInspect(context.Background(), exec.ID)
+					if err != nil {
+						return fmt.Errorf("failed to check prepare command exit code: %v", err)
+					}
+					if c := inspect.ExitCode; c != 0 {
+						return fmt.Errorf("prepare command exited with code %v", c)
+					}
 				} else {
 					log.WithFields(log.Fields{
 						"volume":    vol.Name,
