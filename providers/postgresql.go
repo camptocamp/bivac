@@ -18,7 +18,7 @@ func (p *PostgreSQLProvider) GetPrepareCommand(mount *types.MountPoint) []string
 	return []string{
 		"sh",
 		"-c",
-		"mkdir -p " + mount.Destination + "/backups && pg_dumpall -Upostgres > " + mount.Destination + "/backups/all.sql",
+		"mkdir -p " + mount.Destination + "/backups && pg_dumpall --clean -Upostgres > " + mount.Destination + "/backups/all.sql",
 	}
 }
 
