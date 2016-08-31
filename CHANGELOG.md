@@ -1,3 +1,10 @@
+# [0.25.1](https://github.com/camptocamp/conplicity/releases/tag/0.25.1) (2016-08-31)
+
+* Bugfix:
+
+  - Drop databases before recreating (fix #104)
+  - Call p.GetBackupDir(), not p.backupDir (fix #103)
+
 # [0.25.0](https://github.com/camptocamp/conplicity/releases/tag/0.25.0) (2016-08-22)
 
 ## Warning:
