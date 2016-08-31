@@ -140,5 +140,5 @@ func (p *BaseProvider) GetBackupDir() string {
 
 // SetVolumeBackupDir sets the backup dir for the volume
 func (p *BaseProvider) SetVolumeBackupDir() {
-	p.vol.BackupDir = p.backupDir
+	p.vol.BackupDir = p.GetBackupDir()
 }
