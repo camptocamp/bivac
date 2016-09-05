@@ -1,5 +1,9 @@
 # [0.25.2](https://github.com/camptocamp/conplicity/releases/tag/0.25.2) (2016-09-05)
 
+* Build:
+
+  - Build with Go 1.7 in Travis CI
+
 * Bugfix:
 
   - Check exit code in PrepareBackup() (fix #105)
