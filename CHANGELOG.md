@@ -1,3 +1,9 @@
+# [0.25.2](https://github.com/camptocamp/conplicity/releases/tag/0.25.2) (2016-09-05)
+
+* Bugfix:
+
+  - Check exit code in PrepareBackup() (fix #105)
+
 # [0.25.1](https://github.com/camptocamp/conplicity/releases/tag/0.25.1) (2016-08-31)
 
 * Bugfix:
