@@ -12,8 +12,8 @@ import (
 	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
-	"github.com/docker/engine-api/types"
-	"github.com/docker/engine-api/types/container"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 )
 
 // RCloneEngine implements a backup engine with RClone

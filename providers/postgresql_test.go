@@ -3,7 +3,7 @@ package providers
 import (
 	"testing"
 
-	"github.com/docker/engine-api/types"
+	"github.com/docker/docker/api/types"
 )
 
 func TestPostgreSQLGetName(t *testing.T) {

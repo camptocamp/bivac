@@ -9,7 +9,7 @@ import (
 	"github.com/camptocamp/conplicity/config"
 	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/volume"
-	"github.com/docker/engine-api/types"
+	"github.com/docker/docker/api/types"
 )
 
 func TestGetProvider(t *testing.T) {

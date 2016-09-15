@@ -1,6 +1,6 @@
 package providers
 
-import "github.com/docker/engine-api/types"
+import "github.com/docker/docker/api/types"
 
 // OpenLDAPProvider implements a BaseProvider struct
 // for OpenLDAP backups

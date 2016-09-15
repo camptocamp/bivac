@@ -9,7 +9,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/config"
 	"github.com/camptocamp/conplicity/util"
-	"github.com/docker/engine-api/types"
+	"github.com/docker/docker/api/types"
 	"github.com/go-ini/ini"
 )
 

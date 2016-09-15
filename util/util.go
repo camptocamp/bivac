@@ -8,8 +8,8 @@ import (
 	"golang.org/x/net/context"
 
 	log "github.com/Sirupsen/logrus"
-	docker "github.com/docker/engine-api/client"
-	"github.com/docker/engine-api/types"
+	docker "github.com/docker/docker/client"
+	"github.com/docker/docker/api/types"
 )
 
 const labelPrefix string = "io.conplicity"
