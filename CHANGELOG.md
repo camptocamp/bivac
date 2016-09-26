@@ -1,3 +1,13 @@
+# [0.25.3](https://github.com/camptocamp/conplicity/releases/tag/0.25.3) (2016-09-26)
+
+* Dependencies:
+
+  - Switch to docker/docker since docker/engine-api is deprecated
+
+* Bugfix:
+
+  - Override p.SetVolumeBackupDir() for all providers (fix #107, really fix #103)
+
 # [0.25.2](https://github.com/camptocamp/conplicity/releases/tag/0.25.2) (2016-09-05)
 
 * Build:
