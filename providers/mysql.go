@@ -26,3 +26,8 @@ func (p *MySQLProvider) GetPrepareCommand(mount *types.MountPoint) []string {
 func (p *MySQLProvider) GetBackupDir() string {
 	return "backups"
 }
+
+// SetVolumeBackupDir sets the backup dir for the volume
+func (p *MySQLProvider) SetVolumeBackupDir() {
+	p.vol.BackupDir = p.GetBackupDir()
+}

@@ -26,3 +26,8 @@ func (p *PostgreSQLProvider) GetPrepareCommand(mount *types.MountPoint) []string
 func (p *PostgreSQLProvider) GetBackupDir() string {
 	return "backups"
 }
+
+// SetVolumeBackupDir sets the backup dir for the volume
+func (p *PostgreSQLProvider) SetVolumeBackupDir() {
+	p.vol.BackupDir = p.GetBackupDir()
+}

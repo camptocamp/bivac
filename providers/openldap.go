@@ -26,3 +26,8 @@ func (p *OpenLDAPProvider) GetPrepareCommand(mount *types.MountPoint) []string {
 func (p *OpenLDAPProvider) GetBackupDir() string {
 	return "backups"
 }
+
+// SetVolumeBackupDir sets the backup dir for the volume
+func (p *OpenLDAPProvider) SetVolumeBackupDir() {
+	p.vol.BackupDir = p.GetBackupDir()
+}
