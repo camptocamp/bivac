@@ -9,8 +9,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/volume"
-	docker "github.com/docker/docker/client"
 	"github.com/docker/docker/api/types"
+	docker "github.com/docker/docker/client"
 )
 
 // A Provider is an interface for providers
