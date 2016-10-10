@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/engines"
@@ -20,6 +21,10 @@ func main() {
 
 	c, err := handler.NewConplicity(version)
 	util.CheckErr(err, "Failed to setup Conplicity handler: %v", "fatal")
+	if c.Config.Sleep > 0 {
+		log.Infof("Waiting %v seconds...", c.Config.Sleep)
+		time.Sleep(time.Duration(c.Config.Sleep) * time.Second)
+	}
 
 	log.Infof("Conplicity v%s starting backup...", version)
 
