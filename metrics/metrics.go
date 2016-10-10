@@ -112,7 +112,12 @@ func (p *PrometheusMetrics) GetMetrics() (err error) {
 	}
 	log.Debug("Retrieving existing metrics")
 	url := p.PushgatewayURL + "/metrics"
-	resp, err := http.Get(url)
+	var resp *http.Response
+	err = util.Retry(5, func() error {
+		var err error
+		resp, err = http.Get(url)
+		return err
+	})
 	if err != nil {
 		err = fmt.Errorf("failed to get existing metrics from Prometheus: %v", err)
 		return
