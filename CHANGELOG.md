@@ -1,3 +1,9 @@
+# [0.25.6](https://github.com/camptocamp/conplicity/releases/tag/0.25.6) (2016-10-17)
+
+* Bugfix:
+
+  - Fix lint issue
+
 # [0.25.5](https://github.com/camptocamp/conplicity/releases/tag/0.25.5) (2016-10-17)
 
 * Features:
