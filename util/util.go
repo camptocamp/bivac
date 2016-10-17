@@ -89,7 +89,7 @@ func RemoveContainer(c *docker.Client, id string) {
 	CheckErr(err, "Failed to remove container "+id+": %v", "error")
 }
 
-// Retry
+// Retry retry on error
 func Retry(attempts int, callback func() error) (err error) {
 	for i := 0; ; i++ {
 		err = callback()
