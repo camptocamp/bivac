@@ -1,3 +1,9 @@
+# [0.25.4](https://github.com/camptocamp/conplicity/releases/tag/0.25.4) (2016-10-17)
+
+* Bugfix:
+
+  - Do not crash when GetMetrics fails (fix #108)
+
 # [0.25.3](https://github.com/camptocamp/conplicity/releases/tag/0.25.3) (2016-09-26)
 
 * Dependencies:
