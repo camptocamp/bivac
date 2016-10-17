@@ -1,3 +1,9 @@
+# [0.25.5](https://github.com/camptocamp/conplicity/releases/tag/0.25.5) (2016-10-17)
+
+* Features:
+
+  - Retry on errors (fix #112)
+
 # [0.25.4](https://github.com/camptocamp/conplicity/releases/tag/0.25.4) (2016-10-17)
 
 * Bugfix:
