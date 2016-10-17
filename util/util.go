@@ -4,12 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	"golang.org/x/net/context"
 
 	log "github.com/Sirupsen/logrus"
-	docker "github.com/docker/docker/client"
 	"github.com/docker/docker/api/types"
+	docker "github.com/docker/docker/client"
 )
 
 const labelPrefix string = "io.conplicity"
@@ -86,4 +87,23 @@ func RemoveContainer(c *docker.Client, id string) {
 		RemoveVolumes: true,
 	})
 	CheckErr(err, "Failed to remove container "+id+": %v", "error")
+}
+
+// Retry
+func Retry(attempts int, callback func() error) (err error) {
+	for i := 0; ; i++ {
+		err = callback()
+		if err == nil {
+			return nil
+		}
+
+		if i >= (attempts - 1) {
+			break
+		}
+
+		time.Sleep(2 * time.Second)
+
+		log.Println("retrying...")
+	}
+	return fmt.Errorf("after %d attempts, last error: %s", attempts, err)
 }

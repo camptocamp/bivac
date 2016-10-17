@@ -57,19 +57,19 @@ func (d *DuplicityEngine) Backup() (err error) {
 	vol.BackupDir = vol.Mountpoint + "/" + backupDir
 	vol.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
 
-	err = d.duplicityBackup()
+	err = util.Retry(3, d.duplicityBackup)
 	if err != nil {
 		err = fmt.Errorf("failed to backup volume with duplicity: %v", err)
 		return
 	}
 
-	err = d.removeOld()
+	err = util.Retry(3, d.removeOld)
 	if err != nil {
 		err = fmt.Errorf("failed to remove old backups: %v", err)
 		return
 	}
 
-	err = d.cleanup()
+	err = util.Retry(3, d.cleanup)
 	if err != nil {
 		err = fmt.Errorf("failed to cleanup extraneous duplicity files: %v", err)
 		return
@@ -80,14 +80,14 @@ func (d *DuplicityEngine) Backup() (err error) {
 			"volume": vol.Name,
 		}).Info("Skipping verification")
 	} else {
-		err = d.verify()
+		err = util.Retry(3, d.verify)
 		if err != nil {
 			err = fmt.Errorf("failed to verify backup: %v", err)
 			return
 		}
 	}
 
-	err = d.status()
+	err = util.Retry(3, d.status)
 	if err != nil {
 		err = fmt.Errorf("failed to retrieve last backup info: %v", err)
 		return
