@@ -81,7 +81,7 @@ func PullImage(c *docker.Client, image string) (err error) {
 func RemoveContainer(c *docker.Client, id string) {
 	log.WithFields(log.Fields{
 		"container": id,
-	}).Infof("Removing container")
+	}).Debug("Removing container")
 	err := c.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{
 		Force:         true,
 		RemoveVolumes: true,

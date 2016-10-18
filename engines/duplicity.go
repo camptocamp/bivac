@@ -362,7 +362,7 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 		"full_if_older_than": v.Config.Duplicity.FullIfOlderThan,
 		"target":             v.Target,
 		"mount":              v.Mount,
-	}).Debug("Starting volume backup")
+	}).Info("Starting volume backup")
 
 	// TODO
 	// Init engine
