@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/engines"
@@ -27,12 +28,18 @@ func main() {
 	util.CheckErr(err, "Failed to get Docker volumes: %v", "fatal")
 
 	var pushMetrics bool
-	err = c.MetricsHandler.GetMetrics()
-	if err != nil {
-		log.Errorf("Failed to get existing Prometheus metrics: %v", err)
-		pushMetrics = false
-	} else {
-		pushMetrics = true
+	for i := c.Config.Metrics.PushgatewayRetries; i > 0; i-- {
+		err = c.MetricsHandler.GetMetrics()
+		if err != nil {
+			pushMetrics = false
+			if i == 1 {
+				log.Errorf("Failed to get existing Prometheus metrics: %v", err)
+			} else {
+				time.Sleep(time.Duration(c.Config.Metrics.PushgatewayWait) * time.Second)
+			}
+		} else {
+			pushMetrics = true
+		}
 	}
 
 	for _, vol := range vols {
