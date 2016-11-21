@@ -1,4 +1,4 @@
-.TH conplicity 1 "10 August 2016"
+.TH conplicity 1 "21 November 2016"
 .SH NAME
 conplicity \- Docker volumes backup
 .SH SYNOPSIS
@@ -60,6 +60,12 @@ The rclone docker image.
 .TP
 \fB\fB\-g\fR, \fB\-\-gateway-url\fR <default: \fI$PUSHGATEWAY_URL\fR>\fP
 The prometheus push gateway URL to use.
+.TP
+\fB\fB\-\-gateway-retries\fR <default: \fI"1"\fR>\fP
+How many times to attempt to contact the push gateway.
+.TP
+\fB\fB\-\-gateway-wait\fR <default: \fI"2"\fR>\fP
+How long to wait between push gateway retries.
 .SS AWS Options
 .TP
 \fB\fB\-\-aws-access-key-id\fR <default: \fI$AWS_ACCESS_KEY_ID\fR>\fP

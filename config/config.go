@@ -32,7 +32,9 @@ type Config struct {
 	} `group:"RClone Options"`
 
 	Metrics struct {
-		PushgatewayURL string `short:"g" long:"gateway-url" description:"The prometheus push gateway URL to use." env:"PUSHGATEWAY_URL"`
+		PushgatewayURL     string `short:"g" long:"gateway-url" description:"The prometheus push gateway URL to use." env:"PUSHGATEWAY_URL"`
+		PushgatewayRetries int    `long:"gateway-retries" description:"How many times to attempt to contact the push gateway." env:"PUSHGATEWAY_RETRIES" default:"1"`
+		PushgatewayWait    int    `long:"gateway-wait" description:"How long to wait between push gateway retries." env:"PUSHGATEWAY_WAIT" default:"2"`
 	} `group:"Metrics Options"`
 
 	AWS struct {
