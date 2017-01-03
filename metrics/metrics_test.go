@@ -64,10 +64,14 @@ func TestEventString(t *testing.T) {
 }
 
 func TestNewMetrics(t *testing.T) {
-	p := NewMetrics("foo", "http://foo:9091")
+	p := NewMetrics("foo", "bar", "http://foo:9091")
 
 	if p.Instance != "foo" {
 		t.Fatalf("Expected instance to be foo, got %s", p.Instance)
+	}
+
+	if p.Volume != "bar" {
+		t.Fatalf("Expected volume to be bar, got %s", p.Volume)
 	}
 
 	if p.PushgatewayURL != "http://foo:9091" {
@@ -80,7 +84,7 @@ func TestNewMetrics(t *testing.T) {
 }
 
 func TestNewMetric(t *testing.T) {
-	p := NewMetrics("foo", "http://foo:9091")
+	p := NewMetrics("foo", "baz", "http://foo:9091")
 	m := p.NewMetric("bar", "qux")
 
 	if len(p.Metrics) != 1 {
@@ -97,41 +101,6 @@ func TestNewMetric(t *testing.T) {
 
 	if m.Type != "qux" {
 		t.Fatalf("Expected type to be qux, got %s", m.Name)
-	}
-}
-
-func TestParseEvent(t *testing.T) {
-	if e := parseEvent(""); e != nil {
-		t.Fatalf("Expected empty line to return nil, got %v", e)
-	}
-
-	if e := parseEvent("# HELP foo Some foo metric"); e != nil {
-		t.Fatalf("Expected help line to return nil, got %v", e)
-	}
-
-	if e := parseEvent("# TYPE foo gauge"); e != nil {
-		t.Fatalf("Expected type line to return nil, got %v", e)
-	}
-
-	if e := parseEvent("foo{bar=\"qux\"} 0"); e != nil {
-		t.Fatalf("Expected non-conplicity event to return nil, got %v", e)
-	}
-
-	e := parseEvent("conplicity_foo{bar=\"qux\",baz=\"abc\"} 0")
-	if e == nil {
-		t.Fatal("Expected an event, got nil")
-	}
-	if e.Name != "conplicity_foo" {
-		t.Fatalf("Expected event name to be conplicity_foo, got %s", e.Name)
-	}
-	if e.Value != "0" {
-		t.Fatalf("Expected event value to be 0, got %s", e.Value)
-	}
-	if len(e.Labels) != 2 {
-		t.Fatalf("Expected event to have two labels, got %v", len(e.Labels))
-	}
-	if e.Labels["bar"] != "qux" {
-		t.Fatalf("Expected event's bar label to be \"qux\", got %s", e.Labels["bar"])
 	}
 }
 
