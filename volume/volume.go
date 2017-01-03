@@ -5,9 +5,11 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/config"
+	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/docker/docker/api/types"
 	"github.com/go-ini/ini"
@@ -16,10 +18,11 @@ import (
 // Volume provides backup methods for a single Docker volume
 type Volume struct {
 	*types.Volume
-	Target    string
-	BackupDir string
-	Mount     string
-	Config    *Config
+	Target         string
+	BackupDir      string
+	Mount          string
+	Config         *Config
+	MetricsHandler *metrics.PrometheusMetrics
 }
 
 // Config is the volume's configuration parameters
@@ -39,7 +42,7 @@ type Config struct {
 }
 
 // NewVolume returns a new Volume for a given types.Volume struct
-func NewVolume(v *types.Volume, c *config.Config) *Volume {
+func NewVolume(v *types.Volume, c *config.Config, h string) *Volume {
 	vol := &Volume{
 		Volume: v,
 		Config: &Config{},
@@ -50,7 +53,37 @@ func NewVolume(v *types.Volume, c *config.Config) *Volume {
 		log.Fatal(err)
 	}
 
+	err = vol.setupMetrics(c, h)
+	if err != nil {
+		log.Error(err)
+	}
+
 	return vol
+}
+
+// LogTime adds a new metric even with the current time
+func (v *Volume) LogTime(event string) (err error) {
+	metricName := fmt.Sprintf("conplicity_%s", event)
+	startTimeMetric := v.MetricsHandler.NewMetric(metricName, "counter")
+	err = startTimeMetric.UpdateEvent(
+		&metrics.Event{
+			Labels: map[string]string{
+				"volume": v.Name,
+			},
+			Value: strconv.FormatInt(time.Now().Unix(), 10),
+		},
+	)
+	if err != nil {
+		return
+	}
+	err = v.MetricsHandler.Push()
+	return
+}
+
+func (v *Volume) setupMetrics(c *config.Config, h string) (err error) {
+	v.MetricsHandler = metrics.NewMetrics(h, v.Volume.Name, c.Metrics.PushgatewayURL)
+	util.CheckErr(err, "Failed to set up metrics: %v", "fatal")
+	return
 }
 
 func (v *Volume) getConfig(c *config.Config) error {

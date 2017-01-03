@@ -168,7 +168,7 @@ func (d *DuplicityEngine) verify() (err error) {
 		return
 	}
 
-	metric := d.Handler.MetricsHandler.NewMetric("conplicity_verifyExitCode", "gauge")
+	metric := d.Volume.MetricsHandler.NewMetric("conplicity_verifyExitCode", "gauge")
 	err = metric.UpdateEvent(
 		&metrics.Event{
 			Labels: map[string]string{
@@ -235,23 +235,19 @@ func (d *DuplicityEngine) status() (err error) {
 		return
 	}
 
-	lastBackupMetric := d.Handler.MetricsHandler.NewMetric("conplicity_lastBackup", "counter")
+	lastBackupMetric := d.Volume.MetricsHandler.NewMetric("conplicity_lastBackup", "counter")
 	lastBackupMetric.UpdateEvent(
 		&metrics.Event{
-			Labels: map[string]string{
-				"volume": v.Name,
-			},
-			Value: strconv.FormatInt(chainEndTimeDate.Unix(), 10),
+			Labels: map[string]string{},
+			Value:  strconv.FormatInt(chainEndTimeDate.Unix(), 10),
 		},
 	)
 
-	lastFullBackupMetric := d.Handler.MetricsHandler.NewMetric("conplicity_lastFullBackup", "counter")
+	lastFullBackupMetric := d.Volume.MetricsHandler.NewMetric("conplicity_lastFullBackup", "counter")
 	lastFullBackupMetric.UpdateEvent(
 		&metrics.Event{
-			Labels: map[string]string{
-				"volume": v.Name,
-			},
-			Value: strconv.FormatInt(fullBackupDate.Unix(), 10),
+			Labels: map[string]string{},
+			Value:  strconv.FormatInt(fullBackupDate.Unix(), 10),
 		},
 	)
 
@@ -388,13 +384,11 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 		return
 	}
 
-	metric := d.Handler.MetricsHandler.NewMetric("conplicity_backupExitCode", "gauge")
+	metric := d.Volume.MetricsHandler.NewMetric("conplicity_backupExitCode", "gauge")
 	metric.UpdateEvent(
 		&metrics.Event{
-			Labels: map[string]string{
-				"volume": v.Name,
-			},
-			Value: strconv.Itoa(state),
+			Labels: map[string]string{},
+			Value:  strconv.Itoa(state),
 		},
 	)
 	return

@@ -13,6 +13,7 @@ import (
 // PrometheusMetrics is a struct to push metrics to Prometheus
 type PrometheusMetrics struct {
 	Instance       string
+	Volume         string
 	PushgatewayURL string
 	Metrics        map[string]*Metric
 }
@@ -32,9 +33,10 @@ type Event struct {
 }
 
 // NewMetrics returns a new metrics struct
-func NewMetrics(instance, pushgatewayURL string) *PrometheusMetrics {
+func NewMetrics(instance, volume, pushgatewayURL string) *PrometheusMetrics {
 	return &PrometheusMetrics{
 		Instance:       instance,
+		Volume:         volume,
 		PushgatewayURL: pushgatewayURL,
 		Metrics:        make(map[string]*Metric),
 	}
@@ -104,93 +106,6 @@ func (p *PrometheusMetrics) NewMetric(name, mType string) (m *Metric) {
 	return
 }
 
-// GetMetrics returns a map of existing metrics
-func (p *PrometheusMetrics) GetMetrics() (err error) {
-	if p.PushgatewayURL == "" {
-		log.Debug("No Pushgateway URL specified, not retrieving metrics")
-		return
-	}
-	log.Debug("Retrieving existing metrics")
-	url := p.PushgatewayURL + "/metrics"
-	resp, err := http.Get(url)
-	if err != nil {
-		err = fmt.Errorf("failed to get existing metrics from Prometheus: %v", err)
-		return
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		err = fmt.Errorf("failed to read HTTP response: %v", err)
-		return
-	}
-	for _, l := range strings.Split(string(body), "\n") {
-		if strings.HasPrefix(l, "# TYPE ") {
-			lSplit := strings.Fields(l)
-			mName := lSplit[2]
-			mType := lSplit[3]
-			m, ok := p.Metrics[mName]
-			if !ok {
-				m = &Metric{
-					Name: mName,
-				}
-			}
-			m.Type = mType
-			continue
-		}
-		e := parseEvent(l)
-		if e == nil {
-			continue
-		}
-		if e.Labels["instance"] != p.Instance {
-			log.WithFields(log.Fields{
-				"event":    e.Name,
-				"instance": e.Labels["instance"],
-			}).Debug("Ignoring event from wrong instance")
-			continue
-		}
-		log.WithFields(log.Fields{
-			"event":  e.Name,
-			"value":  e.Value,
-			"labels": e.Labels,
-		}).Debug("Found event")
-		m, ok := p.Metrics[e.Name]
-		if !ok {
-			m = &Metric{
-				Name: e.Name,
-			}
-			p.Metrics[e.Name] = m
-		}
-		m.Events = append(m.Events, e)
-	}
-
-	return
-}
-
-func parseEvent(line string) (event *Event) {
-	// Filter out metrics and comments
-	if !strings.HasPrefix(line, "conplicity") {
-		return
-	}
-
-	spaceSplit := strings.Fields(line)
-	BraceSplit := strings.Split(spaceSplit[0], "{")
-	name := BraceSplit[0]
-	labelsStr := strings.TrimSuffix(strings.TrimPrefix(spaceSplit[0], fmt.Sprintf("%s{", name)), "}")
-	labels := make(map[string]string)
-	for _, l := range strings.Split(labelsStr, ",") {
-		lParse := strings.Split(l, "=")
-		lName := lParse[0]
-		lValue := strings.TrimSuffix(strings.TrimPrefix(l, fmt.Sprintf("%s=\"", lName)), "\"")
-		labels[lName] = lValue
-	}
-	event = &Event{
-		Name:   name,
-		Value:  spaceSplit[1],
-		Labels: labels,
-	}
-	return
-}
-
 // Push sends metrics to a Prometheus push gateway
 func (p *PrometheusMetrics) Push() (err error) {
 	if p.PushgatewayURL == "" {
@@ -198,7 +113,7 @@ func (p *PrometheusMetrics) Push() (err error) {
 		return
 	}
 	metrics := p.Metrics
-	url := p.PushgatewayURL + "/metrics/job/conplicity/instance/" + p.Instance
+	url := p.PushgatewayURL + "/metrics/job/conplicity/instance/" + p.Instance + "/volume/" + p.Volume
 
 	var data string
 	for _, m := range metrics {
