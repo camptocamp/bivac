@@ -26,35 +26,14 @@ func main() {
 	vols, err := c.GetVolumes()
 	util.CheckErr(err, "Failed to get Docker volumes: %v", "fatal")
 
-	var pushMetrics bool
-	err = c.MetricsHandler.GetMetrics()
-	if err != nil {
-		log.Errorf("Failed to get existing Prometheus metrics: %v", err)
-		pushMetrics = false
-	} else {
-		pushMetrics = true
-	}
-
 	for _, vol := range vols {
-		if pushMetrics {
-			c.LogTime(vol, "backupStartTime")
-		}
+		c.LogTime(vol, "backupStartTime")
 		err = backupVolume(c, vol)
-		if pushMetrics {
-			c.LogTime(vol, "backupEndTime")
-		}
+		c.LogTime(vol, "backupEndTime")
 		if err != nil {
 			log.Errorf("Failed to backup volume %s: %v", vol.Name, err)
 			exitCode = 1
 			continue
-		}
-	}
-
-	if pushMetrics {
-		err = c.MetricsHandler.Push()
-		if err != nil {
-			log.Errorf("Failed to post data to Prometheus Pushgateway: %v", err)
-			exitCode = 2
 		}
 	}
 
