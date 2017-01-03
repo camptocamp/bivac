@@ -5,6 +5,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/config"
@@ -58,6 +59,25 @@ func NewVolume(v *types.Volume, c *config.Config, h string) *Volume {
 	}
 
 	return vol
+}
+
+// LogTime adds a new metric even with the current time
+func (v *Volume) LogTime(event string) (err error) {
+	metricName := fmt.Sprintf("conplicity_%s", event)
+	startTimeMetric := v.MetricsHandler.NewMetric(metricName, "counter")
+	err = startTimeMetric.UpdateEvent(
+		&metrics.Event{
+			Labels: map[string]string{
+				"volume": v.Name,
+			},
+			Value: strconv.FormatInt(time.Now().Unix(), 10),
+		},
+	)
+	if err != nil {
+		return
+	}
+	err = v.MetricsHandler.Push()
+	return
 }
 
 func (v *Volume) setupMetrics(c *config.Config, h string) (err error) {

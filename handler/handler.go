@@ -7,15 +7,12 @@ import (
 	"net/http"
 	"os"
 	"sort"
-	"strconv"
-	"time"
 	"unicode/utf8"
 
 	"golang.org/x/net/context"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/config"
-	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/docker/api/types"
@@ -104,25 +101,6 @@ func (c *Conplicity) GetVolumes() (volumes []*volume.Volume, err error) {
 		}
 		volumes = append(volumes, v)
 	}
-	return
-}
-
-// LogTime adds a new metric even with the current time
-func (c *Conplicity) LogTime(vol *volume.Volume, event string) (err error) {
-	metricName := fmt.Sprintf("conplicity_%s", event)
-	startTimeMetric := vol.MetricsHandler.NewMetric(metricName, "counter")
-	err = startTimeMetric.UpdateEvent(
-		&metrics.Event{
-			Labels: map[string]string{
-				"volume": vol.Name,
-			},
-			Value: strconv.FormatInt(time.Now().Unix(), 10),
-		},
-	)
-	if err != nil {
-		return
-	}
-	err = vol.MetricsHandler.Push()
 	return
 }
 

@@ -27,9 +27,9 @@ func main() {
 	util.CheckErr(err, "Failed to get Docker volumes: %v", "fatal")
 
 	for _, vol := range vols {
-		c.LogTime(vol, "backupStartTime")
+		vol.LogTime("backupStartTime")
 		err = backupVolume(c, vol)
-		c.LogTime(vol, "backupEndTime")
+		vol.LogTime("backupEndTime")
 		if err != nil {
 			log.Errorf("Failed to backup volume %s: %v", vol.Name, err)
 			exitCode = 1
