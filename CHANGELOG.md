@@ -1,3 +1,9 @@
+# [0.26.0](https://github.com/camptocamp/conplicity/releases/tag/0.26.0) (2017-01-03)
+
+* Metrics:
+
+  - Use volume as primary key in metrics, avoids getting all metrics (PR #117, fix #115)
+
 # [0.25.6](https://github.com/camptocamp/conplicity/releases/tag/0.25.6) (2016-10-17)
 
 * Bugfix:
