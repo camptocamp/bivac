@@ -1,3 +1,10 @@
+# [0.26.1](https://github.com/camptocamp/conplicity/releases/tag/0.26.1) (2017-05-26)
+
+* Rclone:
+
+  - Pin camptocamp/rclone:1.33-1 as newer images changes environment variable API
+
+
 # [0.26.0](https://github.com/camptocamp/conplicity/releases/tag/0.26.0) (2017-01-03)
 
 * Metrics:
