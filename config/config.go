@@ -28,7 +28,7 @@ type Config struct {
 	} `group:"Duplicity Options"`
 
 	RClone struct {
-		Image string `long:"rclone-image" description:"The rclone docker image." env:"RCLONE_DOCKER_IMAGE" default:"camptocamp/rclone:latest"`
+		Image string `long:"rclone-image" description:"The rclone docker image." env:"RCLONE_DOCKER_IMAGE" default:"camptocamp/rclone:1.33-1"`
 	} `group:"RClone Options"`
 
 	Metrics struct {
