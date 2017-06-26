@@ -182,23 +182,37 @@ func (d *DuplicityEngine) verify() (err error) {
 
 // status gets the latest backup date info from duplicity
 func (d *DuplicityEngine) status() (err error) {
+	var stdout string
+	attempts := 3
 	v := d.Volume
-	_, stdout, err := d.launchDuplicity(
-		[]string{
-			"collection-status",
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
-			"--name", v.Name,
-			v.Target,
-		},
-		[]string{
-			v.Mount,
-			cacheMount,
-		},
-	)
-	if err != nil {
-		err = fmt.Errorf("failed to launch duplicity: %v", err)
+	for i := 1; i <= attempts; i++ {
+		_, stdout, err = d.launchDuplicity(
+			[]string{
+				"collection-status",
+				"--s3-use-new-style",
+				"--ssh-options", "-oStrictHostKeyChecking=no",
+				"--no-encryption",
+				"--name", v.Name,
+				v.Target,
+			},
+			[]string{
+				v.Mount,
+				cacheMount,
+			},
+		)
+		if err != nil {
+			err = fmt.Errorf("failed to launch duplicity: %v", err)
+			return
+		}
+		if strings.Contains(stdout, "No orphaned or incomplete backup sets found.") {
+			break
+		} else {
+			log.Debug("No end string found, the collection-status output may be wrong, retrying ...")
+		}
+	}
+
+	if strings.Contains(stdout, "No orphaned or incomplete backup sets found.") {
+		err = fmt.Errorf("failed to retrieve full output from collection-status after %v attempts", attempts)
 		return
 	}
 
