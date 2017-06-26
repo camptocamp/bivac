@@ -183,9 +183,10 @@ func (d *DuplicityEngine) verify() (err error) {
 // status gets the latest backup date info from duplicity
 func (d *DuplicityEngine) status() (err error) {
 	var stdout string
+	collectionComplete := false
 	attempts := 3
 	v := d.Volume
-	for i := 1; i <= attempts; i++ {
+	for i := 0; i < attempts; i++ {
 		_, stdout, err = d.launchDuplicity(
 			[]string{
 				"collection-status",
@@ -205,13 +206,14 @@ func (d *DuplicityEngine) status() (err error) {
 			return
 		}
 		if strings.Contains(stdout, "No orphaned or incomplete backup sets found.") {
+			collectionComplete = true
 			break
 		} else {
-			log.Debug("No end string found, the collection-status output may be wrong, retrying ...")
+			log.Debug("No end string, found the collection-status output may be wrong, retrying ...")
 		}
 	}
 
-	if strings.Contains(stdout, "No orphaned or incomplete backup sets found.") {
+	if !collectionComplete {
 		err = fmt.Errorf("failed to retrieve full output from collection-status after %v attempts", attempts)
 		return
 	}
