@@ -123,6 +123,11 @@ Conplicity detects automatically the kind of data that is stored on a volume and
 * OpenLDAP: Run `slapcat` before backup
 * Default: Backup volume data as is
 
+**Note:** in order to detect providers, conplicity needs to access the files in the
+volume. When running in a Docker container, you need to mount the Docker
+volumes directory for this feature to work, by adding `-v
+/var/lib/docker/volumes:/var/lib/docker/volumes:ro` to the Docker command line.
+
 
 ## Engines
 
