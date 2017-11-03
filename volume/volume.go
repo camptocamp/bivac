@@ -39,6 +39,9 @@ type Config struct {
 
 	RClone struct {
 	} `label:"rclone" ini:"rclone" config:"RClone"`
+
+	Restic struct {
+	} `label:"restic" ini:"restic" config:"Restic"`
 }
 
 // NewVolume returns a new Volume for a given types.Volume struct

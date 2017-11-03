@@ -1,4 +1,4 @@
-.TH conplicity 1 "26 June 2017"
+.TH conplicity 1 "3 November 2017"
 .SH NAME
 conplicity \- Docker volumes backup
 .SH SYNOPSIS
@@ -12,6 +12,7 @@ Conplicity supports multiple engines for performing the backup:
 
 * RClone: use for heavy data that Duplicity cannot manage efficiently
 
+* Restic
 
 .SH OPTIONS
 .SS Application Options
@@ -56,6 +57,13 @@ The number days after which backups must be removed.
 .TP
 \fB\fB\-\-rclone-image\fR <default: \fI"camptocamp/rclone:1.33-1"\fR>\fP
 The rclone docker image.
+.SS Restic Options
+.TP
+\fB\fB\-\-restic-image\fR <default: \fI"restic/restic:latest"\fR>\fP
+The restic docker image.
+.TP
+\fB\fB\-\-restic-password\fR <default: \fI$RESTIC_PASSWORD\fR>\fP
+The restic backup password.
 .SS Metrics Options
 .TP
 \fB\fB\-g\fR, \fB\-\-gateway-url\fR <default: \fI$PUSHGATEWAY_URL\fR>\fP
