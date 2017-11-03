@@ -28,6 +28,11 @@ func GetEngine(c *handler.Conplicity, v *volume.Volume) Engine {
 			Handler: c,
 			Volume:  v,
 		}
+	case "restic":
+		return &ResticEngine{
+			Handler: c,
+			Volume:  v,
+		}
 	}
 
 	log.Fatalf("Unknown engine %s", engine)

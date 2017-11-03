@@ -31,6 +31,11 @@ type Config struct {
 		Image string `long:"rclone-image" description:"The rclone docker image." env:"RCLONE_DOCKER_IMAGE" default:"camptocamp/rclone:1.33-1"`
 	} `group:"RClone Options"`
 
+	Restic struct {
+		Image    string `long:"restic-image" description:"The restic docker image." env:"RESTIC_DOCKER_IMAGE" default:"restic/restic:latest"`
+		Password string `long:"restic-password" description:"The restic backup password." env:"RESTIC_PASSWORD"`
+	} `group:"Restic Options"`
+
 	Metrics struct {
 		PushgatewayURL string `short:"g" long:"gateway-url" description:"The prometheus push gateway URL to use." env:"PUSHGATEWAY_URL"`
 	} `group:"Metrics Options"`
@@ -77,6 +82,7 @@ Conplicity supports multiple engines for performing the backup:
 
 * RClone: use for heavy data that Duplicity cannot manage efficiently
 
+* Restic
 `
 		parser.WriteManPage(&buf)
 		fmt.Printf(buf.String())
