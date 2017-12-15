@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"golang.org/x/net/context"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/handler"
+	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/docker/api/types"
@@ -29,6 +31,7 @@ func (*ResticEngine) GetName() string {
 
 // Backup performs the backup of the passed volume
 func (r *ResticEngine) Backup() (err error) {
+
 	v := r.Volume
 
 	targetURL, err := url.Parse(v.Config.TargetURL)
@@ -94,6 +97,16 @@ func (r *ResticEngine) Backup() (err error) {
 	if state != 0 {
 		err = fmt.Errorf("Restic exited with state %v while checking the backup", state)
 	}
+
+	metric := r.Volume.MetricsHandler.NewMetric("conplicity_verifyExitCode", "gauge")
+	err = metric.UpdateEvent(
+		&metrics.Event{
+			Labels: map[string]string{
+				"volume": v.Name,
+			},
+			Value: strconv.Itoa(state),
+		},
+	)
 	return
 }
 
