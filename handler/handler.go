@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"time"
 	"unicode/utf8"
 
 	"golang.org/x/net/context"
@@ -102,6 +103,43 @@ func (c *Conplicity) GetVolumes() (volumes []*volume.Volume, err error) {
 		volumes = append(volumes, v)
 	}
 	return
+}
+
+// MustVerifyBackup checks if the backup must be verified
+func (c *Conplicity) MustVerifyBackup(vol *volume.Volume) (bool, error) {
+	logCheckPath := vol.Mountpoint + "/.conplicity_last_check"
+
+	if vol.Config.NoVerify {
+		log.WithFields(log.Fields{
+			"volume": vol.Name,
+		}).Info("Skipping verification")
+
+		return false, nil
+	}
+
+	if _, err := os.Stat(logCheckPath); os.IsNotExist(err) {
+		os.OpenFile(logCheckPath, os.O_RDONLY|os.O_CREATE, 0644)
+	}
+
+	info, err := os.Stat(logCheckPath)
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve the last check date: %v", err)
+		return false, err
+	}
+
+	checkExpiration := info.ModTime().AddDate(0, 0, c.Config.DaysLastCheck)
+	if time.Now().Before(checkExpiration) {
+		return false, nil
+	}
+
+	now := time.Now().Local()
+	os.Chtimes(logCheckPath, now, now)
+
+	log.WithFields(log.Fields{
+		"volume": vol.Name,
+	}).Info("Verifying backup")
+
+	return true, nil
 }
 
 func (c *Conplicity) blacklistedVolume(vol *volume.Volume) (bool, string, string) {

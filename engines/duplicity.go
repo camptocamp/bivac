@@ -75,11 +75,12 @@ func (d *DuplicityEngine) Backup() (err error) {
 		return
 	}
 
-	if vol.Config.NoVerify {
-		log.WithFields(log.Fields{
-			"volume": vol.Name,
-		}).Info("Skipping verification")
-	} else {
+	verify, err := d.Handler.MustVerifyBackup(vol)
+	if err != nil {
+		return
+	}
+
+	if verify {
 		err = util.Retry(3, d.verify)
 		if err != nil {
 			err = fmt.Errorf("failed to verify backup: %v", err)
