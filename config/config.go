@@ -5,22 +5,23 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"time"
 
 	"github.com/jessevdk/go-flags"
 )
 
 // Config stores the handler's configuration and UI interface parameters
 type Config struct {
-	Version             bool     `short:"V" long:"version" description:"Display version."`
-	Loglevel            string   `short:"l" long:"loglevel" description:"Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic')." env:"CONPLICITY_LOG_LEVEL" default:"info"`
-	VolumesBlacklist    []string `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"CONPLICITY_VOLUMES_BLACKLIST" env-delim:","`
-	Manpage             bool     `short:"m" long:"manpage" description:"Output manpage."`
-	NoVerify            bool     `long:"no-verify" description:"Do not verify backup." env:"CONPLICITY_NO_VERIFY"`
-	JSON                bool     `short:"j" long:"json" description:"Log as JSON (to stderr)." env:"CONPLICITY_JSON_OUTPUT"`
-	Engine              string   `short:"E" long:"engine" description:"Backup engine to use." env:"CONPLICITY_ENGINE" default:"duplicity"`
-	TargetURL           string   `short:"u" long:"target-url" description:"The target URL to push to." env:"CONPLICITY_TARGET_URL"`
-	HostnameFromRancher bool     `short:"H" long:"hostname-from-rancher" description:"Retrieve hostname from Rancher metadata." env:"CONPLICITY_HOSTNAME_FROM_RANCHER"`
-	DaysLastCheck       int      `long:"last-check" description:"Days since the last check of your backup." env:"CONPLICITY_LAST_CHECK" default:"0"`
+	Version             bool          `short:"V" long:"version" description:"Display version."`
+	Loglevel            string        `short:"l" long:"loglevel" description:"Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic')." env:"CONPLICITY_LOG_LEVEL" default:"info"`
+	VolumesBlacklist    []string      `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"CONPLICITY_VOLUMES_BLACKLIST" env-delim:","`
+	Manpage             bool          `short:"m" long:"manpage" description:"Output manpage."`
+	NoVerify            bool          `long:"no-verify" description:"Do not verify backup." env:"CONPLICITY_NO_VERIFY"`
+	JSON                bool          `short:"j" long:"json" description:"Log as JSON (to stderr)." env:"CONPLICITY_JSON_OUTPUT"`
+	Engine              string        `short:"E" long:"engine" description:"Backup engine to use." env:"CONPLICITY_ENGINE" default:"duplicity"`
+	TargetURL           string        `short:"u" long:"target-url" description:"The target URL to push to." env:"CONPLICITY_TARGET_URL"`
+	HostnameFromRancher bool          `short:"H" long:"hostname-from-rancher" description:"Retrieve hostname from Rancher metadata." env:"CONPLICITY_HOSTNAME_FROM_RANCHER"`
+	CheckEvery          time.Duration `long:"check-every" description:"Days between backup checks." env:"CONPLICIY_CHECK_EVERY" default:"0"`
 
 	Duplicity struct {
 		Image           string `long:"duplicity-image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`

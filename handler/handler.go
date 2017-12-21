@@ -105,8 +105,8 @@ func (c *Conplicity) GetVolumes() (volumes []*volume.Volume, err error) {
 	return
 }
 
-// MustVerifyBackup checks if the backup must be verified
-func (c *Conplicity) MustVerifyBackup(vol *volume.Volume) (bool, error) {
+// IsCheckScheduled checks if the backup must be verified
+func (c *Conplicity) IsCheckScheduled(vol *volume.Volume) (bool, error) {
 	logCheckPath := vol.Mountpoint + "/.conplicity_last_check"
 
 	if vol.Config.NoVerify {
@@ -127,7 +127,7 @@ func (c *Conplicity) MustVerifyBackup(vol *volume.Volume) (bool, error) {
 		return false, err
 	}
 
-	checkExpiration := info.ModTime().AddDate(0, 0, c.Config.DaysLastCheck)
+	checkExpiration := info.ModTime().Add(c.Config.CheckEvery)
 	if time.Now().Before(checkExpiration) {
 		return false, nil
 	}

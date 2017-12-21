@@ -56,12 +56,12 @@ func (r *ResticEngine) Backup() (err error) {
 		return
 	}
 
-	verify, err := r.Handler.MustVerifyBackup(v)
+	checkScheduled, err := r.Handler.IsCheckScheduled(v)
 	if err != nil {
 		return
 	}
 
-	if verify {
+	if checkScheduled {
 		err = util.Retry(3, r.verify)
 		if err != nil {
 			err = fmt.Errorf("failed to verify backup: %v", err)
