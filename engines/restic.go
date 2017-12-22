@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/net/context"
 
@@ -139,10 +141,13 @@ func (r *ResticEngine) verify() (err error) {
 		err = fmt.Errorf("failed to launch Restic to check the backup: %v", err)
 		return
 	}
-	if state != 0 {
+	if state == 0 {
+		now := time.Now().Local()
+		os.Chtimes(v.Mountpoint+"/.conplicity_last_check", now, now)
+	} else {
 		err = fmt.Errorf("Restic exited with state %v while checking the backup", state)
-		return
 	}
+
 	metric := r.Volume.MetricsHandler.NewMetric("conplicity_verifyExitCode", "gauge")
 	err = metric.UpdateEvent(
 		&metrics.Event{

@@ -1,4 +1,4 @@
-.TH conplicity 1 "21 December 2017"
+.TH conplicity 1 "22 December 2017"
 .SH NAME
 conplicity \- Docker volumes backup
 .SH SYNOPSIS
@@ -44,8 +44,8 @@ The target URL to push to.
 \fB\fB\-H\fR, \fB\-\-hostname-from-rancher\fR <default: \fI$CONPLICITY_HOSTNAME_FROM_RANCHER\fR>\fP
 Retrieve hostname from Rancher metadata.
 .TP
-\fB\fB\-\-check-every\fR <default: \fI"0"\fR>\fP
-Days between backup checks.
+\fB\fB\-\-check-every\fR <default: \fI"24h"\fR>\fP
+Time between backup checks.
 .SS Duplicity Options
 .TP
 \fB\fB\-\-duplicity-image\fR <default: \fI"camptocamp/duplicity:latest"\fR>\fP

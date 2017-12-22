@@ -127,13 +127,16 @@ func (c *Conplicity) IsCheckScheduled(vol *volume.Volume) (bool, error) {
 		return false, err
 	}
 
-	checkExpiration := info.ModTime().Add(c.Config.CheckEvery)
+	checkEvery, err := time.ParseDuration(c.Config.CheckEvery)
+	if err != nil {
+		err = fmt.Errorf("failed to parse the parameter 'check-every': %v", err)
+		return false, err
+	}
+
+	checkExpiration := info.ModTime().Add(checkEvery)
 	if time.Now().Before(checkExpiration) {
 		return false, nil
 	}
-
-	now := time.Now().Local()
-	os.Chtimes(logCheckPath, now, now)
 
 	log.WithFields(log.Fields{
 		"volume": vol.Name,
