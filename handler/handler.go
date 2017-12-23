@@ -123,8 +123,10 @@ func (c *Conplicity) IsCheckScheduled(vol *volume.Volume) (bool, error) {
 
 	info, err := os.Stat(logCheckPath)
 	if err != nil {
-		err = fmt.Errorf("failed to retrieve the last check date: %v", err)
-		return false, err
+		log.WithFields(log.Fields{
+			"volume": vol.Name,
+		}).Warning("Cannot retrieve the last check date, skipping verification")
+		return false, nil
 	}
 
 	checkEvery, err := time.ParseDuration(c.Config.CheckEvery)
