@@ -76,17 +76,14 @@ func (d *DuplicityEngine) Backup() (err error) {
 		return
 	}
 
-	checkScheduled, err := d.Handler.IsCheckScheduled(vol)
-	if err != nil {
-		return
-	}
-
-	if checkScheduled {
+	if _, err := d.Handler.IsCheckScheduled(vol); err == nil {
 		err = util.Retry(3, d.verify)
 		if err != nil {
 			err = fmt.Errorf("failed to verify backup: %v", err)
-			return
+			return err
 		}
+	} else {
+		return err
 	}
 
 	err = util.Retry(3, d.status)
