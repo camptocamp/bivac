@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/net/context"
 
@@ -40,37 +42,72 @@ func (r *ResticEngine) Backup() (err error) {
 		return
 	}
 
-	target := targetURL.String()
-	backupDir := v.Mountpoint + "/" + v.BackupDir
+	v.Target = targetURL.String()
+	v.BackupDir = v.Mountpoint + "/" + v.BackupDir
+	v.Mount = v.Name + ":" + v.Mountpoint + ":ro"
 
-	// Init repository
-	state, _, err := r.launchRestic(
+	err = util.Retry(3, r.init)
+	if err != nil {
+		err = fmt.Errorf("failed to create a secure bucket: %v", err)
+		return
+	}
+
+	err = util.Retry(3, r.resticBackup)
+	if err != nil {
+		err = fmt.Errorf("failed to backup the volume: %v", err)
+		return
+	}
+
+	if _, err := r.Handler.IsCheckScheduled(v); err == nil {
+		err = util.Retry(3, r.verify)
+		if err != nil {
+			err = fmt.Errorf("failed to verify backup: %v", err)
+			return err
+		}
+	}
+	return
+}
+
+// init initialize a secure bucket
+func (r *ResticEngine) init() (err error) {
+	v := r.Volume
+	state, stdout, err := r.launchRestic(
 		[]string{
 			"-r",
-			target,
+			v.Target,
 			"init",
 		},
 		[]string{
-			v.Name + ":" + v.Mountpoint + ":ro",
+			v.Mount,
 		},
 	)
+	if strings.Contains(stdout, "already initialized") {
+		err = nil
+		return
+	}
 	if err != nil {
 		err = fmt.Errorf("failed to launch Restic to initialize the repository: %v", err)
+		return
 	}
 	if state != 0 {
 		err = fmt.Errorf("Restic existed with state %v while initializing repository", state)
+		return
 	}
+	return
+}
 
-	// Backup the volume
-	state, _, err = r.launchRestic(
+// resticBackup performs the backup of a volume with Restic
+func (r *ResticEngine) resticBackup() (err error) {
+	v := r.Volume
+	state, _, err := r.launchRestic(
 		[]string{
 			"-r",
-			target,
+			v.Target,
 			"backup",
-			backupDir,
+			v.BackupDir,
 		},
 		[]string{
-			v.Name + ":" + v.Mountpoint + ":ro",
+			v.Mount,
 		},
 	)
 	if err != nil {
@@ -79,22 +116,30 @@ func (r *ResticEngine) Backup() (err error) {
 	if state != 0 {
 		err = fmt.Errorf("Restic exited with state %v while backuping the volume", state)
 	}
+	return
+}
 
-	// Check the backup
-	state, _, err = r.launchRestic(
+// verify checks that the backup is usable
+func (r *ResticEngine) verify() (err error) {
+	v := r.Volume
+	state, _, err := r.launchRestic(
 		[]string{
 			"-r",
-			target,
+			v.Target,
 			"check",
 		},
 		[]string{
-			v.Name + ":" + v.Mountpoint + ":ro",
+			v.Mount,
 		},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch Restic to check the backup: %v", err)
+		return
 	}
-	if state != 0 {
+	if state == 0 {
+		now := time.Now().Local()
+		os.Chtimes(v.Mountpoint+"/.conplicity_last_check", now, now)
+	} else {
 		err = fmt.Errorf("Restic exited with state %v while checking the backup", state)
 	}
 

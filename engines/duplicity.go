@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -75,16 +76,14 @@ func (d *DuplicityEngine) Backup() (err error) {
 		return
 	}
 
-	if vol.Config.NoVerify {
-		log.WithFields(log.Fields{
-			"volume": vol.Name,
-		}).Info("Skipping verification")
-	} else {
+	if _, err := d.Handler.IsCheckScheduled(vol); err == nil {
 		err = util.Retry(3, d.verify)
 		if err != nil {
 			err = fmt.Errorf("failed to verify backup: %v", err)
-			return
+			return err
 		}
+	} else {
+		return err
 	}
 
 	err = util.Retry(3, d.status)
@@ -166,6 +165,13 @@ func (d *DuplicityEngine) verify() (err error) {
 	if err != nil {
 		err = fmt.Errorf("failed to launch duplicity: %v", err)
 		return
+	}
+
+	if state == 0 {
+		now := time.Now().Local()
+		os.Chtimes(v.Mountpoint+"/.conplicity_last_check", now, now)
+	} else {
+		err = fmt.Errorf("Duplicity exited with state %v while checking the backup", state)
 	}
 
 	metric := d.Volume.MetricsHandler.NewMetric("conplicity_verifyExitCode", "gauge")

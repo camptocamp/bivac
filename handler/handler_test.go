@@ -1,9 +1,14 @@
 package handler
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/camptocamp/conplicity/config"
+	"github.com/camptocamp/conplicity/volume"
+	"github.com/docker/docker/api/types"
 	"golang.org/x/net/context"
 
 	log "github.com/Sirupsen/logrus"
@@ -45,5 +50,160 @@ func TestSetup(t *testing.T) {
 	err := fakeHandler.setupLoglevel()
 	if err == nil {
 		t.Fatal("Expected setupLoglevel to fail")
+	}
+}
+
+func TestSchedulerVolumeNoVerify(t *testing.T) {
+	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
+	if err != nil {
+		t.Fatal("Cannot create temporary directory: %v", err)
+	}
+
+	defer os.RemoveAll(fakeMountpoint)
+
+	vol := volume.Volume{
+		Volume: &types.Volume{
+			Mountpoint: fakeMountpoint,
+		},
+		Config: &volume.Config{
+			NoVerify: true,
+		},
+	}
+
+	c := Conplicity{}
+
+	result, err := c.IsCheckScheduled(&vol)
+
+	if result != false {
+		t.Fatal("Expected vol.Config.NoVerify equals to false")
+	}
+}
+
+func TestSchedulerVolumePermissionDenied(t *testing.T) {
+	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
+	if err != nil {
+		t.Fatal("Cannot create temporary directory: %v", err)
+	}
+
+	defer os.RemoveAll(fakeMountpoint)
+
+	os.OpenFile(fakeMountpoint+"/.conplicity_last_check", os.O_RDONLY|os.O_CREATE, 0644)
+	os.Chmod(fakeMountpoint, 0644)
+
+	vol := volume.Volume{
+		Volume: &types.Volume{
+			Mountpoint: fakeMountpoint,
+		},
+		Config: &volume.Config{
+			NoVerify: false,
+		},
+	}
+
+	c := Conplicity{
+		Config: &config.Config{
+			CheckEvery: "1h",
+		},
+	}
+
+	result, err := c.IsCheckScheduled(&vol)
+
+	if result != false {
+		t.Fatal("Expected false, got true.")
+	}
+}
+
+func TestSchedulerVolumeInvalidCheckEvery(t *testing.T) {
+	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
+	if err != nil {
+		t.Fatal("Cannot create temporary directory: %v", err)
+	}
+
+	defer os.RemoveAll(fakeMountpoint)
+
+	os.OpenFile(fakeMountpoint+"/.conplicity_last_check", os.O_RDONLY|os.O_CREATE, 0644)
+
+	vol := volume.Volume{
+		Volume: &types.Volume{
+			Mountpoint: fakeMountpoint,
+		},
+		Config: &volume.Config{
+			NoVerify: false,
+		},
+	}
+
+	c := Conplicity{
+		Config: &config.Config{
+			CheckEvery: "fake",
+		},
+	}
+
+	result, err := c.IsCheckScheduled(&vol)
+
+	if result != false {
+		t.Fatal("Expected false, got true.")
+	}
+}
+
+func TestSchedulerVolumeVerifyNotRequired(t *testing.T) {
+	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
+	if err != nil {
+		t.Fatal("Cannot create temporary directory: %v", err)
+	}
+
+	defer os.RemoveAll(fakeMountpoint)
+
+	vol := volume.Volume{
+		Volume: &types.Volume{
+			Mountpoint: fakeMountpoint,
+		},
+		Config: &volume.Config{
+			NoVerify: false,
+		},
+	}
+
+	c := Conplicity{
+		Config: &config.Config{
+			CheckEvery: "1h",
+		},
+	}
+
+	result, err := c.IsCheckScheduled(&vol)
+
+	if result != false {
+		t.Fatal("Expected false, got true.")
+	}
+}
+
+func TestSchedulerVolumeVerifyRequired(t *testing.T) {
+	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
+	if err != nil {
+		t.Fatal("Cannot create temporary directory: %v", err)
+	}
+
+	defer os.RemoveAll(fakeMountpoint)
+
+	os.OpenFile(fakeMountpoint+"/.conplicity_last_check", os.O_RDONLY|os.O_CREATE, 0644)
+	h := time.Now().Local().AddDate(0, 0, -1)
+	os.Chtimes(fakeMountpoint+"/.conplicity_last_check", h, h)
+
+	vol := volume.Volume{
+		Volume: &types.Volume{
+			Mountpoint: fakeMountpoint,
+		},
+		Config: &volume.Config{
+			NoVerify: false,
+		},
+	}
+
+	c := Conplicity{
+		Config: &config.Config{
+			CheckEvery: "1h",
+		},
+	}
+
+	result, err := c.IsCheckScheduled(&vol)
+
+	if result != true {
+		t.Fatal("Expected true, got false.")
 	}
 }
