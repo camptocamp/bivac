@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+
+
+
+<html>
+    <head>
+	<meta name="generator" content="Hugo 0.38-DEV" />
+            <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title> Conplicity</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="author" content="Camptocamp">
+    
+    <meta http-equiv="content-language" content="en-us" />
+
+  
+
+    
+    
+    <meta name="og:site_name" content="Conplicity">
+    <meta name="og:title" content="Conplicity">
+    <meta name="og:url" content="http://camptocamp.github.io/conplicity/">
+    <meta name="og:image" content="http://camptocamp.github.io/conplicity/images/">
+    <meta name="twitter:title" content="Conplicity" />
+    <meta name="twitter:url" content="http://camptocamp.github.io/conplicity/" />
+    <meta name="twitter:image" content="http://camptocamp.github.io/conplicity/images/" />
+    <meta name="twitter:card" content="" />
+    
+    
+    
+    <link rel="canonical" href="http://camptocamp.github.io/conplicity/"/>
+
+    
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,600,400italic,700' rel='stylesheet' type='text/css'>
+    
+    
+    <link rel="stylesheet" href="css/animate.css">
+    
+    <link rel="stylesheet" href="css/icomoon.css">
+    
+    <link rel="stylesheet" href="css/simple-line-icons.css">
+    
+    <link rel="stylesheet" href="css/magnific-popup.css">
+    
+    <link rel="stylesheet" href="css/bootstrap.css">
+
+    
+    <link rel="stylesheet" href="css/style.css">
+
+    
+    
+
+    
+    <script src="js/modernizr-2.6.2.min.js"></script>
+    
+    
+
+    </head>
+    <body>
+            <header role="banner" id="fh5co-header">
+        <div class="container">
+            
+            <nav class="navbar navbar-default">
+                <div class="navbar-header">
+                    
+                    <a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar"><i></i></a>
+                    <a class="navbar-brand" href="index.html">Conplicity</a> 
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
+                  <ul class="nav navbar-nav navbar-right">
+
+                    
+
+                    <li class="active"><a href="#" data-nav-section="home"><span>Home</span></a></li>
+                    
+                    
+
+                    
+
+                    
+                    <li><a href="#" data-nav-section="services"><span></span></a></li> 
+                    
+
+                    
+
+                    
+
+                    
+                        <li><a class="external" href="http://www.camptocamp.com"><span>Camptocamp</span></a></li>
+                    
+                        <li><a class="external" href="https://github.com/camptocamp/conplicity"><span>Github</span></a></li>
+                    
+                </ul>
+            </div>
+        </nav>
+        
+    </div>
+</header>
+
+
+			<section id="fh5co-home" data-section="home" style="background-image: url(images/full_image_2.jpg);" data-stellar-background-ratio="0.5">
+		<div class="gradient"></div>
+		<div class="container">
+			<div class="text-wrap">
+				<div class="text-inner">
+					<div class="row">
+						<div class="col-md-8 col-md-offset-2">
+							<h1 class="to-animate"><p><img src="images/conplicity_small.png" alt="Conplicity" /> <p>Conplicity</p></p>
+</h1>
+							<h2 class="to-animate">Automatic backups for Docker containers.</h2>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="slant"></div>
+	</section>
+		
+        	<section id="fh5co-intro">
+		<div class="container">
+			<div class="row row-bottom-padded-lg">
+				
+				<div class="fh5co-block to-animate" style="background-image: url(images/img_7.jpg);">
+					<div class="overlay-darker"></div>
+					<div class="overlay"></div>
+					<div class="fh5co-text">
+						<i class="fh5co-intro-icon icon-bulb"></i>
+						<h2>Install from source</h2>
+                        <p><pre><code class="language-shell">$ go get github.com/camptocamp/conplicity
+</code></pre>
+</p>
+                        
+					</div>
+				</div>
+				
+				<div class="fh5co-block to-animate" style="background-image: url(images/);">
+					<div class="overlay-darker"></div>
+					<div class="overlay"></div>
+					<div class="fh5co-text">
+						<i class="fh5co-intro-icon icon-wrench"></i>
+						<h2>Example usage</h2>
+                        <p><pre><code class="language-shell">$ conplicity \
+  -u s3+http://s3-eu-west-1.amazonaws.com/&lt;my_bucket&gt;/&lt;my_dir&gt; \
+  --aws-access-key-id=&lt;my_key_id&gt; \
+  --aws-secret-key-id=&lt;my_secret_key&gt;
+</code></pre>
+</p>
+                        
+					</div>
+				</div>
+				
+				<div class="fh5co-block to-animate" style="background-image: url(images/);">
+					<div class="overlay-darker"></div>
+					<div class="overlay"></div>
+					<div class="fh5co-text">
+						<i class="fh5co-intro-icon icon-rocket"></i>
+						<h2>Launch with Docker</h2>
+                        <p><pre><code class="language-shell">$ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
+   -e CONPLICITY_TARGET_URL=s3+http://s3-eu-west-1.amazonaws.com/&lt;my_bucket&gt;/&lt;my_dir&gt; \
+   -e AWS_ACCESS_KEY_ID=&lt;my_key_id&gt; \
+   -e AWS_SECRET_ACCESS_KEY=&lt;my_secret_key&gt; \
+     camptocamp/conplicity
+</code></pre>
+</p>
+                        
+					</div>
+				</div>
+				
+			</div>
+			
+		</div>
+	</section>
+
+
+		
+
+		
+
+		
+        		<section id="fh5co-services" data-section="services">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12 section-heading text-left">
+					<h2 class=" left-border to-animate">Features</h2>
+					<div class="row">
+						<div class="col-md-8 subtext to-animate">
+							<h3>Conplicity allows to backup Docker volumes using the Duplicity, RClone, and Restic engines.</h3>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+			
+				<div class="col-md-6 col-sm-6 fh5co-service to-animate">
+					<i class="icon to-animate-2 icon-anchor"></i>
+					<h3>Built for Docker</h3>
+					<p>Conplicity plugs onto the Docker socket to detect local volumes, automatically.</p>
+				</div>
+				<div class="clearfix visible-sm-block"></div>
+			
+				<div class="col-md-6 col-sm-6 fh5co-service to-animate">
+					<i class="icon to-animate-2 icon-speedometer"></i>
+					<h3>Prometheus Ready</h3>
+					<p>Prometheus Support is built-in to easily ship metrics each time conplicity runs.</p>
+				</div>
+				<div class="clearfix visible-sm-block"></div>
+			
+				<div class="col-md-6 col-sm-6 fh5co-service to-animate">
+					<i class="icon to-animate-2 icon-cloud-upload"></i>
+					<h3>Multiple Clouds</h3>
+					<p>Conplicity supports both AWS and Swift as bucket providers.</p>
+				</div>
+				<div class="clearfix visible-sm-block"></div>
+			
+				<div class="col-md-6 col-sm-6 fh5co-service to-animate">
+					<i class="icon to-animate-2 icon-puzzle"></i>
+					<h3>Multiple Engines</h3>
+					<p>Conplicity use Duplicity, RClone and Restic as backends to give you full control of your backup mode.</p>
+				</div>
+				<div class="clearfix visible-sm-block"></div>
+			
+			</div>
+		</div>
+	</section>
+		
+
+		
+
+		
+
+		
+
+        
+        		<footer id="footer" role="contentinfo">
+		<a href="#" class="gotop js-gotop"><i class="icon-arrow-up2"></i></a>
+		<div class="container">
+			<div class="">
+				<div class="col-md-12 text-center">
+					<p>&copy; Camptocamp, 2018.</p>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<ul class="social social-circle">
+					
+						<li><a href="https://twitter.com/camptocamp"><i class="icon-twitter"></i></a></li>
+					
+						<li><a href="https://github.com/camptocamp"><i class="icon-github"></i></a></li>
+					
+					</ul>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+        
+
+        	
+	<script src="js/jquery.min.js"></script>
+	
+	<script src="js/jquery.easing.1.3.js"></script>
+	
+	<script src="js/bootstrap.min.js"></script>
+	
+	<script src="js/jquery.waypoints.min.js"></script>
+	
+	<script src="js/jquery.stellar.min.js"></script>
+	
+	<script src="js/jquery.countTo.js"></script>
+	
+	<script src="js/jquery.magnific-popup.min.js"></script>
+	<script src="js/magnific-popup-options.js"></script>
+	
+	
+	
+	<script src="js/main.js"></script>
+
+    </body>
+</html>
