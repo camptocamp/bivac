@@ -122,8 +122,9 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
   # Footer section
   [params.footer]
     enable = true
-    copyright = '![Camptocamp](images/camptocamp.png)'
+    copyright = '[![Camptocamp](images/camptocamp.png)](https://www.camptocamp.com)'
     links = [
+        ["icon-globe", "https://www.camptocamp.com"],
         ["icon-twitter", "https://twitter.com/camptocamp"],
         ["icon-github", "https://github.com/camptocamp"]
       ]
