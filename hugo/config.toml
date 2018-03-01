@@ -131,6 +131,17 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
         ["icon-github", "https://github.com/camptocamp/terraboard"]
       ]
 
+    [[params.about.item]]
+      name = "Puppet Modules"
+      position = "Camptocamp's Puppet Modules"
+      description = ""
+      img = "puppet.png"
+      alt = "Puppet Modules"
+      social = [
+        ["icon-globe", "https://camptocamp.github.io/puppet-modules"],
+        ["icon-home", "https://forge.puppet.com/camptocamp"]
+      ]
+
   # Contact section
   [params.contact]
     enable = true
