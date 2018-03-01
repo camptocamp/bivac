@@ -14,7 +14,7 @@ theme = "elate"
   # Navigation
   [params.navigation]
     brand = "Conplicity"
-    home = "Home"
+    home = "<i class='icon-home'></i>Home"
     #work = "Install"
     #testimonials = "Testimonials"
     #services = "Services"
@@ -26,12 +26,12 @@ theme = "elate"
 
     [[menu.postpend]]
       url = "https://github.com/camptocamp/conplicity"
-      name = "Github"
+      name = "<i class='icon-github'></i>Github"
       weight = 10
 
     [[menu.postpend]]
       url = "http://www.camptocamp.com"
-      name = "Camptocamp"
+      name = "<i class='icon-globe'></i>Camptocamp"
       weight = 10
 
   # Hero section
