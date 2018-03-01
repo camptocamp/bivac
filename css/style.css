@@ -337,6 +337,9 @@ h1, h2, h3, h4, h5, h6 {
   transform: scaleX(1);
   background-color: #ff8133;
 }
+#fh5co-header #navbar li a span i {
+	margin-right: 10px;
+}
 #fh5co-header .navbar-default {
   border: transparent;
   background: transparent;
