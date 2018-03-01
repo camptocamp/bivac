@@ -14,7 +14,7 @@ theme = "elate"
   # Navigation
   [params.navigation]
     brand = "Conplicity"
-    home = "<i class='icon-home'></i>Home"
+    #home = "<i class='icon-home'></i>Home"
     #work = "Install"
     #testimonials = "Testimonials"
     #services = "Services"
