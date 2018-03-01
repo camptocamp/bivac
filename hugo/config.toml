@@ -46,9 +46,7 @@ theme = "elate"
   [[params.intro.item]]
     title = "Install from source"
     description = '''
-```shell
-$ go get github.com/camptocamp/conplicity
-```
+<pre><code class="language-shell" onclick="$(this).selection('.command-from-source')">$ <span class="command-from-source">go get github.com/camptocamp/conplicity</span></code></pre>
 '''
     #url = "#"
     #button = "Get In Touch"
@@ -58,12 +56,11 @@ $ go get github.com/camptocamp/conplicity
   [[params.intro.item]]
     title = "Example usage"
     description = '''
-```shell
-$ conplicity \
-  -u s3+http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
-  --aws-access-key-id=<my_key_id> \
-  --aws-secret-key-id=<my_secret_key>
-```
+<pre><code class="language-shell" onclick="$(this).selection('.command-example')">$ <span class="command-example">conplicity \
+  -u s3+http://s3-eu-west-1.amazonaws.com/&ltmy_bucket&gt/&ltmy_dir&gt \
+  --aws-access-key-id=&ltmy_key_id&gt \
+  --aws-secret-key-id=&ltmy_secret_key&gt</span>
+</code></pre>
 '''
     #url = "#"
     #button = "Copy"
@@ -73,13 +70,12 @@ $ conplicity \
   [[params.intro.item]]
     title = "Launch with Docker"
     description = '''
-```shell
-$ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
-   -e CONPLICITY_TARGET_URL=s3+http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
-   -e AWS_ACCESS_KEY_ID=<my_key_id> \
-   -e AWS_SECRET_ACCESS_KEY=<my_secret_key> \
-     camptocamp/conplicity
-```
+<pre><code class="language-shell" onclick="$(this).selection('.command-docker')">$ <span class="command-docker">docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
+   -e CONPLICITY_TARGET_URL=s3+http://s3-eu-west-1.amazonaws.com/&ltmy_bucket&gt/&ltmy_dir&gt \
+   -e AWS_ACCESS_KEY_ID=&ltmy_key_id&gt \
+   -e AWS_SECRET_ACCESS_KEY=&ltmy_secret_key&gt \
+     camptocamp/conplicity</span>
+</code></pre>
 '''
     #url = "#"
     #button = "Why us?"
