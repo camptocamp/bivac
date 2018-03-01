@@ -116,7 +116,7 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
 
     [[params.services.item]]
       title = "Multiple Engines"
-      description = "Conplicity use Duplicity, RClone and Restic as backends to give you full control of your backup mode."
+      description = "Conplicity uses Duplicity, RClone and Restic as backends to give you full control of your backup mode."
       icon = "icon-puzzle"
 
   # Footer section
