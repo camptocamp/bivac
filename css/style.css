@@ -467,23 +467,17 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 #fh5co-intro > div {
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
-  flex-wrap: wrap;
-  -webkit-flex-wrap: wrap;
-  -moz-flex-wrap: wrap;
+  display: block;
 }
 #fh5co-intro .fh5co-block {
-  width: 33.33%;
-  float: left;
+  width: 90%;
+  float: center;
   text-align: center;
   font-size: 16px;
   min-height: 300px;
   vertical-align: middle;
   padding: 40px;
+  margin: 30px;
   background: #fff;
   -webkit-box-shadow: 7px 14px 42px 3px rgba(163, 174, 184, 0.4);
   -moz-box-shadow: 7px 14px 42px 3px rgba(163, 174, 184, 0.4);
