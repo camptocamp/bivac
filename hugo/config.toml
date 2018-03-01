@@ -49,7 +49,6 @@ $ go get github.com/camptocamp/conplicity
     #url = "#"
     #button = "Get In Touch"
     icon = "icon-bulb"
-    img = "img_7.jpg"
 
   [[params.intro.item]]
     title = "Example usage"
