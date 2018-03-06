@@ -142,6 +142,17 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
         ["icon-home", "https://forge.puppet.com/camptocamp"]
       ]
 
+    [[params.about.item]]
+      name = "FacterDB"
+      position = "A Database of OS facts provided by Facter"
+      description = ""
+      img = "facterdb.png"
+      alt = "FacterDB"
+      social = [
+        ["icon-globe", "https://camptocamp.github.io/facterdb"],
+        ["icon-home", "https://rubygems.org/gems/facterdb"]
+      ]
+
   # Contact section
   [params.contact]
     enable = true
