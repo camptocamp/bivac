@@ -8,6 +8,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/config"
 	"github.com/camptocamp/conplicity/handler"
+	"github.com/camptocamp/conplicity/orchestrators"
 	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/docker/api/types"
 )
@@ -22,7 +23,7 @@ func TestGetProvider(t *testing.T) {
 	defer os.RemoveAll(dir)
 	ioutil.WriteFile(dir+"/PG_VERSION", []byte{}, 0644)
 
-	p = GetProvider(&handler.Conplicity{}, &volume.Volume{
+	p = GetProvider(&orchestrators.DockerOrchestrator{}, &volume.Volume{
 		Volume: &types.Volume{
 			Mountpoint: dir,
 		}})
@@ -37,7 +38,7 @@ func TestGetProvider(t *testing.T) {
 	defer os.RemoveAll(dir)
 	os.Mkdir(dir+"/mysql", 0755)
 
-	p = GetProvider(&handler.Conplicity{}, &volume.Volume{
+	p = GetProvider(&orchestrators.DockerOrchestrator{}, &volume.Volume{
 		Volume: &types.Volume{
 			Mountpoint: dir,
 		}})
@@ -52,7 +53,7 @@ func TestGetProvider(t *testing.T) {
 	defer os.RemoveAll(dir)
 	ioutil.WriteFile(dir+"/DB_CONFIG", []byte{}, 0644)
 
-	p = GetProvider(&handler.Conplicity{}, &volume.Volume{
+	p = GetProvider(&orchestrators.DockerOrchestrator{}, &volume.Volume{
 		Volume: &types.Volume{
 			Mountpoint: dir,
 		}})
@@ -66,7 +67,7 @@ func TestGetProvider(t *testing.T) {
 	dir, _ = ioutil.TempDir("", "test_get_provider_default")
 	defer os.RemoveAll(dir)
 
-	p = GetProvider(&handler.Conplicity{}, &volume.Volume{
+	p = GetProvider(&orchestrators.DockerOrchestrator{}, &volume.Volume{
 		Volume: &types.Volume{
 			Mountpoint: dir,
 		}})
@@ -83,7 +84,7 @@ func TestPrepareBackup(t *testing.T) {
 
 	p := &DefaultProvider{
 		BaseProvider: &BaseProvider{
-			handler: &handler.Conplicity{},
+			orchestrator: &orchestrators.DockerOrchestrator{handler: &handler.Conplicity},
 			vol: &volume.Volume{
 				Volume: &types.Volume{
 					Name:       dir,
@@ -95,11 +96,11 @@ func TestPrepareBackup(t *testing.T) {
 	}
 
 	// Fill Config manually
-	p.handler.Config = &config.Config{} // Init Config
-	p.handler.Config.Duplicity.Image = "camptocamp/duplicity:latest"
-	p.handler.Config.Docker.Endpoint = "unix:///var/run/docker.sock"
-	p.handler.Hostname, _ = os.Hostname()
-	p.handler.SetupDocker()
+	p.orchestrator.GetHandler().Config = &config.Config{} // Init Config
+	p.orchestrator.GetHandler().Config.Duplicity.Image = "camptocamp/duplicity:latest"
+	p.orchestrator.GetHandler().Config.Docker.Endpoint = "unix:///var/run/docker.sock"
+	p.orchestrator.GetHandler().Hostname, _ = os.Hostname()
+	p.orchestrator.GetHandler().SetupDocker()
 
 	log.SetLevel(log.DebugLevel)
 
@@ -114,9 +115,9 @@ func TestBaseGetHandler(t *testing.T) {
 	expected := ""
 
 	p := &BaseProvider{
-		handler: &handler.Conplicity{},
+		orchestrator: &orchestrators.DockerOrchestrator{},
 	}
-	got := p.GetHandler().Hostname
+	got := p.orchestrator.GetHandler().Hostname
 	if expected != got {
 		t.Fatalf("Expected %s, got %s", expected, got)
 	}
