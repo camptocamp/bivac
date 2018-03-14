@@ -1,4 +1,4 @@
-FROM golang:1.9 as builder
+FROM golang:1.10 as builder
 WORKDIR /go/src/github.com/camptocamp/conplicity
 COPY . .
 # TODO: use vendoring
