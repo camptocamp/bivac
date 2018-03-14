@@ -7,7 +7,7 @@ import (
 	"golang.org/x/net/context"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/handler"
+	"github.com/camptocamp/conplicity/orchestrators"
 	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/docker/api/types"
 	docker "github.com/docker/docker/client"
@@ -17,7 +17,7 @@ import (
 type Provider interface {
 	GetName() string
 	GetPrepareCommand(*types.MountPoint) []string
-	GetHandler() *handler.Conplicity
+	GetOrchestrator() orchestrators.Orchestrator
 	GetVolume() *volume.Volume
 	GetBackupDir() string
 	SetVolumeBackupDir()
@@ -25,20 +25,20 @@ type Provider interface {
 
 // BaseProvider is a struct implementing the Provider interface
 type BaseProvider struct {
-	handler   *handler.Conplicity
-	vol       *volume.Volume
-	backupDir string
+	orchestrator orchestrators.Orchestrator
+	vol          *volume.Volume
+	backupDir    string
 }
 
 // GetProvider detects which provider suits the passed volume and returns it
-func GetProvider(c *handler.Conplicity, vol *volume.Volume) Provider {
+func GetProvider(o orchestrators.Orchestrator, vol *volume.Volume) Provider {
 	v := vol
 	log.WithFields(log.Fields{
 		"volume": v.Name,
 	}).Info("Detecting provider")
 	p := &BaseProvider{
-		handler: c,
-		vol:     v,
+		orchestrator: o,
+		vol:          v,
 	}
 	if f, err := os.Stat(v.Mountpoint + "/PG_VERSION"); err == nil && f.Mode().IsRegular() {
 		log.WithFields(log.Fields{
@@ -72,7 +72,8 @@ func GetProvider(c *handler.Conplicity, vol *volume.Volume) Provider {
 func PrepareBackup(p Provider) (err error) {
 	p.SetVolumeBackupDir()
 
-	c := p.GetHandler()
+	o := p.GetOrchestrator()
+	c := o.GetHandler()
 	vol := p.GetVolume()
 	containers, err := c.ContainerList(context.Background(), types.ContainerListOptions{})
 	if err != nil {
@@ -131,9 +132,9 @@ func PrepareBackup(p Provider) (err error) {
 	return
 }
 
-// GetHandler returns the handler associated with the provider
-func (p *BaseProvider) GetHandler() *handler.Conplicity {
-	return p.handler
+// GetOrchestrator returns the orchestrator associated with the provider
+func (p *BaseProvider) GetOrchestrator() orchestrators.Orchestrator {
+	return p.orchestrator
 }
 
 // GetVolume returns the volume associated with the provider

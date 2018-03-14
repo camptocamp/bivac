@@ -2,7 +2,7 @@ package engines
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/handler"
+	"github.com/camptocamp/conplicity/orchestrators"
 	"github.com/camptocamp/conplicity/volume"
 )
 
@@ -13,25 +13,25 @@ type Engine interface {
 }
 
 // GetEngine returns the engine for passed volume
-func GetEngine(c *handler.Conplicity, v *volume.Volume) Engine {
+func GetEngine(o orchestrators.Orchestrator, v *volume.Volume) Engine {
 	engine := v.Config.Engine
 	log.Debugf("engine=%s", engine)
 
 	switch engine {
 	case "duplicity":
 		return &DuplicityEngine{
-			Handler: c,
-			Volume:  v,
+			Orchestrator: o,
+			Volume:       v,
 		}
 	case "rclone":
 		return &RCloneEngine{
-			Handler: c,
-			Volume:  v,
+			Orchestrator: o,
+			Volume:       v,
 		}
 	case "restic":
 		return &ResticEngine{
-			Handler: c,
-			Volume:  v,
+			Orchestrator: o,
+			Volume:       v,
 		}
 	}
 

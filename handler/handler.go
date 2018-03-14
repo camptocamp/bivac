@@ -6,18 +6,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"sort"
 	"time"
-	"unicode/utf8"
-
-	"golang.org/x/net/context"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/config"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/filters"
 	docker "github.com/docker/docker/client"
 )
 
@@ -77,34 +71,6 @@ func (c *Conplicity) SetupDocker() (err error) {
 	return
 }
 
-// GetVolumes returns the Docker volumes, inspected and filtered
-func (c *Conplicity) GetVolumes() (volumes []*volume.Volume, err error) {
-	vols, err := c.VolumeList(context.Background(), filters.NewArgs())
-	if err != nil {
-		err = fmt.Errorf("Failed to list Docker volumes: %v", err)
-		return
-	}
-	for _, vol := range vols.Volumes {
-		var voll types.Volume
-		voll, err = c.VolumeInspect(context.Background(), vol.Name)
-		if err != nil {
-			err = fmt.Errorf("Failed to inspect volume %s: %v", vol.Name, err)
-			return
-		}
-		v := volume.NewVolume(&voll, c.Config, c.Hostname)
-		if b, r, s := c.blacklistedVolume(v); b {
-			log.WithFields(log.Fields{
-				"volume": vol.Name,
-				"reason": r,
-				"source": s,
-			}).Info("Ignoring volume")
-			continue
-		}
-		volumes = append(volumes, v)
-	}
-	return
-}
-
 // IsCheckScheduled checks if the backup must be verified
 func (c *Conplicity) IsCheckScheduled(vol *volume.Volume) (bool, error) {
 	logCheckPath := vol.Mountpoint + "/.conplicity_last_check"
@@ -145,24 +111,6 @@ func (c *Conplicity) IsCheckScheduled(vol *volume.Volume) (bool, error) {
 	}).Info("Verifying backup")
 
 	return true, nil
-}
-
-func (c *Conplicity) blacklistedVolume(vol *volume.Volume) (bool, string, string) {
-	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" || vol.Name == "lost+found" {
-		return true, "unnamed", ""
-	}
-
-	list := c.Config.VolumesBlacklist
-	i := sort.SearchStrings(list, vol.Name)
-	if i < len(list) && list[i] == vol.Name {
-		return true, "blacklisted", "blacklist config"
-	}
-
-	if vol.Config.Ignore {
-		return true, "blacklisted", "volume config"
-	}
-
-	return false, "", ""
 }
 
 func (c *Conplicity) setupLoglevel() (err error) {

@@ -2,7 +2,6 @@ package engines
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"regexp"
@@ -11,19 +10,16 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/metrics"
+	"github.com/camptocamp/conplicity/orchestrators"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"golang.org/x/net/context"
 )
 
 // DuplicityEngine implements a backup engine with Duplicity
 type DuplicityEngine struct {
-	Handler *handler.Conplicity
-	Volume  *volume.Volume
+	Orchestrator orchestrators.Orchestrator
+	Volume       *volume.Volume
 }
 
 // Constants
@@ -54,7 +50,8 @@ func (d *DuplicityEngine) Backup() (err error) {
 	}
 
 	backupDir := vol.BackupDir
-	vol.Target = targetURL.String() + "/" + d.Handler.Hostname + "/" + vol.Name
+	c := d.Orchestrator.GetHandler()
+	vol.Target = targetURL.String() + "/" + c.Hostname + "/" + vol.Name
 	vol.BackupDir = vol.Mountpoint + "/" + backupDir
 	vol.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
 
@@ -76,7 +73,7 @@ func (d *DuplicityEngine) Backup() (err error) {
 		return
 	}
 
-	if _, err := d.Handler.IsCheckScheduled(vol); err == nil {
+	if _, err := c.IsCheckScheduled(vol); err == nil {
 		err = util.Retry(3, d.verify)
 		if err != nil {
 			err = fmt.Errorf("failed to verify backup: %v", err)
@@ -278,97 +275,21 @@ func (d *DuplicityEngine) status() (err error) {
 
 // launchDuplicity starts a duplicity container with given command and binds
 func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state int, stdout string, err error) {
-	err = util.PullImage(d.Handler.Client, d.Handler.Config.Duplicity.Image)
-	if err != nil {
-		err = fmt.Errorf("failed to pull image: %v", err)
-		return
-	}
+	config := d.Orchestrator.GetHandler().Config
+	image := config.Duplicity.Image
 
 	env := []string{
-		"AWS_ACCESS_KEY_ID=" + d.Handler.Config.AWS.AccessKeyID,
-		"AWS_SECRET_ACCESS_KEY=" + d.Handler.Config.AWS.SecretAccessKey,
-		"SWIFT_USERNAME=" + d.Handler.Config.Swift.Username,
-		"SWIFT_PASSWORD=" + d.Handler.Config.Swift.Password,
-		"SWIFT_AUTHURL=" + d.Handler.Config.Swift.AuthURL,
-		"SWIFT_TENANTNAME=" + d.Handler.Config.Swift.TenantName,
-		"SWIFT_REGIONNAME=" + d.Handler.Config.Swift.RegionName,
+		"AWS_ACCESS_KEY_ID=" + config.AWS.AccessKeyID,
+		"AWS_SECRET_ACCESS_KEY=" + config.AWS.SecretAccessKey,
+		"SWIFT_USERNAME=" + config.Swift.Username,
+		"SWIFT_PASSWORD=" + config.Swift.Password,
+		"SWIFT_AUTHURL=" + config.Swift.AuthURL,
+		"SWIFT_TENANTNAME=" + config.Swift.TenantName,
+		"SWIFT_REGIONNAME=" + config.Swift.RegionName,
 		"SWIFT_AUTHVERSION=2",
 	}
 
-	log.WithFields(log.Fields{
-		"image":       d.Handler.Config.Duplicity.Image,
-		"command":     strings.Join(cmd, " "),
-		"environment": strings.Join(env, ", "),
-		"binds":       strings.Join(binds, ", "),
-	}).Debug("Creating container")
-
-	container, err := d.Handler.ContainerCreate(
-		context.Background(),
-		&container.Config{
-			Cmd:          cmd,
-			Env:          env,
-			Image:        d.Handler.Config.Duplicity.Image,
-			OpenStdin:    true,
-			StdinOnce:    true,
-			AttachStdin:  true,
-			AttachStdout: true,
-			AttachStderr: true,
-			Tty:          true,
-		},
-		&container.HostConfig{
-			Binds: binds,
-		}, nil, "",
-	)
-	if err != nil {
-		err = fmt.Errorf("failed to create container: %v", err)
-		return
-	}
-	defer util.RemoveContainer(d.Handler.Client, container.ID)
-
-	log.Debugf("Launching 'duplicity %v'...", strings.Join(cmd, " "))
-	err = d.Handler.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
-	if err != nil {
-		err = fmt.Errorf("failed to start container: %v", err)
-	}
-
-	var exited bool
-
-	for !exited {
-		var cont types.ContainerJSON
-		cont, err = d.Handler.ContainerInspect(context.Background(), container.ID)
-		if err != nil {
-			err = fmt.Errorf("failed to inspect container: %v", err)
-			return
-		}
-
-		if cont.State.Status == "exited" {
-			exited = true
-			state = cont.State.ExitCode
-		}
-	}
-
-	body, err := d.Handler.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
-		ShowStdout: true,
-		ShowStderr: true,
-		Details:    true,
-		Follow:     true,
-	})
-	if err != nil {
-		err = fmt.Errorf("failed to retrieve logs: %v", err)
-		return
-	}
-
-	defer body.Close()
-	content, err := ioutil.ReadAll(body)
-	if err != nil {
-		err = fmt.Errorf("failed to read logs from response: %v", err)
-		return
-	}
-
-	stdout = string(content)
-	log.Debug(stdout)
-
-	return
+	return d.Orchestrator.LaunchContainer(image, env, cmd, binds)
 }
 
 // duplicityBackup performs the backup of a volume with duplicity

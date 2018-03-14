@@ -7,6 +7,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/engines"
 	"github.com/camptocamp/conplicity/handler"
+	"github.com/camptocamp/conplicity/orchestrators"
 	"github.com/camptocamp/conplicity/providers"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
@@ -23,12 +24,14 @@ func main() {
 
 	log.Infof("Conplicity v%s starting backup...", version)
 
-	vols, err := c.GetVolumes()
+	orch := orchestrators.GetOrchestrator(c)
+
+	vols, err := orch.GetVolumes()
 	util.CheckErr(err, "Failed to get Docker volumes: %v", "fatal")
 
 	for _, vol := range vols {
 		vol.LogTime("backupStartTime")
-		err = backupVolume(c, vol)
+		err = backupVolume(orch, vol)
 		vol.LogTime("backupEndTime")
 		if err != nil {
 			log.Errorf("Failed to backup volume %s: %v", vol.Name, err)
@@ -41,8 +44,8 @@ func main() {
 	os.Exit(exitCode)
 }
 
-func backupVolume(c *handler.Conplicity, vol *volume.Volume) (err error) {
-	p := providers.GetProvider(c, vol)
+func backupVolume(o orchestrators.Orchestrator, vol *volume.Volume) (err error) {
+	p := providers.GetProvider(o, vol)
 	log.WithFields(log.Fields{
 		"volume":   vol.Name,
 		"provider": p.GetName(),
@@ -53,7 +56,7 @@ func backupVolume(c *handler.Conplicity, vol *volume.Volume) (err error) {
 		return
 	}
 
-	e := engines.GetEngine(c, vol)
+	e := engines.GetEngine(o, vol)
 	log.WithFields(log.Fields{
 		"volume": vol.Name,
 		"engine": e.GetName(),

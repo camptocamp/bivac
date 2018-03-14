@@ -18,6 +18,7 @@ type Config struct {
 	NoVerify            bool     `long:"no-verify" description:"Do not verify backup." env:"CONPLICITY_NO_VERIFY"`
 	JSON                bool     `short:"j" long:"json" description:"Log as JSON (to stderr)." env:"CONPLICITY_JSON_OUTPUT"`
 	Engine              string   `short:"E" long:"engine" description:"Backup engine to use." env:"CONPLICITY_ENGINE" default:"duplicity"`
+	Orchestrator        string   `short:"o" long:"orchestrator" description:"Container orchestrator to use." env:"CONPLICITY_ORCHESTRATOR" default:"docker"`
 	TargetURL           string   `short:"u" long:"target-url" description:"The target URL to push to." env:"CONPLICITY_TARGET_URL"`
 	HostnameFromRancher bool     `short:"H" long:"hostname-from-rancher" description:"Retrieve hostname from Rancher metadata." env:"CONPLICITY_HOSTNAME_FROM_RANCHER"`
 	CheckEvery          string   `long:"check-every" description:"Time between backup checks." env:"CONPLICITY_CHECK_EVERY" default:"24h"`
