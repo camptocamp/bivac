@@ -21,7 +21,7 @@ import (
 
 // DockerOrchestrator implements a container orchestrator for Docker
 type DockerOrchestrator struct {
-	handler *handler.Conplicity
+	Handler *handler.Conplicity
 }
 
 // GetName returns the orchestrator name
@@ -31,12 +31,12 @@ func (*DockerOrchestrator) GetName() string {
 
 // GetHandler returns the Orchestrator's handler
 func (o *DockerOrchestrator) GetHandler() *handler.Conplicity {
-	return o.handler
+	return o.Handler
 }
 
 // GetVolumes returns the Docker volumes, inspected and filtered
 func (o *DockerOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) {
-	c := o.handler
+	c := o.Handler
 	vols, err := c.VolumeList(context.Background(), filters.NewArgs())
 	if err != nil {
 		err = fmt.Errorf("Failed to list Docker volumes: %v", err)
@@ -65,7 +65,7 @@ func (o *DockerOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) 
 
 // LaunchContainer starts a container using the Docker orchestrator
 func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []string, binds []string) (state int, stdout string, err error) {
-	err = util.PullImage(o.handler.Client, image)
+	err = util.PullImage(o.Handler.Client, image)
 	if err != nil {
 		err = fmt.Errorf("failed to pull image: %v", err)
 		return
@@ -78,7 +78,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []s
 		"binds":       strings.Join(binds, ", "),
 	}).Debug("Creating container")
 
-	container, err := o.handler.ContainerCreate(
+	container, err := o.Handler.ContainerCreate(
 		context.Background(),
 		&container.Config{
 			Cmd:          cmd,
@@ -99,10 +99,10 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []s
 		err = fmt.Errorf("failed to create container: %v", err)
 		return
 	}
-	defer util.RemoveContainer(o.handler.Client, container.ID)
+	defer util.RemoveContainer(o.Handler.Client, container.ID)
 
 	log.Debugf("Launching with '%v'...", strings.Join(cmd, " "))
-	err = o.handler.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
+	err = o.Handler.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to start container: %v", err)
 	}
@@ -111,7 +111,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []s
 
 	for !exited {
 		var cont types.ContainerJSON
-		cont, err = o.handler.ContainerInspect(context.Background(), container.ID)
+		cont, err = o.Handler.ContainerInspect(context.Background(), container.ID)
 		if err != nil {
 			err = fmt.Errorf("failed to inspect container: %v", err)
 			return
@@ -123,7 +123,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []s
 		}
 	}
 
-	body, err := o.handler.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
+	body, err := o.Handler.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Details:    true,
@@ -152,7 +152,7 @@ func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string
 		return true, "unnamed", ""
 	}
 
-	list := o.handler.Config.VolumesBlacklist
+	list := o.Handler.Config.VolumesBlacklist
 	i := sort.SearchStrings(list, vol.Name)
 	if i < len(list) && list[i] == vol.Name {
 		return true, "blacklisted", "blacklist config"

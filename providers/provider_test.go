@@ -84,7 +84,9 @@ func TestPrepareBackup(t *testing.T) {
 
 	p := &DefaultProvider{
 		BaseProvider: &BaseProvider{
-			orchestrator: &orchestrators.DockerOrchestrator{handler: &handler.Conplicity},
+			orchestrator: &orchestrators.DockerOrchestrator{
+				Handler: &handler.Conplicity{},
+			},
 			vol: &volume.Volume{
 				Volume: &types.Volume{
 					Name:       dir,
@@ -115,7 +117,9 @@ func TestBaseGetHandler(t *testing.T) {
 	expected := ""
 
 	p := &BaseProvider{
-		orchestrator: &orchestrators.DockerOrchestrator{},
+		orchestrator: &orchestrators.DockerOrchestrator{
+			Handler: &handler.Conplicity{},
+		},
 	}
 	got := p.orchestrator.GetHandler().Hostname
 	if expected != got {

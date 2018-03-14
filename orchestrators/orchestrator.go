@@ -21,7 +21,7 @@ func GetOrchestrator(c *handler.Conplicity) Orchestrator {
 	switch orch {
 	case "docker":
 		return &DockerOrchestrator{
-			handler: c,
+			Handler: c,
 		}
 	}
 
