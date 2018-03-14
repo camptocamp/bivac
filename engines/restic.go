@@ -93,9 +93,12 @@ func (r *ResticEngine) init() (err error) {
 
 // resticBackup performs the backup of a volume with Restic
 func (r *ResticEngine) resticBackup() (err error) {
+	c := r.Orchestrator.GetHandler()
 	v := r.Volume
 	state, _, err := r.launchRestic(
 		[]string{
+			"--hostname",
+			c.Hostname,
 			"-r",
 			v.Target,
 			"backup",
