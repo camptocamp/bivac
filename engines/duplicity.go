@@ -97,7 +97,7 @@ func (d *DuplicityEngine) removeOld() (err error) {
 	v := d.Volume
 	_, _, err = d.launchDuplicity(
 		[]string{
-			"remove-older-than", v.Config.Duplicity.RemoveOlderThan,
+			"remove-older-than", v.Config.RemoveOlderThan,
 			"--s3-use-new-style",
 			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",

@@ -22,11 +22,11 @@ type Config struct {
 	TargetURL           string   `short:"u" long:"target-url" description:"The target URL to push to." env:"CONPLICITY_TARGET_URL"`
 	HostnameFromRancher bool     `short:"H" long:"hostname-from-rancher" description:"Retrieve hostname from Rancher metadata." env:"CONPLICITY_HOSTNAME_FROM_RANCHER"`
 	CheckEvery          string   `long:"check-every" description:"Time between backup checks." env:"CONPLICITY_CHECK_EVERY" default:"24h"`
+	RemoveOlderThan     string   `long:"remove-older-than" description:"Remove backups older than the specified interval." env:"CONPLICITY_REMOVE_OLDER_THAN" default:"30D"`
 
 	Duplicity struct {
 		Image           string `long:"duplicity-image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
 		FullIfOlderThan string `long:"full-if-older-than" description:"The number of days after which a full backup must be performed." env:"CONPLICITY_FULL_IF_OLDER_THAN" default:"15D"`
-		RemoveOlderThan string `long:"remove-older-than" description:"The number days after which backups must be removed." env:"CONPLICITY_REMOVE_OLDER_THAN" default:"30D"`
 	} `group:"Duplicity Options"`
 
 	RClone struct {

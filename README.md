@@ -39,13 +39,12 @@ Application Options:
   -E, --engine=                Backup engine to use. (default: duplicity) [$CONPLICITY_ENGINE]
   -u, --target-url=            The target URL to push to. [$CONPLICITY_TARGET_URL]
   -H, --hostname-from-rancher  Retrieve hostname from Rancher metadata. [$CONPLICITY_HOSTNAME_FROM_RANCHER]
+      --remove-older-than=     Remove backups older than the specified interval. [$CONPLICITY_REMOVE_OLDER_THAN]
 
 Duplicity Options:
       --duplicity-image=       The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
       --full-if-older-than=    The number of days after which a full backup must be performed. (default: 15D)
                                [$CONPLICITY_FULL_IF_OLDER_THAN]
-      --remove-older-than=     The number days after which backups must be removed. (default: 30D) [$CONPLICITY_REMOVE_OLDER_THAN]
-
 RClone Options:
       --rclone-image=          The rclone docker image. (default: camptocamp/rclone:latest) [$RCLONE_DOCKER_IMAGE]
 

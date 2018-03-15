@@ -13,7 +13,7 @@ var fakeVol = Volume{
 // TestNewVolume checks the creation of a new volume
 func TestNewVolume(t *testing.T) {
 	fakeVol.Config.Duplicity.FullIfOlderThan = "3W"
-	fakeVol.Config.Duplicity.RemoveOlderThan = "1Y"
+	fakeVol.Config.RemoveOlderThan = "1Y"
 
 	if fakeVol.Target != "/foo" {
 		t.Fatalf("Volume target is wrong. Expected /foo, got %v", fakeVol.Target)
@@ -31,7 +31,7 @@ func TestNewVolume(t *testing.T) {
 		t.Fatalf("Volume FullIfOlderThan is wrong. Expected 3W, got %v", fakeVol.Config.Duplicity.FullIfOlderThan)
 	}
 
-	if fakeVol.Config.Duplicity.RemoveOlderThan != "1Y" {
-		t.Fatalf("Volume RemoveOlderThan is wrong. Expected 1Y, got %v", fakeVol.Config.Duplicity.RemoveOlderThan)
+	if fakeVol.Config.RemoveOlderThan != "1Y" {
+		t.Fatalf("Volume RemoveOlderThan is wrong. Expected 1Y, got %v", fakeVol.Config.RemoveOlderThan)
 	}
 }
