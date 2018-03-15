@@ -66,7 +66,7 @@ func (r *ResticEngine) Backup() (err error) {
 
 	err = util.Retry(3, r.forget)
 	if err != nil {
-		err = fmt.Errorf("failed to backup the volume: %v", err)
+		err = fmt.Errorf("failed to forget the oldest snapshots: %v", err)
 		return
 	}
 
