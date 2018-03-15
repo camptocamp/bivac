@@ -130,7 +130,7 @@ func TestBaseGetHandler(t *testing.T) {
 func TestBaseGetVolume(t *testing.T) {
 	got := (&BaseProvider{}).GetVolume()
 	if got != nil {
-		t.Fatalf("Expected to get nil, got %s", got)
+		t.Fatalf("Expected to get nil, got %v", got)
 	}
 }
 

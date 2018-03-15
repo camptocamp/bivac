@@ -56,7 +56,7 @@ func TestSetup(t *testing.T) {
 func TestSchedulerVolumeNoVerify(t *testing.T) {
 	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
 	if err != nil {
-		t.Fatal("Cannot create temporary directory: %v", err)
+		t.Fatalf("Cannot create temporary directory: %v", err)
 	}
 
 	defer os.RemoveAll(fakeMountpoint)
@@ -82,7 +82,7 @@ func TestSchedulerVolumeNoVerify(t *testing.T) {
 func TestSchedulerVolumePermissionDenied(t *testing.T) {
 	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
 	if err != nil {
-		t.Fatal("Cannot create temporary directory: %v", err)
+		t.Fatalf("Cannot create temporary directory: %v", err)
 	}
 
 	defer os.RemoveAll(fakeMountpoint)
@@ -115,7 +115,7 @@ func TestSchedulerVolumePermissionDenied(t *testing.T) {
 func TestSchedulerVolumeInvalidCheckEvery(t *testing.T) {
 	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
 	if err != nil {
-		t.Fatal("Cannot create temporary directory: %v", err)
+		t.Fatalf("Cannot create temporary directory: %v", err)
 	}
 
 	defer os.RemoveAll(fakeMountpoint)
@@ -147,7 +147,7 @@ func TestSchedulerVolumeInvalidCheckEvery(t *testing.T) {
 func TestSchedulerVolumeVerifyNotRequired(t *testing.T) {
 	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
 	if err != nil {
-		t.Fatal("Cannot create temporary directory: %v", err)
+		t.Fatalf("Cannot create temporary directory: %v", err)
 	}
 
 	defer os.RemoveAll(fakeMountpoint)
@@ -177,7 +177,7 @@ func TestSchedulerVolumeVerifyNotRequired(t *testing.T) {
 func TestSchedulerVolumeVerifyRequired(t *testing.T) {
 	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
 	if err != nil {
-		t.Fatal("Cannot create temporary directory: %v", err)
+		t.Fatalf("Cannot create temporary directory: %v", err)
 	}
 
 	defer os.RemoveAll(fakeMountpoint)
