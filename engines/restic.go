@@ -1,6 +1,7 @@
 package engines
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
@@ -18,6 +19,17 @@ import (
 type ResticEngine struct {
 	Orchestrator orchestrators.Orchestrator
 	Volume       *volume.Volume
+}
+
+// Snapshot is a struct returned by the function snapshots()
+type Snapshot struct {
+	Time     time.Time `json:"time"`
+	Parent   string    `json:"parent"`
+	Tree     string    `json:"tree"`
+	Path     []string  `json:"path"`
+	Hostname string    `json:"hostname"`
+	ID       string    `json:"id"`
+	ShortID  string    `json:"short_id"`
 }
 
 // GetName returns the engine name
@@ -52,6 +64,12 @@ func (r *ResticEngine) Backup() (err error) {
 		return
 	}
 
+	err = util.Retry(3, r.forget)
+	if err != nil {
+		err = fmt.Errorf("failed to backup the volume: %v", err)
+		return
+	}
+
 	c := r.Orchestrator.GetHandler()
 	if _, err := c.IsCheckScheduled(v); err == nil {
 		err = util.Retry(3, r.verify)
@@ -60,6 +78,7 @@ func (r *ResticEngine) Backup() (err error) {
 			return err
 		}
 	}
+
 	return
 }
 
@@ -150,6 +169,79 @@ func (r *ResticEngine) verify() (err error) {
 			Value: strconv.Itoa(state),
 		},
 	)
+	return
+}
+
+// forget removes a snapshot
+func (r *ResticEngine) forget() (err error) {
+
+	v := r.Volume
+
+	snapshots, err := r.snapshots()
+
+	duration, err := util.GetDurationFromInterval(v.Config.RemoveOlderThan)
+	if err != nil {
+		return err
+	}
+
+	validSnapshots := 0
+	now := time.Now()
+	for _, snapshot := range snapshots {
+		expiration := snapshot.Time.Add(duration)
+		if now.Before(expiration) {
+			validSnapshots++
+		}
+	}
+
+	state, output, err := r.launchRestic(
+		[]string{
+			"-r",
+			v.Target,
+			"forget",
+			"--prune",
+			"--keep-last",
+			fmt.Sprintf("%d", validSnapshots),
+		},
+		[]string{
+			v.Mount,
+		},
+	)
+	if err != nil {
+		err = fmt.Errorf("failed to launch Restic to forget the snapshot: %v", err)
+		return err
+	}
+
+	if state != 0 {
+		err = fmt.Errorf("restic failed to forget old snapshots: %v", output)
+		return err
+	}
+	return
+}
+
+// snapshots lists snapshots
+func (r *ResticEngine) snapshots() (snapshots []Snapshot, err error) {
+	v := r.Volume
+
+	_, output, err := r.launchRestic(
+		[]string{
+			"-r",
+			v.Target,
+			"snapshots",
+			"--json",
+		},
+		[]string{
+			v.Mount,
+		},
+	)
+	if err != nil {
+		err = fmt.Errorf("failed to launch Restic to check the backup: %v", err)
+		return
+	}
+
+	if err := json.Unmarshal([]byte(output), &snapshots); err != nil {
+		err = fmt.Errorf("failed to parse JSON output: %v", err)
+		return snapshots, err
+	}
 	return
 }
 
