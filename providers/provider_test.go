@@ -77,16 +77,23 @@ func TestGetProvider(t *testing.T) {
 	}
 }
 
-func TestPrepareBackup(t *testing.T) {
+func TestPrepareBackupWithDocker(t *testing.T) {
+
 	// Use Default provider
 	dir, _ := ioutil.TempDir("", "test_backup_volume")
 	defer os.RemoveAll(dir)
 
+	c := &handler.Conplicity{}
+	c.Config = &config.Config{}
+	c.Config.Orchestrator = "docker"
+	c.Config.Duplicity.Image = "camptocamp/duplicity:latest"
+	c.Config.Docker.Endpoint = "unix:///var/run/docker.sock"
+
+	o := orchestrators.GetOrchestrator(c)
+
 	p := &DefaultProvider{
 		BaseProvider: &BaseProvider{
-			orchestrator: &orchestrators.DockerOrchestrator{
-				Handler: &handler.Conplicity{},
-			},
+			orchestrator: o,
 			vol: &volume.Volume{
 				Volume: &types.Volume{
 					Name:       dir,
@@ -96,13 +103,6 @@ func TestPrepareBackup(t *testing.T) {
 			},
 		},
 	}
-
-	// Fill Config manually
-	p.orchestrator.GetHandler().Config = &config.Config{} // Init Config
-	p.orchestrator.GetHandler().Config.Duplicity.Image = "camptocamp/duplicity:latest"
-	p.orchestrator.GetHandler().Config.Docker.Endpoint = "unix:///var/run/docker.sock"
-	p.orchestrator.GetHandler().Hostname, _ = os.Hostname()
-	p.orchestrator.GetHandler().SetupDocker()
 
 	log.SetLevel(log.DebugLevel)
 

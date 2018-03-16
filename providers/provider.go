@@ -4,19 +4,15 @@ import (
 	"fmt"
 	"os"
 
-	"golang.org/x/net/context"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/orchestrators"
 	"github.com/camptocamp/conplicity/volume"
-	"github.com/docker/docker/api/types"
-	docker "github.com/docker/docker/client"
 )
 
 // A Provider is an interface for providers
 type Provider interface {
 	GetName() string
-	GetPrepareCommand(*types.MountPoint) []string
+	GetPrepareCommand(string) []string
 	GetOrchestrator() orchestrators.Orchestrator
 	GetVolume() *volume.Volume
 	GetBackupDir() string
@@ -73,59 +69,31 @@ func PrepareBackup(p Provider) (err error) {
 	p.SetVolumeBackupDir()
 
 	o := p.GetOrchestrator()
-	c := o.GetHandler()
-	vol := p.GetVolume()
-	containers, err := c.ContainerList(context.Background(), types.ContainerListOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to list containers: %v", err)
-	}
 
-	// Work around https://github.com/docker/engine-api/issues/303
-	client, err := docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
+	containers, err := o.GetMountedVolumes()
 	if err != nil {
-		return fmt.Errorf("failed to create new Docker client: %v", err)
+		err = fmt.Errorf("failed to list containers: %v", err)
+		return
 	}
 
 	for _, container := range containers {
-		container, err := client.ContainerInspect(context.Background(), container.ID)
-		if err != nil {
-			return fmt.Errorf("failed to inspect container %v: %v", container.ID, err)
-		}
-		for _, mount := range container.Mounts {
-			if mount.Name == vol.Name {
-				log.WithFields(log.Fields{
-					"volume":    vol.Name,
-					"container": container.ID,
-				}).Debug("Container found using volume")
+		for volName, volDestination := range container.Volumes {
+			log.WithFields(log.Fields{
+				"volume":    volName,
+				"container": container.ContainerID,
+			}).Debug("Container found using volume")
 
-				cmd := p.GetPrepareCommand(&mount)
-				if cmd != nil {
-					exec, err := client.ContainerExecCreate(context.Background(), container.ID, types.ExecConfig{
-						Cmd: p.GetPrepareCommand(&mount),
-					},
-					)
-					if err != nil {
-						return fmt.Errorf("failed to create exec: %v", err)
-					}
-
-					err = client.ContainerExecStart(context.Background(), exec.ID, types.ExecStartCheck{})
-					if err != nil {
-						return fmt.Errorf("failed to start exec: %v", err)
-					}
-
-					inspect, err := client.ContainerExecInspect(context.Background(), exec.ID)
-					if err != nil {
-						return fmt.Errorf("failed to check prepare command exit code: %v", err)
-					}
-					if c := inspect.ExitCode; c != 0 {
-						return fmt.Errorf("prepare command exited with code %v", c)
-					}
-				} else {
-					log.WithFields(log.Fields{
-						"volume":    vol.Name,
-						"container": container.ID,
-					}).Info("No prepare command to execute in container")
+			cmd := p.GetPrepareCommand(volDestination)
+			if cmd != nil {
+				err = o.ContainerExec(container.ContainerID, cmd)
+				if err != nil {
+					return fmt.Errorf("failed to execute command in container: %v", err)
 				}
+			} else {
+				log.WithFields(log.Fields{
+					"volume":    volName,
+					"container": container.ContainerID,
+				}).Info("No prepare command to execute in container")
 			}
 		}
 	}

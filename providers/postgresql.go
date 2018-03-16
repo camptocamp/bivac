@@ -1,7 +1,5 @@
 package providers
 
-import "github.com/docker/docker/api/types"
-
 // PostgreSQLProvider implements a BaseProvider struct
 // for PostgreSQL backups
 type PostgreSQLProvider struct {
@@ -14,11 +12,11 @@ func (p *PostgreSQLProvider) GetName() string {
 }
 
 // GetPrepareCommand returns the command to be executed before backup
-func (p *PostgreSQLProvider) GetPrepareCommand(mount *types.MountPoint) []string {
+func (p *PostgreSQLProvider) GetPrepareCommand(volDestination string) []string {
 	return []string{
 		"sh",
 		"-c",
-		"mkdir -p " + mount.Destination + "/backups && pg_dumpall --clean -Upostgres > " + mount.Destination + "/backups/all.sql",
+		"mkdir -p " + volDestination + "/backups && pg_dumpall --clean -Upostgres > " + volDestination + "/backups/all.sql",
 	}
 }
 

@@ -9,7 +9,6 @@ import (
 	"github.com/camptocamp/conplicity/config"
 	"github.com/camptocamp/conplicity/volume"
 	"github.com/docker/docker/api/types"
-	"golang.org/x/net/context"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -24,13 +23,6 @@ func TestSetup(t *testing.T) {
 	// Check Hostname
 	if fakeHandler.Hostname == "" {
 		t.Fatal("Hostname should not be nil")
-	}
-
-	// Check Client
-	expectedInfo, _ := os.Hostname()
-	gotInfo, _ := fakeHandler.Client.Info(context.Background())
-	if gotInfo.Name != expectedInfo {
-		t.Fatalf("Expected %s, got %s", expectedInfo, gotInfo.Name)
 	}
 
 	// Check default Loglevel

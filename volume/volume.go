@@ -44,6 +44,12 @@ type Config struct {
 	} `label:"restic" ini:"restic" config:"Restic"`
 }
 
+// MountedVolumes stores mounted volumes inside a container
+type MountedVolumes struct {
+	ContainerID string
+	Volumes     map[string]string
+}
+
 // NewVolume returns a new Volume for a given types.Volume struct
 func NewVolume(v *types.Volume, c *config.Config, h string) *Volume {
 	vol := &Volume{

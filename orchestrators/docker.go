@@ -17,16 +17,34 @@ import (
 	"github.com/docker/docker/api/types/filters"
 
 	log "github.com/Sirupsen/logrus"
+	docker "github.com/docker/docker/client"
 )
 
 // DockerOrchestrator implements a container orchestrator for Docker
 type DockerOrchestrator struct {
 	Handler *handler.Conplicity
+	Client  *docker.Client
+}
+
+// InitDocker for the client
+func InitDocker(c *handler.Conplicity) (o *DockerOrchestrator) {
+	var err error
+	o = &DockerOrchestrator{
+		Handler: c,
+	}
+	o.Client, err = docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
+	util.CheckErr(err, "failed to create a Docker client: %v", "fatal")
+	return
 }
 
 // GetName returns the orchestrator name
 func (*DockerOrchestrator) GetName() string {
 	return "Docker"
+}
+
+// GetClient returns the Orchestrator's client
+func (o *DockerOrchestrator) GetClient() *docker.Client {
+	return o.Client
 }
 
 // GetHandler returns the Orchestrator's handler
@@ -37,14 +55,14 @@ func (o *DockerOrchestrator) GetHandler() *handler.Conplicity {
 // GetVolumes returns the Docker volumes, inspected and filtered
 func (o *DockerOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) {
 	c := o.Handler
-	vols, err := c.VolumeList(context.Background(), filters.NewArgs())
+	vols, err := o.Client.VolumeList(context.Background(), filters.NewArgs())
 	if err != nil {
 		err = fmt.Errorf("Failed to list Docker volumes: %v", err)
 		return
 	}
 	for _, vol := range vols.Volumes {
 		var voll types.Volume
-		voll, err = c.VolumeInspect(context.Background(), vol.Name)
+		voll, err = o.Client.VolumeInspect(context.Background(), vol.Name)
 		if err != nil {
 			err = fmt.Errorf("Failed to inspect volume %s: %v", vol.Name, err)
 			return
@@ -65,7 +83,7 @@ func (o *DockerOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) 
 
 // LaunchContainer starts a container using the Docker orchestrator
 func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []string, binds []string) (state int, stdout string, err error) {
-	err = util.PullImage(o.Handler.Client, image)
+	err = util.PullImage(o.Client, image)
 	if err != nil {
 		err = fmt.Errorf("failed to pull image: %v", err)
 		return
@@ -78,7 +96,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []s
 		"binds":       strings.Join(binds, ", "),
 	}).Debug("Creating container")
 
-	container, err := o.Handler.ContainerCreate(
+	container, err := o.Client.ContainerCreate(
 		context.Background(),
 		&container.Config{
 			Cmd:          cmd,
@@ -99,10 +117,10 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []s
 		err = fmt.Errorf("failed to create container: %v", err)
 		return
 	}
-	defer util.RemoveContainer(o.Handler.Client, container.ID)
+	defer util.RemoveContainer(o.Client, container.ID)
 
 	log.Debugf("Launching with '%v'...", strings.Join(cmd, " "))
-	err = o.Handler.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
+	err = o.Client.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to start container: %v", err)
 	}
@@ -111,7 +129,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []s
 
 	for !exited {
 		var cont types.ContainerJSON
-		cont, err = o.Handler.ContainerInspect(context.Background(), container.ID)
+		cont, err = o.Client.ContainerInspect(context.Background(), container.ID)
 		if err != nil {
 			err = fmt.Errorf("failed to inspect container: %v", err)
 			return
@@ -123,7 +141,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []s
 		}
 	}
 
-	body, err := o.Handler.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
+	body, err := o.Client.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Details:    true,
@@ -147,6 +165,54 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []s
 	return
 }
 
+// GetMountedVolumes returns mounted volumes
+func (o *DockerOrchestrator) GetMountedVolumes() (containers []*volume.MountedVolumes, err error) {
+	c, err := o.Client.ContainerList(context.Background(), types.ContainerListOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to list containers: %v", err)
+		return
+	}
+
+	for _, container := range c {
+		mv := &volume.MountedVolumes{
+			ContainerID: container.ID,
+			Volumes:     make(map[string]string),
+		}
+		for _, mount := range container.Mounts {
+			if mount.Type == "volume" {
+				mv.Volumes[mount.Name] = mount.Destination
+			}
+		}
+		containers = append(containers, mv)
+	}
+	return
+}
+
+// ContainerExec executes a command in a container
+func (o *DockerOrchestrator) ContainerExec(containerID string, command []string) (err error) {
+	exec, err := o.Client.ContainerExecCreate(context.Background(), containerID, types.ExecConfig{
+		Cmd: command,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create exec: %v", err)
+	}
+
+	err = o.Client.ContainerExecStart(context.Background(), exec.ID, types.ExecStartCheck{})
+	if err != nil {
+		return fmt.Errorf("failed to start exec: %v", err)
+	}
+
+	inspect, err := o.Client.ContainerExecInspect(context.Background(), exec.ID)
+	if err != nil {
+		return fmt.Errorf("failed to check prepare command exit code: %v", err)
+	}
+
+	if c := inspect.ExitCode; c != 0 {
+		return fmt.Errorf("prepare command exited with code %v", c)
+	}
+	return
+}
+
 func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" || vol.Name == "lost+found" {
 		return true, "unnamed", ""
@@ -163,4 +229,42 @@ func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string
 	}
 
 	return false, "", ""
+}
+
+func pullImage(c *docker.Client, image string) (err error) {
+	if _, _, err = c.ImageInspectWithRaw(context.Background(), image); err != nil {
+		// TODO: output pull to logs
+		log.WithFields(log.Fields{
+			"image": image,
+		}).Info("Pulling image")
+		resp, err := c.ImagePull(context.Background(), image, types.ImagePullOptions{})
+		if err != nil {
+			log.Errorf("ImagePull returned an error: %v", err)
+			return err
+		}
+		defer resp.Close()
+		body, err := ioutil.ReadAll(resp)
+		if err != nil {
+			log.Errorf("Failed to read from ImagePull response: %v", err)
+			return err
+		}
+		log.Debugf("Pull image response body: %v", string(body))
+	} else {
+		log.WithFields(log.Fields{
+			"image": image,
+		}).Debug("Image already pulled, not pulling")
+	}
+
+	return nil
+}
+
+func removeContainer(c *docker.Client, id string) {
+	log.WithFields(log.Fields{
+		"container": id,
+	}).Debug("Removing container")
+	err := c.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{
+		Force:         true,
+		RemoveVolumes: true,
+	})
+	util.CheckErr(err, "Failed to remove container "+id+": %v", "error")
 }

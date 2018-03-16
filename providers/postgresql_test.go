@@ -2,8 +2,6 @@ package providers
 
 import (
 	"testing"
-
-	"github.com/docker/docker/api/types"
 )
 
 func TestPostgreSQLGetName(t *testing.T) {
@@ -23,9 +21,7 @@ func TestPostgreSQLGetBackupDir(t *testing.T) {
 }
 
 func TestPostgreSQLGetPrepareCommand(t *testing.T) {
-	mount := &types.MountPoint{
-		Destination: "/mnt",
-	}
+	mount := "/mnt"
 
 	expected := []string{
 		"sh",

@@ -50,6 +50,7 @@ func backupVolume(o orchestrators.Orchestrator, vol *volume.Volume) (err error) 
 		"volume":   vol.Name,
 		"provider": p.GetName(),
 	}).Info("Found data provider")
+
 	err = providers.PrepareBackup(p)
 	if err != nil {
 		err = fmt.Errorf("failed to prepare backup: %v", err)
