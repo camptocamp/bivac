@@ -42,11 +42,6 @@ func (*DockerOrchestrator) GetName() string {
 	return "Docker"
 }
 
-// GetClient returns the Orchestrator's client
-func (o *DockerOrchestrator) GetClient() *docker.Client {
-	return o.Client
-}
-
 // GetHandler returns the Orchestrator's handler
 func (o *DockerOrchestrator) GetHandler() *handler.Conplicity {
 	return o.Handler
