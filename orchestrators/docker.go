@@ -26,8 +26,8 @@ type DockerOrchestrator struct {
 	Client  *docker.Client
 }
 
-// InitDocker for the client
-func InitDocker(c *handler.Conplicity) (o *DockerOrchestrator) {
+// NewDockerOrchestrator creates a Docker client
+func NewDockerOrchestrator(c *handler.Conplicity) (o *DockerOrchestrator) {
 	var err error
 	o = &DockerOrchestrator{
 		Handler: c,

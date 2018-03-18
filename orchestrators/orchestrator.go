@@ -22,7 +22,7 @@ func GetOrchestrator(c *handler.Conplicity) Orchestrator {
 
 	switch orch {
 	case "docker":
-		return InitDocker(c)
+		return NewDockerOrchestrator(c)
 	}
 
 	log.Fatalf("Unknown orchestrator %s", orch)
