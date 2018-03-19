@@ -8,7 +8,6 @@ import (
 
 	"github.com/camptocamp/conplicity/config"
 	"github.com/camptocamp/conplicity/volume"
-	"github.com/docker/docker/api/types"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -54,9 +53,7 @@ func TestSchedulerVolumeNoVerify(t *testing.T) {
 	defer os.RemoveAll(fakeMountpoint)
 
 	vol := volume.Volume{
-		Volume: &types.Volume{
-			Mountpoint: fakeMountpoint,
-		},
+		Mountpoint: fakeMountpoint,
 		Config: &volume.Config{
 			NoVerify: true,
 		},
@@ -83,9 +80,7 @@ func TestSchedulerVolumePermissionDenied(t *testing.T) {
 	os.Chmod(fakeMountpoint, 0644)
 
 	vol := volume.Volume{
-		Volume: &types.Volume{
-			Mountpoint: fakeMountpoint,
-		},
+		Mountpoint: fakeMountpoint,
 		Config: &volume.Config{
 			NoVerify: false,
 		},
@@ -115,9 +110,7 @@ func TestSchedulerVolumeInvalidCheckEvery(t *testing.T) {
 	os.OpenFile(fakeMountpoint+"/.conplicity_last_check", os.O_RDONLY|os.O_CREATE, 0644)
 
 	vol := volume.Volume{
-		Volume: &types.Volume{
-			Mountpoint: fakeMountpoint,
-		},
+		Mountpoint: fakeMountpoint,
 		Config: &volume.Config{
 			NoVerify: false,
 		},
@@ -145,9 +138,7 @@ func TestSchedulerVolumeVerifyNotRequired(t *testing.T) {
 	defer os.RemoveAll(fakeMountpoint)
 
 	vol := volume.Volume{
-		Volume: &types.Volume{
-			Mountpoint: fakeMountpoint,
-		},
+		Mountpoint: fakeMountpoint,
 		Config: &volume.Config{
 			NoVerify: false,
 		},
@@ -179,9 +170,7 @@ func TestSchedulerVolumeVerifyRequired(t *testing.T) {
 	os.Chtimes(fakeMountpoint+"/.conplicity_last_check", h, h)
 
 	vol := volume.Volume{
-		Volume: &types.Volume{
-			Mountpoint: fakeMountpoint,
-		},
+		Mountpoint: fakeMountpoint,
 		Config: &volume.Config{
 			NoVerify: false,
 		},

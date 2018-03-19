@@ -62,7 +62,16 @@ func (o *DockerOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) 
 			err = fmt.Errorf("Failed to inspect volume %s: %v", vol.Name, err)
 			return
 		}
-		v := volume.NewVolume(&voll, c.Config, c.Hostname)
+
+		nv := &volume.Volume{
+			Config:      &volume.Config{},
+			Mountpoint:  voll.Mountpoint,
+			Name:        voll.Name,
+			Labels:      voll.Labels,
+			LabelPrefix: c.Config.LabelPrefix,
+		}
+
+		v := volume.NewVolume(nv, c.Config, c.Hostname)
 		if b, r, s := o.blacklistedVolume(v); b {
 			log.WithFields(log.Fields{
 				"volume": vol.Name,
@@ -78,7 +87,7 @@ func (o *DockerOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) 
 
 // LaunchContainer starts a container using the Docker orchestrator
 func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []string, binds []string) (state int, stdout string, err error) {
-	err = util.PullImage(o.Client, image)
+	err = pullImage(o.Client, image)
 	if err != nil {
 		err = fmt.Errorf("failed to pull image: %v", err)
 		return
@@ -112,7 +121,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []s
 		err = fmt.Errorf("failed to create container: %v", err)
 		return
 	}
-	defer util.RemoveContainer(o.Client, container.ID)
+	defer removeContainer(o.Client, container.ID)
 
 	log.Debugf("Launching with '%v'...", strings.Join(cmd, " "))
 	err = o.Client.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})

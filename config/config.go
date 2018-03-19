@@ -23,6 +23,7 @@ type Config struct {
 	HostnameFromRancher bool     `short:"H" long:"hostname-from-rancher" description:"Retrieve hostname from Rancher metadata." env:"CONPLICITY_HOSTNAME_FROM_RANCHER"`
 	CheckEvery          string   `long:"check-every" description:"Time between backup checks." env:"CONPLICITY_CHECK_EVERY" default:"24h"`
 	RemoveOlderThan     string   `long:"remove-older-than" description:"Remove backups older than the specified interval." env:"CONPLICITY_REMOVE_OLDER_THAN" default:"30D"`
+	LabelPrefix         string   `long:"label-prefix" description:"The volume prefix label." env:"CONPLICITY_LABEL_PREFIX"`
 
 	Duplicity struct {
 		Image           string `long:"duplicity-image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`

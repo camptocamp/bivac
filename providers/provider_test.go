@@ -10,7 +10,6 @@ import (
 	"github.com/camptocamp/conplicity/handler"
 	"github.com/camptocamp/conplicity/orchestrators"
 	"github.com/camptocamp/conplicity/volume"
-	"github.com/docker/docker/api/types"
 )
 
 func TestGetProvider(t *testing.T) {
@@ -24,9 +23,8 @@ func TestGetProvider(t *testing.T) {
 	ioutil.WriteFile(dir+"/PG_VERSION", []byte{}, 0644)
 
 	p = GetProvider(&orchestrators.DockerOrchestrator{}, &volume.Volume{
-		Volume: &types.Volume{
-			Mountpoint: dir,
-		}})
+		Mountpoint: dir,
+	})
 	got = p.GetName()
 	if got != expected {
 		t.Fatalf("Expected provider %s, got %s", expected, got)
@@ -39,9 +37,8 @@ func TestGetProvider(t *testing.T) {
 	os.Mkdir(dir+"/mysql", 0755)
 
 	p = GetProvider(&orchestrators.DockerOrchestrator{}, &volume.Volume{
-		Volume: &types.Volume{
-			Mountpoint: dir,
-		}})
+		Mountpoint: dir,
+	})
 	got = p.GetName()
 	if got != expected {
 		t.Fatalf("Expected provider %s, got %s", expected, got)
@@ -54,9 +51,8 @@ func TestGetProvider(t *testing.T) {
 	ioutil.WriteFile(dir+"/DB_CONFIG", []byte{}, 0644)
 
 	p = GetProvider(&orchestrators.DockerOrchestrator{}, &volume.Volume{
-		Volume: &types.Volume{
-			Mountpoint: dir,
-		}})
+		Mountpoint: dir,
+	})
 	got = p.GetName()
 	if got != expected {
 		t.Fatalf("Expected provider %s, got %s", expected, got)
@@ -68,9 +64,8 @@ func TestGetProvider(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	p = GetProvider(&orchestrators.DockerOrchestrator{}, &volume.Volume{
-		Volume: &types.Volume{
-			Mountpoint: dir,
-		}})
+		Mountpoint: dir,
+	})
 	got = p.GetName()
 	if got != expected {
 		t.Fatalf("Expected provider %s, got %s", expected, got)
@@ -95,11 +90,9 @@ func TestPrepareBackupWithDocker(t *testing.T) {
 		BaseProvider: &BaseProvider{
 			orchestrator: o,
 			vol: &volume.Volume{
-				Volume: &types.Volume{
-					Name:       dir,
-					Driver:     "local",
-					Mountpoint: "/mnt",
-				},
+				Name:       dir,
+				Driver:     "local",
+				Mountpoint: "/mnt",
 			},
 		},
 	}

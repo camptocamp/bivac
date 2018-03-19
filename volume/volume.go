@@ -1,6 +1,7 @@
 package volume
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -11,16 +12,19 @@ import (
 	"github.com/camptocamp/conplicity/config"
 	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/util"
-	"github.com/docker/docker/api/types"
 	"github.com/go-ini/ini"
 )
 
 // Volume provides backup methods for a single Docker volume
 type Volume struct {
-	*types.Volume
+	Name           string
 	Target         string
 	BackupDir      string
 	Mount          string
+	Mountpoint     string
+	Driver         string
+	Labels         map[string]string
+	LabelPrefix    string
 	Config         *Config
 	MetricsHandler *metrics.PrometheusMetrics
 }
@@ -51,23 +55,18 @@ type MountedVolumes struct {
 }
 
 // NewVolume returns a new Volume for a given types.Volume struct
-func NewVolume(v *types.Volume, c *config.Config, h string) *Volume {
-	vol := &Volume{
-		Volume: v,
-		Config: &Config{},
-	}
-
-	err := vol.getConfig(c)
+func NewVolume(v *Volume, c *config.Config, h string) *Volume {
+	err := v.getConfig(c)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = vol.setupMetrics(c, h)
+	err = v.setupMetrics(c, h)
 	if err != nil {
 		log.Error(err)
 	}
 
-	return vol
+	return v
 }
 
 // LogTime adds a new metric even with the current time
@@ -90,7 +89,7 @@ func (v *Volume) LogTime(event string) (err error) {
 }
 
 func (v *Volume) setupMetrics(c *config.Config, h string) (err error) {
-	v.MetricsHandler = metrics.NewMetrics(h, v.Volume.Name, c.Metrics.PushgatewayURL)
+	v.MetricsHandler = metrics.NewMetrics(h, v.Name, c.Metrics.PushgatewayURL)
 	util.CheckErr(err, "Failed to set up metrics: %v", "fatal")
 	return
 }
@@ -144,7 +143,7 @@ func (v *Volume) getField(field reflect.StructField, c *config.Config, iniOverri
 		label = fmt.Sprintf("%s.", prefix)
 	}
 	label += field.Tag.Get("label")
-	value, _ = util.GetVolumeLabel(v.Volume, label)
+	value, _ = v.getVolumeLabel(label)
 	if value != "" {
 		return
 	}
@@ -219,4 +218,14 @@ func setField(field reflect.Value, fieldType reflect.StructField, value interfac
 		return fmt.Errorf("unsupported type %s", field.Kind())
 	}
 	return nil
+}
+
+func (v *Volume) getVolumeLabel(key string) (value string, err error) {
+	//log.Debugf("Getting value for label %s of volume %s", key, vol.Name)
+	value, ok := v.Labels[v.LabelPrefix+key]
+	if !ok {
+		errMsg := fmt.Sprintf("Key %v not found in labels for volume %v", key, v.Name)
+		err = errors.New(errMsg)
+	}
+	return
 }
