@@ -1,7 +1,5 @@
 package providers
 
-import "github.com/docker/docker/api/types"
-
 // OpenLDAPProvider implements a BaseProvider struct
 // for OpenLDAP backups
 type OpenLDAPProvider struct {
@@ -14,11 +12,11 @@ func (p *OpenLDAPProvider) GetName() string {
 }
 
 // GetPrepareCommand returns the command to be executed before backup
-func (p *OpenLDAPProvider) GetPrepareCommand(mount *types.MountPoint) []string {
+func (p *OpenLDAPProvider) GetPrepareCommand(volDestination string) []string {
 	return []string{
 		"sh",
 		"-c",
-		"mkdir -p " + mount.Destination + "/backups && slapcat > " + mount.Destination + "/backups/all.ldif",
+		"mkdir -p " + volDestination + "/backups && slapcat > " + volDestination + "/backups/all.ldif",
 	}
 }
 

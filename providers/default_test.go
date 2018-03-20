@@ -2,8 +2,6 @@ package providers
 
 import (
 	"testing"
-
-	"github.com/docker/docker/api/types"
 )
 
 func TestDefaultGetName(t *testing.T) {
@@ -22,9 +20,7 @@ func TestDefaultPrepareBackup(t *testing.T) {
 }
 
 func TestDefaultGetPrepareCommand(t *testing.T) {
-	mount := &types.MountPoint{
-		Destination: "/mnt",
-	}
+	mount := "/mnt"
 
 	got := (&DefaultProvider{}).GetPrepareCommand(mount)
 	if got != nil {

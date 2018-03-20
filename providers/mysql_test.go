@@ -2,8 +2,6 @@ package providers
 
 import (
 	"testing"
-
-	"github.com/docker/docker/api/types"
 )
 
 func TestMySQLGetName(t *testing.T) {
@@ -23,9 +21,7 @@ func TestMySQLGetBackupDir(t *testing.T) {
 }
 
 func TestMySQLGetPrepareCommand(t *testing.T) {
-	mount := &types.MountPoint{
-		Destination: "/mnt",
-	}
+	mount := "/mnt"
 
 	expected := []string{
 		"sh",

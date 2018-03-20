@@ -12,12 +12,10 @@ import (
 	"github.com/camptocamp/conplicity/config"
 	"github.com/camptocamp/conplicity/util"
 	"github.com/camptocamp/conplicity/volume"
-	docker "github.com/docker/docker/client"
 )
 
 // Conplicity is the main handler struct
 type Conplicity struct {
-	*docker.Client
 	Config   *config.Config
 	Hostname string
 }
@@ -39,9 +37,6 @@ func (c *Conplicity) Setup(version string) (err error) {
 	err = c.GetHostname()
 	util.CheckErr(err, "Failed to get hostname: %v", "fatal")
 
-	err = c.SetupDocker()
-	util.CheckErr(err, "Failed to setup docker: %v", "fatal")
-
 	return
 }
 
@@ -61,13 +56,6 @@ func (c *Conplicity) GetHostname() (err error) {
 	} else {
 		c.Hostname, err = os.Hostname()
 	}
-	return
-}
-
-// SetupDocker for the  client
-func (c *Conplicity) SetupDocker() (err error) {
-	c.Client, err = docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
-	util.CheckErr(err, "Failed to create Docker client: %v", "fatal")
 	return
 }
 

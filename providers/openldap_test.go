@@ -2,8 +2,6 @@ package providers
 
 import (
 	"testing"
-
-	"github.com/docker/docker/api/types"
 )
 
 func TestOpenLDAPGetName(t *testing.T) {
@@ -23,9 +21,7 @@ func TestOpenLDAPGetBackupDir(t *testing.T) {
 }
 
 func TestOpenLDAPGetPrepareCommand(t *testing.T) {
-	mount := &types.MountPoint{
-		Destination: "/mnt",
-	}
+	mount := "/mnt"
 
 	expected := []string{
 		"sh",
