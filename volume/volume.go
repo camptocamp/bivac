@@ -51,6 +51,7 @@ type Config struct {
 
 // MountedVolumes stores mounted volumes inside a container
 type MountedVolumes struct {
+	PodID       string
 	ContainerID string
 	Volumes     map[string]string
 }
