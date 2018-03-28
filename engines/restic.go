@@ -91,7 +91,9 @@ func (r *ResticEngine) init() (err error) {
 			v.Target,
 			"init",
 		},
-		v,
+		[]*volume.Volume{
+			v,
+		},
 	)
 	if strings.Contains(stdout, "already initialized") {
 		err = nil
@@ -121,7 +123,9 @@ func (r *ResticEngine) resticBackup() (err error) {
 			"backup",
 			v.BackupDir,
 		},
-		v,
+		[]*volume.Volume{
+			v,
+		},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch Restic to backup the volume: %v", err)
@@ -141,7 +145,7 @@ func (r *ResticEngine) verify() (err error) {
 			v.Target,
 			"check",
 		},
-		v,
+		[]*volume.Volume{},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch Restic to check the backup: %v", err)
@@ -196,7 +200,7 @@ func (r *ResticEngine) forget() (err error) {
 			"--keep-last",
 			fmt.Sprintf("%d", validSnapshots),
 		},
-		v,
+		[]*volume.Volume{},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch Restic to forget the snapshot: %v", err)
@@ -221,7 +225,7 @@ func (r *ResticEngine) snapshots() (snapshots []Snapshot, err error) {
 			"snapshots",
 			"--json",
 		},
-		v,
+		[]*volume.Volume{},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch Restic to check the backup: %v", err)
@@ -236,9 +240,15 @@ func (r *ResticEngine) snapshots() (snapshots []Snapshot, err error) {
 }
 
 // launchRestic starts a restic container with the given command
-func (r *ResticEngine) launchRestic(cmd []string, v *volume.Volume) (state int, stdout string, err error) {
+func (r *ResticEngine) launchRestic(cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
 	config := r.Orchestrator.GetHandler().Config
 	image := config.Restic.Image
+
+	cache := &volume.Volume{
+		Name:       "restic-cache",
+		Mountpoint: "/root/.cache/restic",
+	}
+	volumes = append(volumes, cache)
 
 	env := map[string]string{
 		"AWS_ACCESS_KEY_ID":     config.AWS.AccessKeyID,
@@ -251,5 +261,5 @@ func (r *ResticEngine) launchRestic(cmd []string, v *volume.Volume) (state int, 
 		"RESTIC_PASSWORD":       config.Restic.Password,
 	}
 
-	return r.Orchestrator.LaunchContainer(image, env, cmd, v)
+	return r.Orchestrator.LaunchContainer(image, env, cmd, volumes)
 }

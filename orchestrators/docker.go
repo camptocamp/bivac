@@ -86,7 +86,8 @@ func (o *DockerOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) 
 	return
 }
 
-func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string, cmd []string, v *volume.Volume) (state int, stdout string, err error) {
+// LaunchContainer starts a container using the Docker orchestrator
+func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
 	err = pullImage(o.Client, image)
 	if err != nil {
 		err = fmt.Errorf("failed to pull image: %v", err)
@@ -104,6 +105,18 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 		"environment": strings.Join(envVars, ", "),
 	}).Debug("Creating container")
 
+	var mounts []mount.Mount
+
+	for _, v := range volumes {
+		m := mount.Mount{
+			Type:     "volume",
+			Target:   v.Mountpoint,
+			Source:   v.Name,
+			ReadOnly: v.ReadOnly,
+		}
+		mounts = append(mounts, m)
+	}
+
 	container, err := o.Client.ContainerCreate(
 		context.Background(),
 		&container.Config{
@@ -118,14 +131,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 			Tty:          true,
 		},
 		&container.HostConfig{
-			Mounts: []mount.Mount{
-				mount.Mount{
-					Type:     "volume",
-					Target:   v.Mountpoint,
-					Source:   v.Name,
-					ReadOnly: true,
-				},
-			},
+			Mounts: mounts,
 		}, nil, "",
 	)
 	if err != nil {

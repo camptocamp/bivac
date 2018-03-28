@@ -44,7 +44,9 @@ func (r *RCloneEngine) Backup() (err error) {
 			target,
 		},
 		extraEnv,
-		v,
+		[]*volume.Volume{
+			v,
+		},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch RClone: %v", err)
@@ -74,7 +76,7 @@ func formatURL(u *url.URL) (env map[string]string) {
 }
 
 // launchRClone starts an rclone container with a given command
-func (r *RCloneEngine) launchRClone(cmd []string, extraEnv map[string]string, v *volume.Volume) (state int, stdout string, err error) {
+func (r *RCloneEngine) launchRClone(cmd []string, extraEnv map[string]string, volumes []*volume.Volume) (state int, stdout string, err error) {
 	config := r.Orchestrator.GetHandler().Config
 	image := config.RClone.Image
 
@@ -91,5 +93,5 @@ func (r *RCloneEngine) launchRClone(cmd []string, extraEnv map[string]string, v 
 		env[en] = ev
 	}
 
-	return r.Orchestrator.LaunchContainer(image, env, cmd, v)
+	return r.Orchestrator.LaunchContainer(image, env, cmd, volumes)
 }

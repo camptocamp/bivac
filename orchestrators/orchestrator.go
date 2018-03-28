@@ -10,7 +10,7 @@ import (
 type Orchestrator interface {
 	GetHandler() *handler.Conplicity
 	GetVolumes() ([]*volume.Volume, error)
-	LaunchContainer(image string, env map[string]string, cmd []string, v *volume.Volume) (state int, stdout string, err error)
+	LaunchContainer(image string, env map[string]string, cmd []string, v []*volume.Volume) (state int, stdout string, err error)
 	GetMountedVolumes() ([]*volume.MountedVolumes, error)
 	ContainerExec(containerID string, command []string) error
 }

@@ -23,7 +23,6 @@ type DuplicityEngine struct {
 }
 
 // Constants
-const cacheMount = "duplicity_cache:/root/.cache/duplicity"
 const timeFormat = "Mon Jan 2 15:04:05 2006"
 
 var fullBackupRx = regexp.MustCompile("Last full backup date: (.+)")
@@ -105,7 +104,7 @@ func (d *DuplicityEngine) removeOld() (err error) {
 			"--name", v.Name,
 			v.Target,
 		},
-		v,
+		[]*volume.Volume{},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch Duplicity: %v", err)
@@ -128,7 +127,7 @@ func (d *DuplicityEngine) cleanup() (err error) {
 			"--name", v.Name,
 			v.Target,
 		},
-		v,
+		[]*volume.Volume{},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch duplicity: %v", err)
@@ -150,7 +149,9 @@ func (d *DuplicityEngine) verify() (err error) {
 			v.Target,
 			v.BackupDir,
 		},
-		v,
+		[]*volume.Volume{
+			v,
+		},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch duplicity: %v", err)
@@ -192,7 +193,9 @@ func (d *DuplicityEngine) status() (err error) {
 				"--name", v.Name,
 				v.Target,
 			},
-			v,
+			[]*volume.Volume{
+				v,
+			},
 		)
 		if err != nil {
 			err = fmt.Errorf("failed to launch duplicity: %v", err)
@@ -264,9 +267,15 @@ func (d *DuplicityEngine) status() (err error) {
 }
 
 // launchDuplicity starts a duplicity container with given command
-func (d *DuplicityEngine) launchDuplicity(cmd []string, v *volume.Volume) (state int, stdout string, err error) {
+func (d *DuplicityEngine) launchDuplicity(cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
 	config := d.Orchestrator.GetHandler().Config
 	image := config.Duplicity.Image
+
+	cache := &volume.Volume{
+		Name:       "duplicity-cache",
+		Mountpoint: "/root/.cache/duplicity",
+	}
+	volumes = append(volumes, cache)
 
 	env := map[string]string{
 		"AWS_ACCESS_KEY_ID":     config.AWS.AccessKeyID,
@@ -279,7 +288,7 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, v *volume.Volume) (state
 		"SWIFT_AUTHVERSION":     "2",
 	}
 
-	return d.Orchestrator.LaunchContainer(image, env, cmd, v)
+	return d.Orchestrator.LaunchContainer(image, env, cmd, volumes)
 }
 
 // duplicityBackup performs the backup of a volume with duplicity
@@ -307,7 +316,9 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 			v.BackupDir,
 			v.Target,
 		},
-		v,
+		[]*volume.Volume{
+			v,
+		},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch duplicity: %v", err)
