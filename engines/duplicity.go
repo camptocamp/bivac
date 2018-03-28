@@ -105,9 +105,7 @@ func (d *DuplicityEngine) removeOld() (err error) {
 			"--name", v.Name,
 			v.Target,
 		},
-		[]string{
-			cacheMount,
-		},
+		v,
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch Duplicity: %v", err)
@@ -130,9 +128,7 @@ func (d *DuplicityEngine) cleanup() (err error) {
 			"--name", v.Name,
 			v.Target,
 		},
-		[]string{
-			cacheMount,
-		},
+		v,
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch duplicity: %v", err)
@@ -154,10 +150,7 @@ func (d *DuplicityEngine) verify() (err error) {
 			v.Target,
 			v.BackupDir,
 		},
-		[]string{
-			v.Mount,
-			cacheMount,
-		},
+		v,
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch duplicity: %v", err)
@@ -199,10 +192,7 @@ func (d *DuplicityEngine) status() (err error) {
 				"--name", v.Name,
 				v.Target,
 			},
-			[]string{
-				v.Mount,
-				cacheMount,
-			},
+			v,
 		)
 		if err != nil {
 			err = fmt.Errorf("failed to launch duplicity: %v", err)
@@ -273,8 +263,8 @@ func (d *DuplicityEngine) status() (err error) {
 	return
 }
 
-// launchDuplicity starts a duplicity container with given command and binds
-func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state int, stdout string, err error) {
+// launchDuplicity starts a duplicity container with given command
+func (d *DuplicityEngine) launchDuplicity(cmd []string, v *volume.Volume) (state int, stdout string, err error) {
 	config := d.Orchestrator.GetHandler().Config
 	image := config.Duplicity.Image
 
@@ -289,7 +279,7 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state i
 		"SWIFT_AUTHVERSION":     "2",
 	}
 
-	return d.Orchestrator.LaunchContainer(image, env, cmd, binds)
+	return d.Orchestrator.LaunchContainer(image, env, cmd, v)
 }
 
 // duplicityBackup performs the backup of a volume with duplicity
@@ -317,10 +307,7 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 			v.BackupDir,
 			v.Target,
 		},
-		[]string{
-			v.Mount,
-			cacheMount,
-		},
+		v,
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch duplicity: %v", err)
