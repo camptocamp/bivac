@@ -86,17 +86,22 @@ func (o *DockerOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) 
 }
 
 // LaunchContainer starts a container using the Docker orchestrator
-func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []string, binds []string) (state int, stdout string, err error) {
+func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string, cmd []string, binds []string) (state int, stdout string, err error) {
 	err = pullImage(o.Client, image)
 	if err != nil {
 		err = fmt.Errorf("failed to pull image: %v", err)
 		return
 	}
 
+	var envVars []string
+	for envName, envValue := range env {
+		envVars = append(envVars, envName+"="+envValue)
+	}
+
 	log.WithFields(log.Fields{
 		"image":       image,
 		"command":     strings.Join(cmd, " "),
-		"environment": strings.Join(env, ", "),
+		"environment": strings.Join(envVars, ", "),
 		"binds":       strings.Join(binds, ", "),
 	}).Debug("Creating container")
 
@@ -104,7 +109,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env []string, cmd []s
 		context.Background(),
 		&container.Config{
 			Cmd:          cmd,
-			Env:          env,
+			Env:          envVars,
 			Image:        image,
 			OpenStdin:    true,
 			StdinOnce:    true,

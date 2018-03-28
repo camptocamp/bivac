@@ -278,15 +278,15 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, binds []string) (state i
 	config := d.Orchestrator.GetHandler().Config
 	image := config.Duplicity.Image
 
-	env := []string{
-		"AWS_ACCESS_KEY_ID=" + config.AWS.AccessKeyID,
-		"AWS_SECRET_ACCESS_KEY=" + config.AWS.SecretAccessKey,
-		"SWIFT_USERNAME=" + config.Swift.Username,
-		"SWIFT_PASSWORD=" + config.Swift.Password,
-		"SWIFT_AUTHURL=" + config.Swift.AuthURL,
-		"SWIFT_TENANTNAME=" + config.Swift.TenantName,
-		"SWIFT_REGIONNAME=" + config.Swift.RegionName,
-		"SWIFT_AUTHVERSION=2",
+	env := map[string]string{
+		"AWS_ACCESS_KEY_ID":     config.AWS.AccessKeyID,
+		"AWS_SECRET_ACCESS_KEY": config.AWS.SecretAccessKey,
+		"SWIFT_USERNAME":        config.Swift.Username,
+		"SWIFT_PASSWORD":        config.Swift.Password,
+		"SWIFT_AUTHURL":         config.Swift.AuthURL,
+		"SWIFT_TENANTNAME":      config.Swift.TenantName,
+		"SWIFT_REGIONNAME":      config.Swift.RegionName,
+		"SWIFT_AUTHVERSION":     "2",
 	}
 
 	return d.Orchestrator.LaunchContainer(image, env, cmd, binds)
