@@ -12,66 +12,6 @@ import (
 	"github.com/camptocamp/conplicity/volume"
 )
 
-func TestGetProvider(t *testing.T) {
-	var dir, expected, got string
-	var p Provider
-
-	// Test PostgreSQL detection
-	expected = "PostgreSQL"
-	dir, _ = ioutil.TempDir("", "test_get_provider_postgresql")
-	defer os.RemoveAll(dir)
-	ioutil.WriteFile(dir+"/PG_VERSION", []byte{}, 0644)
-
-	p = GetProvider(&orchestrators.DockerOrchestrator{}, &volume.Volume{
-		Mountpoint: dir,
-	})
-	got = p.GetName()
-	if got != expected {
-		t.Fatalf("Expected provider %s, got %s", expected, got)
-	}
-
-	// Test MySQL detection
-	expected = "MySQL"
-	dir, _ = ioutil.TempDir("", "test_get_provider_mysql")
-	defer os.RemoveAll(dir)
-	os.Mkdir(dir+"/mysql", 0755)
-
-	p = GetProvider(&orchestrators.DockerOrchestrator{}, &volume.Volume{
-		Mountpoint: dir,
-	})
-	got = p.GetName()
-	if got != expected {
-		t.Fatalf("Expected provider %s, got %s", expected, got)
-	}
-
-	// Test OpenLDAP detection
-	expected = "OpenLDAP"
-	dir, _ = ioutil.TempDir("", "test_get_provider_openldap")
-	defer os.RemoveAll(dir)
-	ioutil.WriteFile(dir+"/DB_CONFIG", []byte{}, 0644)
-
-	p = GetProvider(&orchestrators.DockerOrchestrator{}, &volume.Volume{
-		Mountpoint: dir,
-	})
-	got = p.GetName()
-	if got != expected {
-		t.Fatalf("Expected provider %s, got %s", expected, got)
-	}
-
-	// Test Default detection
-	expected = "Default"
-	dir, _ = ioutil.TempDir("", "test_get_provider_default")
-	defer os.RemoveAll(dir)
-
-	p = GetProvider(&orchestrators.DockerOrchestrator{}, &volume.Volume{
-		Mountpoint: dir,
-	})
-	got = p.GetName()
-	if got != expected {
-		t.Fatalf("Expected provider %s, got %s", expected, got)
-	}
-}
-
 func TestPrepareBackupWithDocker(t *testing.T) {
 
 	// Use Default provider
