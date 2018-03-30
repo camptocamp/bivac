@@ -57,12 +57,13 @@ func (r *RCloneEngine) Backup() (err error) {
 	return
 }
 
-func formatURL(u *url.URL) (env []string) {
+func formatURL(u *url.URL) (env map[string]string) {
 	// We have no way but to assume fqdns contain "."
 	// which is arguable very ugly
+	env = make(map[string]string)
 	if strings.Contains(u.Host, ".") && strings.HasPrefix(u.Scheme, "s3") {
 		u.Opaque = strings.TrimPrefix(u.Path, "/")
-		env = append(env, "AWS_ENDPOINT="+u.Host)
+		env["AWS_ENDPOINT"] = u.Host
 	} else {
 		u.Opaque = strings.TrimPrefix(u.Host+u.Path, "/")
 	}
@@ -75,20 +76,22 @@ func formatURL(u *url.URL) (env []string) {
 }
 
 // launchRClone starts an rclone container with a given command and binds
-func (r *RCloneEngine) launchRClone(cmd, binds, extraEnv []string) (state int, stdout string, err error) {
+func (r *RCloneEngine) launchRClone(cmd, binds []string, extraEnv map[string]string) (state int, stdout string, err error) {
 	config := r.Orchestrator.GetHandler().Config
 	image := config.RClone.Image
 
-	env := []string{
-		"AWS_ACCESS_KEY_ID=" + config.AWS.AccessKeyID,
-		"AWS_SECRET_ACCESS_KEY=" + config.AWS.SecretAccessKey,
-		"OS_USERNAME=" + config.Swift.Username,
-		"OS_PASSWORD=" + config.Swift.Password,
-		"OS_AUTH_URL=" + config.Swift.AuthURL,
-		"OS_TENANT_NAME=" + config.Swift.TenantName,
-		"OS_REGION_NAME=" + config.Swift.RegionName,
+	env := map[string]string{
+		"AWS_ACCESS_KEY_ID":     config.AWS.AccessKeyID,
+		"AWS_SECRET_ACCESS_KEY": config.AWS.SecretAccessKey,
+		"OS_USERNAME":           config.Swift.Username,
+		"OS_PASSWORD":           config.Swift.Password,
+		"OS_AUTH_URL":           config.Swift.AuthURL,
+		"OS_TENANT_NAME":        config.Swift.TenantName,
+		"OS_REGION_NAME":        config.Swift.RegionName,
 	}
-	env = append(env, extraEnv...)
+	for en, ev := range extraEnv {
+		env[en] = ev
+	}
 
 	return r.Orchestrator.LaunchContainer(image, env, cmd, binds)
 }

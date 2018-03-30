@@ -250,15 +250,15 @@ func (r *ResticEngine) launchRestic(cmd, binds []string) (state int, stdout stri
 	config := r.Orchestrator.GetHandler().Config
 	image := config.Restic.Image
 
-	env := []string{
-		"AWS_ACCESS_KEY_ID=" + config.AWS.AccessKeyID,
-		"AWS_SECRET_ACCESS_KEY=" + config.AWS.SecretAccessKey,
-		"OS_USERNAME=" + config.Swift.Username,
-		"OS_PASSWORD=" + config.Swift.Password,
-		"OS_AUTH_URL=" + config.Swift.AuthURL,
-		"OS_TENANT_NAME=" + config.Swift.TenantName,
-		"OS_REGION_NAME=" + config.Swift.RegionName,
-		"RESTIC_PASSWORD=" + config.Restic.Password,
+	env := map[string]string{
+		"AWS_ACCESS_KEY_ID":     config.AWS.AccessKeyID,
+		"AWS_SECRET_ACCESS_KEY": config.AWS.SecretAccessKey,
+		"OS_USERNAME":           config.Swift.Username,
+		"OS_PASSWORD":           config.Swift.Password,
+		"OS_AUTH_URL":           config.Swift.AuthURL,
+		"OS_TENANT_NAME":        config.Swift.TenantName,
+		"OS_REGION_NAME":        config.Swift.RegionName,
+		"RESTIC_PASSWORD":       config.Restic.Password,
 	}
 
 	return r.Orchestrator.LaunchContainer(image, env, cmd, binds)
