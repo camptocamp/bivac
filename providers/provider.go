@@ -27,8 +27,7 @@ type BaseProvider struct {
 }
 
 // GetProvider detects which provider suits the passed volume and returns it
-func GetProvider(o orchestrators.Orchestrator, vol *volume.Volume) Provider {
-	v := vol
+func GetProvider(o orchestrators.Orchestrator, v *volume.Volume) Provider {
 	log.WithFields(log.Fields{
 		"volume": v.Name,
 	}).Info("Detecting provider")
@@ -36,9 +35,9 @@ func GetProvider(o orchestrators.Orchestrator, vol *volume.Volume) Provider {
 		orchestrator: o,
 		vol:          v,
 	}
-	shell := `([[ -d ` + vol.Mountpoint + `/mysql ]] && echo -n 'mysql') || ` +
-		`([[ -f ` + vol.Mountpoint + `/PG_VERSION ]] && echo -n 'postgresql') || ` +
-		`([[ -f ` + vol.Mountpoint + `/DB_CONFIG ]] && echo -n 'openldap'); ` +
+	shell := `([[ -d ` + v.Mountpoint + `/mysql ]] && echo -n 'mysql') || ` +
+		`([[ -f ` + v.Mountpoint + `/PG_VERSION ]] && echo -n 'postgresql') || ` +
+		`([[ -f ` + v.Mountpoint + `/DB_CONFIG ]] && echo -n 'openldap'); ` +
 		`return 0`
 
 	cmd := []string{
@@ -46,7 +45,7 @@ func GetProvider(o orchestrators.Orchestrator, vol *volume.Volume) Provider {
 		"-c",
 		shell,
 	}
-	_, stdout, _ := o.LaunchContainer("busybox", map[string]string{}, cmd, v)
+	_, stdout, _ := o.LaunchContainer("busybox", map[string]string{}, cmd, []*volume.Volume{v})
 
 	switch strings.TrimSpace(stdout) {
 	case "mysql":
