@@ -25,6 +25,7 @@ type Volume struct {
 	Driver         string
 	Labels         map[string]string
 	LabelPrefix    string
+	ReadOnly       bool
 	Config         *Config
 	MetricsHandler *metrics.PrometheusMetrics
 }

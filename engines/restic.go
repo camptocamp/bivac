@@ -91,8 +91,8 @@ func (r *ResticEngine) init() (err error) {
 			v.Target,
 			"init",
 		},
-		[]string{
-			v.Mount,
+		[]*volume.Volume{
+			v,
 		},
 	)
 	if strings.Contains(stdout, "already initialized") {
@@ -123,8 +123,8 @@ func (r *ResticEngine) resticBackup() (err error) {
 			"backup",
 			v.BackupDir,
 		},
-		[]string{
-			v.Mount,
+		[]*volume.Volume{
+			v,
 		},
 	)
 	if err != nil {
@@ -145,9 +145,7 @@ func (r *ResticEngine) verify() (err error) {
 			v.Target,
 			"check",
 		},
-		[]string{
-			v.Mount,
-		},
+		[]*volume.Volume{},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch Restic to check the backup: %v", err)
@@ -202,9 +200,7 @@ func (r *ResticEngine) forget() (err error) {
 			"--keep-last",
 			fmt.Sprintf("%d", validSnapshots),
 		},
-		[]string{
-			v.Mount,
-		},
+		[]*volume.Volume{},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch Restic to forget the snapshot: %v", err)
@@ -229,9 +225,7 @@ func (r *ResticEngine) snapshots() (snapshots []Snapshot, err error) {
 			"snapshots",
 			"--json",
 		},
-		[]string{
-			v.Mount,
-		},
+		[]*volume.Volume{},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch Restic to check the backup: %v", err)
@@ -245,10 +239,16 @@ func (r *ResticEngine) snapshots() (snapshots []Snapshot, err error) {
 	return
 }
 
-// launchRestic starts a restic container with the given command and binds
-func (r *ResticEngine) launchRestic(cmd, binds []string) (state int, stdout string, err error) {
+// launchRestic starts a restic container with the given command
+func (r *ResticEngine) launchRestic(cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
 	config := r.Orchestrator.GetHandler().Config
 	image := config.Restic.Image
+
+	cache := &volume.Volume{
+		Name:       "restic-cache",
+		Mountpoint: "/root/.cache/restic",
+	}
+	volumes = append(volumes, cache)
 
 	env := map[string]string{
 		"AWS_ACCESS_KEY_ID":     config.AWS.AccessKeyID,
@@ -261,5 +261,5 @@ func (r *ResticEngine) launchRestic(cmd, binds []string) (state int, stdout stri
 		"RESTIC_PASSWORD":       config.Restic.Password,
 	}
 
-	return r.Orchestrator.LaunchContainer(image, env, cmd, binds)
+	return r.Orchestrator.LaunchContainer(image, env, cmd, volumes)
 }
