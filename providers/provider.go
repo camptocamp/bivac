@@ -2,7 +2,7 @@ package providers
 
 import (
 	"fmt"
-	"os"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/conplicity/orchestrators"
@@ -27,8 +27,7 @@ type BaseProvider struct {
 }
 
 // GetProvider detects which provider suits the passed volume and returns it
-func GetProvider(o orchestrators.Orchestrator, vol *volume.Volume) Provider {
-	v := vol
+func GetProvider(o orchestrators.Orchestrator, v *volume.Volume) Provider {
 	log.WithFields(log.Fields{
 		"volume": v.Name,
 	}).Info("Detecting provider")
@@ -36,31 +35,44 @@ func GetProvider(o orchestrators.Orchestrator, vol *volume.Volume) Provider {
 		orchestrator: o,
 		vol:          v,
 	}
-	if f, err := os.Stat(v.Mountpoint + "/PG_VERSION"); err == nil && f.Mode().IsRegular() {
-		log.WithFields(log.Fields{
-			"volume": v.Name,
-		}).Debug("PG_VERSION file found, this should be a PostgreSQL datadir")
-		return &PostgreSQLProvider{
-			BaseProvider: p,
-		}
-	} else if f, err := os.Stat(v.Mountpoint + "/mysql"); err == nil && f.Mode().IsDir() {
+	shell := `([[ -d ` + v.Mountpoint + `/mysql ]] && echo -n 'mysql') || ` +
+		`([[ -f ` + v.Mountpoint + `/PG_VERSION ]] && echo -n 'postgresql') || ` +
+		`([[ -f ` + v.Mountpoint + `/DB_CONFIG ]] && echo -n 'openldap'); ` +
+		`return 0`
+
+	cmd := []string{
+		"sh",
+		"-c",
+		shell,
+	}
+	_, stdout, _ := o.LaunchContainer("busybox", map[string]string{}, cmd, []*volume.Volume{v})
+
+	switch strings.TrimSpace(stdout) {
+	case "mysql":
 		log.WithFields(log.Fields{
 			"volume": v.Name,
 		}).Debug("mysql directory found, this should be MySQL datadir")
 		return &MySQLProvider{
 			BaseProvider: p,
 		}
-	} else if f, err := os.Stat(v.Mountpoint + "/DB_CONFIG"); err == nil && f.Mode().IsRegular() {
+	case "postgresql":
+		log.WithFields(log.Fields{
+			"volume": v.Name,
+		}).Debug("PG_VERSION file found, this should be a PostgreSQL datadir")
+		return &PostgreSQLProvider{
+			BaseProvider: p,
+		}
+	case "openldap":
 		log.WithFields(log.Fields{
 			"volume": v.Name,
 		}).Debug("DB_CONFIG file found, this should be and OpenLDAP datadir")
 		return &OpenLDAPProvider{
 			BaseProvider: p,
 		}
-	}
-
-	return &DefaultProvider{
-		BaseProvider: p,
+	default:
+		return &DefaultProvider{
+			BaseProvider: p,
+		}
 	}
 }
 
