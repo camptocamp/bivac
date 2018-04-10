@@ -2,6 +2,7 @@ package orchestrators
 
 import (
 	"bytes"
+	"math/rand"
 	"sort"
 	"unicode/utf8"
 
@@ -131,16 +132,18 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 		kvms = append(kvms, kvm)
 	}
 
+	var workerName = createWorkerName()
+
 	_, err = o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "conplicity-worker",
+			Name: workerName,
 		},
 		Spec: apiv1.PodSpec{
 			RestartPolicy: "Never",
 			Volumes:       kvs,
 			Containers: []apiv1.Container{
 				{
-					Name:         "conplicity-worker",
+					Name:         workerName,
 					Image:        image,
 					Args:         cmd,
 					Env:          envVars,
@@ -155,7 +158,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 
 	terminated := false
 	for !terminated {
-		pod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Get("conplicity-worker", metav1.GetOptions{})
+		pod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Get(workerName, metav1.GetOptions{})
 		if err != nil {
 			log.Errorf("failed to get pod: %s", err)
 		}
@@ -166,7 +169,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 		}
 	}
 
-	req := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).GetLogs("conplicity-worker", &apiv1.PodLogOptions{})
+	req := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).GetLogs(workerName, &apiv1.PodLogOptions{})
 
 	readCloser, err := req.Stream()
 	if err != nil {
@@ -178,7 +181,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 	buf.ReadFrom(readCloser)
 	stdout = buf.String()
 
-	err = o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Delete("conplicity-worker", &metav1.DeleteOptions{})
+	err = o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Delete(workerName, &metav1.DeleteOptions{})
 	if err != nil {
 		log.Errorf("failed to delete the pod: %s", err)
 	}
@@ -296,4 +299,13 @@ func (o *KubernetesOrchestrator) getConfig() (config *rest.Config, err error) {
 		config, err = rest.InClusterConfig()
 	}
 	return
+}
+
+func createWorkerName() string {
+	var letter = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+	b := make([]rune, 20)
+	for i := range b {
+		b[i] = letter[rand.Intn(len(letter))]
+	}
+	return "conplicity-" + string(b)
 }
