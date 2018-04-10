@@ -132,7 +132,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 		kvms = append(kvms, kvm)
 	}
 
-	var workerName = createWorkerName()
+	var workerName = o.createWorkerName()
 
 	_, err = o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -301,11 +301,29 @@ func (o *KubernetesOrchestrator) getConfig() (config *rest.Config, err error) {
 	return
 }
 
-func createWorkerName() string {
-	var letter = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
-	b := make([]rune, 20)
-	for i := range b {
-		b[i] = letter[rand.Intn(len(letter))]
+func (o *KubernetesOrchestrator) createWorkerName() string {
+	var name string
+	validName := false
+	for !validName {
+		var letter = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+		b := make([]rune, 20)
+		for i := range b {
+			b[i] = letter[rand.Intn(len(letter))]
+		}
+
+		name = "conplicity-" + string(b)
+
+		// Check if this name is available
+		pods, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).List(metav1.ListOptions{})
+		if err != nil {
+			log.Fatalf("failed to list pods: %s", err)
+		}
+		for _, pod := range pods.Items {
+			if pod.Name == name {
+				continue
+			}
+		}
+		validName = true
 	}
-	return "conplicity-" + string(b)
+	return name
 }
