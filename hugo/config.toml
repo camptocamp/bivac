@@ -26,9 +26,9 @@ theme = "elate"
 
   # Hero section
   [params.hero]
-    title = "![Bivac](images/bivac.png) <p>Bivac</p>"
+    title = "![Bivac](images/bivac.png)"
     subtitle = '''
-Automatic backups for Docker containers.
+*/bee-vac/* French word imported by Swiss mercenaries from the German root *bewachen* (to keep guard): an extra guard added to a military camp at night to increase its safety.
 
 [![GitHub stars](https://img.shields.io/github/stars/camptocamp/bivac.svg?style=social&logo=github&label=Stars)](https://github.com/camptocamp/bivac)
 [![Docker Pulls](https://img.shields.io/docker/pulls/camptocamp/bivac.svg)](https://hub.docker.com/r/camptocamp/bivac/)
@@ -92,11 +92,11 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
   [params.services]
     enable = true
     title = "Features"
-    description = "Bivac allows to backup Docker volumes using the Duplicity, RClone, and Restic engines."
+    description = "Bivac allows to backup Container volumes using the Duplicity, RClone, and Restic engines."
 
     [[params.services.item]]
-      title = "Built for Docker"
-      description = "Bivac plugs onto the Docker socket to detect local volumes, automatically."
+      title = "Docker and Kubernetes Support"
+      description = "Bivac plugs onto the Docker socket or the Kubernetes API to detect volumes and back them up, automatically."
       icon = "icon-anchor"
 
     [[params.services.item]]
