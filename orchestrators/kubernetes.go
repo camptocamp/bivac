@@ -2,7 +2,6 @@ package orchestrators
 
 import (
 	"bytes"
-	"math/rand"
 	"sort"
 	"unicode/utf8"
 
@@ -132,18 +131,16 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 		kvms = append(kvms, kvm)
 	}
 
-	var workerName = o.createWorkerName()
-
-	_, err = o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.Pod{
+	pod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: workerName,
+			GenerateName: "conplicity-worker-",
 		},
 		Spec: apiv1.PodSpec{
 			RestartPolicy: "Never",
 			Volumes:       kvs,
 			Containers: []apiv1.Container{
 				{
-					Name:         workerName,
+					Name:         "conplicity-worker",
 					Image:        image,
 					Args:         cmd,
 					Env:          envVars,
@@ -155,6 +152,8 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 	if err != nil {
 		log.Errorf("failed to create worker: %s", err)
 	}
+
+	workerName := pod.ObjectMeta.Name
 
 	terminated := false
 	for !terminated {
@@ -299,31 +298,4 @@ func (o *KubernetesOrchestrator) getConfig() (config *rest.Config, err error) {
 		config, err = rest.InClusterConfig()
 	}
 	return
-}
-
-func (o *KubernetesOrchestrator) createWorkerName() string {
-	var name string
-	validName := false
-	for !validName {
-		var letter = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
-		b := make([]rune, 20)
-		for i := range b {
-			b[i] = letter[rand.Intn(len(letter))]
-		}
-
-		name = "conplicity-" + string(b)
-
-		// Check if this name is available
-		pods, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).List(metav1.ListOptions{})
-		if err != nil {
-			log.Fatalf("failed to list pods: %s", err)
-		}
-		for _, pod := range pods.Items {
-			if pod.Name == name {
-				continue
-			}
-		}
-		validName = true
-	}
-	return name
 }
