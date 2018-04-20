@@ -64,9 +64,11 @@ func (o *KubernetesOrchestrator) GetVolumes() (volumes []*volume.Volume, err err
 
 	containers, err := o.GetMountedVolumes()
 	mountedVolumes := make(map[string]string)
+	bindHostVolume := make(map[string]string)
 	for _, container := range containers {
 		for volName, volMountpath := range container.Volumes {
 			mountedVolumes[volName] = volMountpath
+			bindHostVolume[volName] = container.HostID
 		}
 	}
 	var mountpoint string
@@ -80,6 +82,7 @@ func (o *KubernetesOrchestrator) GetVolumes() (volumes []*volume.Volume, err err
 			Config:     &volume.Config{},
 			Mountpoint: mountpoint,
 			Name:       pvc.Name,
+			HostBind:   bindHostVolume[pvc.Name],
 		}
 
 		v := volume.NewVolume(nv, c.Config, c.Hostname)
@@ -131,11 +134,19 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 		kvms = append(kvms, kvm)
 	}
 
+	var node string
+	if len(volumes) > 0 {
+		node = volumes[0].HostBind
+	} else {
+		node = ""
+	}
+
 	pod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "conplicity-worker-",
 		},
 		Spec: apiv1.PodSpec{
+			NodeName:      node,
 			RestartPolicy: "Never",
 			Volumes:       kvs,
 			Containers: []apiv1.Container{
@@ -209,6 +220,7 @@ func (o *KubernetesOrchestrator) GetMountedVolumes() (containers []*volume.Mount
 			mv := &volume.MountedVolumes{
 				PodID:       pod.Name,
 				ContainerID: container.Name,
+				HostID:      pod.Spec.NodeName,
 				Volumes:     make(map[string]string),
 			}
 			for _, volumeMount := range container.VolumeMounts {

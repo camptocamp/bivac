@@ -28,6 +28,7 @@ type Volume struct {
 	ReadOnly       bool
 	Config         *Config
 	MetricsHandler *metrics.PrometheusMetrics
+	HostBind       string
 }
 
 // Config is the volume's configuration parameters
@@ -53,6 +54,7 @@ type Config struct {
 type MountedVolumes struct {
 	PodID       string
 	ContainerID string
+	HostID      string
 	Volumes     map[string]string
 }
 
