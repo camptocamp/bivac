@@ -104,7 +104,7 @@ func (r *ResticEngine) init() (err error) {
 		return
 	}
 	if state != 0 {
-		err = fmt.Errorf("Restic existed with state %v while initializing repository", state)
+		err = fmt.Errorf("Restic exited with state %v while initializing repository", state)
 		return
 	}
 	return
@@ -244,11 +244,8 @@ func (r *ResticEngine) launchRestic(cmd []string, volumes []*volume.Volume) (sta
 	config := r.Orchestrator.GetHandler().Config
 	image := config.Restic.Image
 
-	cache := &volume.Volume{
-		Name:       "restic-cache",
-		Mountpoint: "/root/.cache/restic",
-	}
-	volumes = append(volumes, cache)
+	// Disable cache to avoid volume issues with Kubernetes
+	cmd = append(cmd, "--no-cache")
 
 	env := map[string]string{
 		"AWS_ACCESS_KEY_ID":     config.AWS.AccessKeyID,

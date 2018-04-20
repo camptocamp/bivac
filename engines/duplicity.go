@@ -271,11 +271,8 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, volumes []*volume.Volume
 	config := d.Orchestrator.GetHandler().Config
 	image := config.Duplicity.Image
 
-	cache := &volume.Volume{
-		Name:       "duplicity-cache",
-		Mountpoint: "/root/.cache/duplicity",
-	}
-	volumes = append(volumes, cache)
+	// Disable cache to avoid volume issues with Kubernetes
+	cmd = append(cmd, "--archive-dir=/dev/null")
 
 	env := map[string]string{
 		"AWS_ACCESS_KEY_ID":     config.AWS.AccessKeyID,
