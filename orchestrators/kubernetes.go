@@ -114,7 +114,21 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 
 	kvs := []apiv1.Volume{}
 	kvms := []apiv1.VolumeMount{}
+	var node string
+
 	for _, v := range volumes {
+		pvc, err := o.Client.CoreV1().PersistentVolumeClaims(o.Handler.Config.Kubernetes.Namespace).Get(v.Name, metav1.GetOptions{})
+		if err != nil {
+			log.Errorf("failed to retrieve PersistentVolumeClaim \""+v.Name+"\": %s", err)
+			continue
+		}
+
+		for _, am := range pvc.Spec.AccessModes {
+			if am == "ReadWriteOnce" {
+				node = v.HostBind
+			}
+		}
+
 		kv := apiv1.Volume{
 			Name: v.Name,
 			VolumeSource: apiv1.VolumeSource{
@@ -132,13 +146,6 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 			MountPath: v.Mountpoint,
 		}
 		kvms = append(kvms, kvm)
-	}
-
-	var node string
-	if len(volumes) > 0 {
-		node = volumes[0].HostBind
-	} else {
-		node = ""
 	}
 
 	pod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.Pod{
