@@ -124,7 +124,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 		}
 
 		for _, am := range pvc.Spec.AccessModes {
-			if am == "ReadWriteOnce" {
+			if am == apiv1.ReadWriteOnce {
 				node = v.HostBind
 			}
 		}
@@ -134,7 +134,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 			VolumeSource: apiv1.VolumeSource{
 				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
 					ClaimName: v.Name,
-					ReadOnly:  true,
+					ReadOnly:  false,
 				},
 			},
 		}
