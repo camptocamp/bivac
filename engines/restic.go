@@ -48,7 +48,7 @@ func (r *ResticEngine) Backup() (err error) {
 		return
 	}
 
-	v.Target = targetURL.String()
+	v.Target = targetURL.String() + "/" + v.Name
 	v.BackupDir = v.Mountpoint + "/" + v.BackupDir
 	v.Mount = v.Name + ":" + v.Mountpoint + ":ro"
 
