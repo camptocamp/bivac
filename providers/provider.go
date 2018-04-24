@@ -45,7 +45,10 @@ func GetProvider(o orchestrators.Orchestrator, v *volume.Volume) Provider {
 		"-c",
 		shell,
 	}
-	_, stdout, _ := o.LaunchContainer("busybox", map[string]string{}, cmd, []*volume.Volume{v})
+	_, stdout, err := o.LaunchContainer("busybox", map[string]string{}, cmd, []*volume.Volume{v})
+	if err != nil {
+		log.Errorf("failed to run provider detection: %s", err)
+	}
 
 	switch strings.TrimSpace(stdout) {
 	case "mysql":
@@ -82,6 +85,8 @@ func PrepareBackup(p Provider) (err error) {
 
 	o := p.GetOrchestrator()
 
+	vol := p.GetVolume()
+
 	containers, err := o.GetMountedVolumes()
 	if err != nil {
 		err = fmt.Errorf("failed to list containers: %v", err)
@@ -90,22 +95,24 @@ func PrepareBackup(p Provider) (err error) {
 
 	for _, container := range containers {
 		for volName, volDestination := range container.Volumes {
-			log.WithFields(log.Fields{
-				"volume":    volName,
-				"container": container.ContainerID,
-			}).Debug("Container found using volume")
-
-			cmd := p.GetPrepareCommand(volDestination)
-			if cmd != nil {
-				err = o.ContainerExec(container.ContainerID, cmd)
-				if err != nil {
-					return fmt.Errorf("failed to execute command in container: %v", err)
-				}
-			} else {
+			if volName == vol.Name {
 				log.WithFields(log.Fields{
 					"volume":    volName,
 					"container": container.ContainerID,
-				}).Info("No prepare command to execute in container")
+				}).Debug("Container found using volume")
+
+				cmd := p.GetPrepareCommand(volDestination)
+				if cmd != nil {
+					err = o.ContainerExec(container, cmd)
+					if err != nil {
+						return fmt.Errorf("failed to execute command in container: %v", err)
+					}
+				} else {
+					log.WithFields(log.Fields{
+						"volume":    volName,
+						"container": container.ContainerID,
+					}).Info("No prepare command to execute in container")
+				}
 			}
 		}
 	}

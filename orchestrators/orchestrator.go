@@ -12,7 +12,7 @@ type Orchestrator interface {
 	GetVolumes() ([]*volume.Volume, error)
 	LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error)
 	GetMountedVolumes() ([]*volume.MountedVolumes, error)
-	ContainerExec(containerID string, command []string) error
+	ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) error
 }
 
 // GetOrchestrator returns the Orchestrator as specified in configuration
@@ -23,6 +23,8 @@ func GetOrchestrator(c *handler.Conplicity) Orchestrator {
 	switch orch {
 	case "docker":
 		return NewDockerOrchestrator(c)
+	case "kubernetes":
+		return NewKubernetesOrchestrator(c)
 	}
 
 	log.Fatalf("Unknown orchestrator %s", orch)

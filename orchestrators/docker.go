@@ -210,8 +210,8 @@ func (o *DockerOrchestrator) GetMountedVolumes() (containers []*volume.MountedVo
 }
 
 // ContainerExec executes a command in a container
-func (o *DockerOrchestrator) ContainerExec(containerID string, command []string) (err error) {
-	exec, err := o.Client.ContainerExecCreate(context.Background(), containerID, types.ExecConfig{
+func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) (err error) {
+	exec, err := o.Client.ContainerExecCreate(context.Background(), mountedVolumes.ContainerID, types.ExecConfig{
 		Cmd: command,
 	})
 	if err != nil {

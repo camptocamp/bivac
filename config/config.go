@@ -59,6 +59,11 @@ type Config struct {
 	Docker struct {
 		Endpoint string `short:"e" long:"docker-endpoint" description:"The Docker endpoint." env:"DOCKER_ENDPOINT" default:"unix:///var/run/docker.sock"`
 	} `group:"Docker Options"`
+
+	Kubernetes struct {
+		Namespace  string `long:"k8s-namespace" description:"Namespace where you want to run Conplicity." env:"K8S_NAMESPACE"`
+		KubeConfig string `long:"k8s-kubeconfig" description:"Path to your kubeconfig file." env:"K8S_KUBECONFIG"`
+	} `group:"Kubernetes Options"`
 }
 
 // LoadConfig loads the config from flags & environment

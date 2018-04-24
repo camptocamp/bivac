@@ -8,6 +8,7 @@ RUN go get golang.org/x/tools/cmd/goimports \
 	       github.com/go-ini/ini \
 	       github.com/jessevdk/go-flags \
 		   golang.org/x/net/context
+RUN go get ./...
 RUN make conplicity
 
 FROM scratch
