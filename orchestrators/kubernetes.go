@@ -2,7 +2,9 @@ package orchestrators
 
 import (
 	"bytes"
+	"fmt"
 	"sort"
+	"time"
 	"unicode/utf8"
 
 	"github.com/camptocamp/conplicity/handler"
@@ -173,6 +175,9 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 
 	workerName := pod.ObjectMeta.Name
 
+	defer o.DeleteWorker(workerName)
+
+	timeout := time.After(60 * time.Second)
 	terminated := false
 	for !terminated {
 		pod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Get(workerName, metav1.GetOptions{})
@@ -180,7 +185,15 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 			log.Errorf("failed to get pod: %s", err)
 		}
 
-		if len(pod.Status.ContainerStatuses) > 0 && pod.Status.ContainerStatuses[0].State.Terminated != nil {
+		if len(pod.Status.ContainerStatuses) > 0 && pod.Status.ContainerStatuses[0].State.Waiting != nil {
+			select {
+			case <-timeout:
+				err = fmt.Errorf("failed to start worker: timeout")
+				return -1, "", err
+			default:
+				continue
+			}
+		} else if len(pod.Status.ContainerStatuses) > 0 && pod.Status.ContainerStatuses[0].State.Terminated != nil {
 			state = int(pod.Status.ContainerStatuses[0].State.Terminated.ExitCode)
 			terminated = true
 		}
@@ -198,11 +211,15 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 	buf.ReadFrom(readCloser)
 	stdout = buf.String()
 
-	err = o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Delete(workerName, &metav1.DeleteOptions{})
-	if err != nil {
-		log.Errorf("failed to delete the pod: %s", err)
-	}
+	return
+}
 
+// DeleteWorker deletes a worker
+func (o *KubernetesOrchestrator) DeleteWorker(name string) {
+	err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Delete(name, &metav1.DeleteOptions{})
+	if err != nil {
+		log.Errorf("failed to delete worker: %s", err)
+	}
 	return
 }
 
