@@ -185,7 +185,10 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 			log.Errorf("failed to get pod: %s", err)
 		}
 
-		if len(pod.Status.ContainerStatuses) > 0 && pod.Status.ContainerStatuses[0].State.Waiting != nil {
+		if pod.Status.Phase == apiv1.PodSucceeded || pod.Status.Phase == apiv1.PodFailed {
+			state = int(pod.Status.ContainerStatuses[0].State.Terminated.ExitCode)
+			terminated = true
+		} else if pod.Status.Phase != apiv1.PodRunning {
 			select {
 			case <-timeout:
 				err = fmt.Errorf("failed to start worker: timeout")
@@ -193,9 +196,6 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 			default:
 				continue
 			}
-		} else if len(pod.Status.ContainerStatuses) > 0 && pod.Status.ContainerStatuses[0].State.Terminated != nil {
-			state = int(pod.Status.ContainerStatuses[0].State.Terminated.ExitCode)
-			terminated = true
 		}
 	}
 
