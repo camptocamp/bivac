@@ -6,8 +6,9 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"strings"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/camptocamp/conplicity/metrics"
 	"github.com/camptocamp/conplicity/orchestrators"
@@ -54,7 +55,7 @@ func (r *ResticEngine) Backup() (err error) {
 
 	err = util.Retry(3, r.init)
 	if err != nil {
-		err = fmt.Errorf("failed to create a secure bucket: %v", err)
+		err = fmt.Errorf("failed to create a secure repository: %v", err)
 		return
 	}
 
@@ -82,10 +83,32 @@ func (r *ResticEngine) Backup() (err error) {
 	return
 }
 
-// init initialize a secure bucket
+// init initialize a secure repository
 func (r *ResticEngine) init() (err error) {
 	v := r.Volume
-	state, stdout, err := r.launchRestic(
+
+	// Check if the repository already exists
+	state, _, err := r.launchRestic(
+		[]string{
+			"-r",
+			v.Target,
+			"snapshots",
+		},
+		[]*volume.Volume{},
+	)
+	if err != nil {
+		err = fmt.Errorf("failed to launch Restic to verify the existence of the repository: %v", err)
+		return
+	}
+	if state == 0 {
+		log.WithFields(log.Fields{
+			"volume": v.Name,
+		}).Info("The repository already exists, skipping initialization.")
+		return nil
+	}
+
+	// Initialize the repository
+	state, _, err = r.launchRestic(
 		[]string{
 			"-r",
 			v.Target,
@@ -95,16 +118,12 @@ func (r *ResticEngine) init() (err error) {
 			v,
 		},
 	)
-	if strings.Contains(stdout, "already initialized") {
-		err = nil
-		return
-	}
 	if err != nil {
 		err = fmt.Errorf("failed to launch Restic to initialize the repository: %v", err)
 		return
 	}
 	if state != 0 {
-		err = fmt.Errorf("Restic exited with state %v while initializing repository", state)
+		err = fmt.Errorf("Restic exited with state %v while initializing the repository", state)
 		return
 	}
 	return
