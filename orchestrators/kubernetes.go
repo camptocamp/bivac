@@ -314,6 +314,14 @@ func (o *KubernetesOrchestrator) getConfig() (config *rest.Config, err error) {
 	if o.Handler.Config.Kubernetes.KubeConfig != "" {
 		config, err = clientcmd.BuildConfigFromFlags("", o.Handler.Config.Kubernetes.KubeConfig)
 	} else {
+		kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+			clientcmd.NewDefaultClientConfigLoadingRules(),
+			&clientcmd.ConfigOverrides{},
+		)
+		o.Handler.Config.Kubernetes.Namespace, _, err = kubeconfig.Namespace()
+		if err != nil {
+			log.Errorf("Failed to retrieve the namespace from the cluster config: %v", err)
+		}
 		config, err = rest.InClusterConfig()
 	}
 	return
