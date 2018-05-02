@@ -2,12 +2,12 @@ language: go
 sudo: required
 services: docker
 go:
-- 1.9
+- "1.10"
 install:
-- go get ./...
 - go get github.com/bradfitz/goimports
 - go get github.com/mattn/goveralls
 - go get golang.org/x/tools/cmd/cover
+- go get github.com/golang/dep/cmd/dep
 script:
 - make
 - "./.travis/build.sh && ./.travis/test.sh && ./.travis/publish.sh"
