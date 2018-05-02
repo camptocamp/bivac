@@ -25,9 +25,10 @@ vet: conplicity.go
 	go vet $<
 
 imports: conplicity.go
+	dep ensure
 	goimports -d $<
 
-test: lint vet imports
+test: imports lint vet
 	go test -v ./...
 
 coverage:
@@ -41,4 +42,4 @@ coverage:
 clean:
 	rm -f conplicity conplicity.1
 
-.PHONY: all lint vet imports test coverage clean
+.PHONY: all imports lint vet test coverage clean
