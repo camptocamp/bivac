@@ -35,7 +35,7 @@ Application Options:
   -m, --manpage                Output manpage.
       --no-verify              Do not verify backup. [$BIVAC_NO_VERIFY]
   -j, --json                   Log as JSON (to stderr). [$BIVAC_JSON_OUTPUT]
-  -E, --engine=                Backup engine to use. (default: duplicity) [$BIVAC_ENGINE]
+  -E, --engine=                Backup engine to use. (default: restic) [$BIVAC_ENGINE]
   -o, --orchestrator=          Container orchestrator to use. (default: docker) [$BIVAC_ORCHESTRATOR]
   -u, --target-url=            The target URL to push to. [$BIVAC_TARGET_URL]
   -H, --hostname-from-rancher  Retrieve hostname from Rancher metadata. [$BIVAC_HOSTNAME_FROM_RANCHER]
@@ -43,16 +43,16 @@ Application Options:
       --remove-older-than=     Remove backups older than the specified interval. (default: 30D) [$BIVAC_REMOVE_OLDER_THAN]
       --label-prefix=          The volume prefix label. [$BIVAC_LABEL_PREFIX]
 
-Duplicity Options:
-      --duplicity-image=       The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
-      --full-if-older-than=    The number of days after which a full backup must be performed. (default: 15D) [$BIVAC_FULL_IF_OLDER_THAN]
+Restic Options:
+      --restic-image=          The restic docker image. (default: restic/restic:latest) [$RESTIC_DOCKER_IMAGE]
+      --restic-password=       The restic backup password. [$RESTIC_PASSWORD]
 
 RClone Options:
       --rclone-image=          The rclone docker image. (default: camptocamp/rclone:1.33-1) [$RCLONE_DOCKER_IMAGE]
 
-Restic Options:
-      --restic-image=          The restic docker image. (default: restic/restic:latest) [$RESTIC_DOCKER_IMAGE]
-      --restic-password=       The restic backup password. [$RESTIC_PASSWORD]
+Duplicity Options:
+      --duplicity-image=       The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
+      --full-if-older-than=    The number of days after which a full backup must be performed. (default: 15D) [$BIVAC_FULL_IF_OLDER_THAN]
 
 Metrics Options:
   -g, --gateway-url=           The prometheus push gateway URL to use. [$PUSHGATEWAY_URL]
