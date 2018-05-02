@@ -1,5 +1,5 @@
-Bivac
-==========
+Bivac : Backup Interface for Volumes Attached to Containers
+===========================================================
 
 Website: [https://camptocamp.github.io/bivac](https://camptocamp.github.io/bivac)
 
@@ -11,7 +11,7 @@ Website: [https://camptocamp.github.io/bivac](https://camptocamp.github.io/bivac
 [![By Camptocamp](https://img.shields.io/badge/by-camptocamp-fb7047.svg)](http://www.camptocamp.com)
 
 
-Bivac lets you backup all your named Docker volumes using Duplicity or RClone.
+Bivac lets you backup all your containers volumes deployed on Docker Engine or Kubernetes using Restic, Duplicity or RClone.
 
 ![Bivac](img/bivac_small.png)
 
@@ -30,23 +30,29 @@ Usage:
 
 Application Options:
   -V, --version                Display version.
-  -l, --loglevel=              Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic'). (default: info)
-                               [$BIVAC_LOG_LEVEL]
+  -l, --loglevel=              Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic'). (default: info) [$BIVAC_LOG_LEVEL]
   -b, --blacklist=             Volumes to blacklist in backups. [$BIVAC_VOLUMES_BLACKLIST]
   -m, --manpage                Output manpage.
       --no-verify              Do not verify backup. [$BIVAC_NO_VERIFY]
   -j, --json                   Log as JSON (to stderr). [$BIVAC_JSON_OUTPUT]
   -E, --engine=                Backup engine to use. (default: duplicity) [$BIVAC_ENGINE]
+  -o, --orchestrator=          Container orchestrator to use. (default: docker) [$BIVAC_ORCHESTRATOR]
   -u, --target-url=            The target URL to push to. [$BIVAC_TARGET_URL]
   -H, --hostname-from-rancher  Retrieve hostname from Rancher metadata. [$BIVAC_HOSTNAME_FROM_RANCHER]
-      --remove-older-than=     Remove backups older than the specified interval. [$BIVAC_REMOVE_OLDER_THAN]
+      --check-every=           Time between backup checks. (default: 24h) [$BIVAC_CHECK_EVERY]
+      --remove-older-than=     Remove backups older than the specified interval. (default: 30D) [$BIVAC_REMOVE_OLDER_THAN]
+      --label-prefix=          The volume prefix label. [$BIVAC_LABEL_PREFIX]
 
 Duplicity Options:
       --duplicity-image=       The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
-      --full-if-older-than=    The number of days after which a full backup must be performed. (default: 15D)
-                               [$BIVAC_FULL_IF_OLDER_THAN]
+      --full-if-older-than=    The number of days after which a full backup must be performed. (default: 15D) [$BIVAC_FULL_IF_OLDER_THAN]
+
 RClone Options:
-      --rclone-image=          The rclone docker image. (default: camptocamp/rclone:latest) [$RCLONE_DOCKER_IMAGE]
+      --rclone-image=          The rclone docker image. (default: camptocamp/rclone:1.33-1) [$RCLONE_DOCKER_IMAGE]
+
+Restic Options:
+      --restic-image=          The restic docker image. (default: restic/restic:latest) [$RESTIC_DOCKER_IMAGE]
+      --restic-password=       The restic backup password. [$RESTIC_PASSWORD]
 
 Metrics Options:
   -g, --gateway-url=           The prometheus push gateway URL to use. [$PUSHGATEWAY_URL]
@@ -64,6 +70,10 @@ Swift Options:
 
 Docker Options:
   -e, --docker-endpoint=       The Docker endpoint. (default: unix:///var/run/docker.sock) [$DOCKER_ENDPOINT]
+
+Kubernetes Options:
+      --k8s-namespace=         Namespace where you want to run Bivac. [$K8S_NAMESPACE]
+      --k8s-kubeconfig=        Path to your kubeconfig file. [$K8S_KUBECONFIG]
 
 Help Options:
   -h, --help                   Show this help message
@@ -114,6 +124,17 @@ full_if_older_than = "3D"
 remove_older_than = "5D"
 ```
 
+## Orchestrators
+
+Bivac supports runing on either Docker Engine (using the Docker API) or Kubernetes (using the Kubernetes API).
+
+### Docker
+
+Bivac will backup all named volumes by default.
+
+### Kubernetes
+
+Bivac will backup all Persistent Volume Claims by default.
 
 ## Providers
 
