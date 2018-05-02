@@ -25,6 +25,7 @@ vet: conplicity.go
 	go vet $<
 
 imports: conplicity.go
+	dep ensure
 	goimports -d $<
 
 test: lint vet imports
