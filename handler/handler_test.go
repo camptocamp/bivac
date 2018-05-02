@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/camptocamp/conplicity/config"
-	"github.com/camptocamp/conplicity/volume"
+	"github.com/camptocamp/bivac/config"
+	"github.com/camptocamp/bivac/volume"
 
 	log "github.com/Sirupsen/logrus"
 )
 
 func TestSetup(t *testing.T) {
-	var fakeHandler = Conplicity{}
+	var fakeHandler = Bivac{}
 
 	t.Skip("Fails with t flag")
 
@@ -45,7 +45,7 @@ func TestSetup(t *testing.T) {
 }
 
 func TestSchedulerVolumeNoVerify(t *testing.T) {
-	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
+	fakeMountpoint, err := ioutil.TempDir("", "testBivac")
 	if err != nil {
 		t.Fatalf("Cannot create temporary directory: %v", err)
 	}
@@ -59,7 +59,7 @@ func TestSchedulerVolumeNoVerify(t *testing.T) {
 		},
 	}
 
-	c := Conplicity{}
+	c := Bivac{}
 
 	result, err := c.IsCheckScheduled(&vol)
 
@@ -69,14 +69,14 @@ func TestSchedulerVolumeNoVerify(t *testing.T) {
 }
 
 func TestSchedulerVolumePermissionDenied(t *testing.T) {
-	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
+	fakeMountpoint, err := ioutil.TempDir("", "testBivac")
 	if err != nil {
 		t.Fatalf("Cannot create temporary directory: %v", err)
 	}
 
 	defer os.RemoveAll(fakeMountpoint)
 
-	os.OpenFile(fakeMountpoint+"/.conplicity_last_check", os.O_RDONLY|os.O_CREATE, 0644)
+	os.OpenFile(fakeMountpoint+"/.bivac_last_check", os.O_RDONLY|os.O_CREATE, 0644)
 	os.Chmod(fakeMountpoint, 0644)
 
 	vol := volume.Volume{
@@ -86,7 +86,7 @@ func TestSchedulerVolumePermissionDenied(t *testing.T) {
 		},
 	}
 
-	c := Conplicity{
+	c := Bivac{
 		Config: &config.Config{
 			CheckEvery: "1h",
 		},
@@ -100,14 +100,14 @@ func TestSchedulerVolumePermissionDenied(t *testing.T) {
 }
 
 func TestSchedulerVolumeInvalidCheckEvery(t *testing.T) {
-	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
+	fakeMountpoint, err := ioutil.TempDir("", "testBivac")
 	if err != nil {
 		t.Fatalf("Cannot create temporary directory: %v", err)
 	}
 
 	defer os.RemoveAll(fakeMountpoint)
 
-	os.OpenFile(fakeMountpoint+"/.conplicity_last_check", os.O_RDONLY|os.O_CREATE, 0644)
+	os.OpenFile(fakeMountpoint+"/.bivac_last_check", os.O_RDONLY|os.O_CREATE, 0644)
 
 	vol := volume.Volume{
 		Mountpoint: fakeMountpoint,
@@ -116,7 +116,7 @@ func TestSchedulerVolumeInvalidCheckEvery(t *testing.T) {
 		},
 	}
 
-	c := Conplicity{
+	c := Bivac{
 		Config: &config.Config{
 			CheckEvery: "fake",
 		},
@@ -130,7 +130,7 @@ func TestSchedulerVolumeInvalidCheckEvery(t *testing.T) {
 }
 
 func TestSchedulerVolumeVerifyNotRequired(t *testing.T) {
-	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
+	fakeMountpoint, err := ioutil.TempDir("", "testBivac")
 	if err != nil {
 		t.Fatalf("Cannot create temporary directory: %v", err)
 	}
@@ -144,7 +144,7 @@ func TestSchedulerVolumeVerifyNotRequired(t *testing.T) {
 		},
 	}
 
-	c := Conplicity{
+	c := Bivac{
 		Config: &config.Config{
 			CheckEvery: "1h",
 		},
@@ -158,16 +158,16 @@ func TestSchedulerVolumeVerifyNotRequired(t *testing.T) {
 }
 
 func TestSchedulerVolumeVerifyRequired(t *testing.T) {
-	fakeMountpoint, err := ioutil.TempDir("", "testConplicity")
+	fakeMountpoint, err := ioutil.TempDir("", "testBivac")
 	if err != nil {
 		t.Fatalf("Cannot create temporary directory: %v", err)
 	}
 
 	defer os.RemoveAll(fakeMountpoint)
 
-	os.OpenFile(fakeMountpoint+"/.conplicity_last_check", os.O_RDONLY|os.O_CREATE, 0644)
+	os.OpenFile(fakeMountpoint+"/.bivac_last_check", os.O_RDONLY|os.O_CREATE, 0644)
 	h := time.Now().Local().AddDate(0, 0, -1)
-	os.Chtimes(fakeMountpoint+"/.conplicity_last_check", h, h)
+	os.Chtimes(fakeMountpoint+"/.bivac_last_check", h, h)
 
 	vol := volume.Volume{
 		Mountpoint: fakeMountpoint,
@@ -176,7 +176,7 @@ func TestSchedulerVolumeVerifyRequired(t *testing.T) {
 		},
 	}
 
-	c := Conplicity{
+	c := Bivac{
 		Config: &config.Config{
 			CheckEvery: "1h",
 		},

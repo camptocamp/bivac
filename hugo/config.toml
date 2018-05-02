@@ -1,5 +1,5 @@
-baseURL = "http://camptocamp.github.io/conplicity/"
-title = "Conplicity"
+baseURL = "http://camptocamp.github.io/bivac/"
+title = "Bivac"
 languageCode = "en-us"
 theme = "elate"
 
@@ -13,7 +13,7 @@ theme = "elate"
   email = ""
   # Navigation
   [params.navigation]
-    brand = "Conplicity"
+    brand = "Bivac"
     intro = "<i class='icon-home'></i>Install"
     work = "<i class='icon-camera'></i>Screenshots"
     testimonials = "<i class='icon-bubbles'></i>Testimonials"
@@ -26,12 +26,12 @@ theme = "elate"
 
   # Hero section
   [params.hero]
-    title = "![Conplicity](images/conplicity.png) <p>Conplicity</p>"
+    title = "![Bivac](images/bivac.png) <p>Bivac</p>"
     subtitle = '''
 Automatic backups for Docker containers.
 
-[![GitHub stars](https://img.shields.io/github/stars/camptocamp/conplicity.svg?style=social&logo=github&label=Stars)](https://github.com/camptocamp/conplicity)
-[![Docker Pulls](https://img.shields.io/docker/pulls/camptocamp/conplicity.svg)](https://hub.docker.com/r/camptocamp/conplicity/)
+[![GitHub stars](https://img.shields.io/github/stars/camptocamp/bivac.svg?style=social&logo=github&label=Stars)](https://github.com/camptocamp/bivac)
+[![Docker Pulls](https://img.shields.io/docker/pulls/camptocamp/bivac.svg)](https://hub.docker.com/r/camptocamp/bivac/)
 [![By Camptocamp](https://img.shields.io/badge/by-camptocamp-fb7047.svg)](http://www.camptocamp.com)
 '''
 
@@ -43,7 +43,7 @@ Automatic backups for Docker containers.
     title = "Install from source"
     description = '''
 ```shell
-$ go get github.com/camptocamp/conplicity
+$ go get github.com/camptocamp/bivac
 ```
 '''
     #url = "#"
@@ -54,7 +54,7 @@ $ go get github.com/camptocamp/conplicity
     title = "Example usage"
     description = '''
 ```shell
-$ conplicity \
+$ bivac \
   -u s3+http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
   --aws-access-key-id=<my_key_id> \
   --aws-secret-key-id=<my_secret_key>
@@ -70,10 +70,10 @@ $ conplicity \
     description = '''
 ```shell
 $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
-   -e CONPLICITY_TARGET_URL=s3+http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
+   -e BIVAC_TARGET_URL=s3+http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
    -e AWS_ACCESS_KEY_ID=<my_key_id> \
    -e AWS_SECRET_ACCESS_KEY=<my_secret_key> \
-     camptocamp/conplicity
+     camptocamp/bivac
 ```
 '''
     #url = "#"
@@ -92,26 +92,26 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
   [params.services]
     enable = true
     title = "Features"
-    description = "Conplicity allows to backup Docker volumes using the Duplicity, RClone, and Restic engines."
+    description = "Bivac allows to backup Docker volumes using the Duplicity, RClone, and Restic engines."
 
     [[params.services.item]]
       title = "Built for Docker"
-      description = "Conplicity plugs onto the Docker socket to detect local volumes, automatically."
+      description = "Bivac plugs onto the Docker socket to detect local volumes, automatically."
       icon = "icon-anchor"
 
     [[params.services.item]]
       title = "Prometheus Ready"
-      description = "Prometheus Support is built-in to easily ship metrics each time conplicity runs."
+      description = "Prometheus Support is built-in to easily ship metrics each time bivac runs."
       icon = "icon-speedometer"
 
     [[params.services.item]]
       title = "Multiple Clouds"
-      description = "Conplicity supports both AWS and Swift as bucket providers."
+      description = "Bivac supports both AWS and Swift as bucket providers."
       icon = "icon-cloud-upload"
 
     [[params.services.item]]
       title = "Multiple Engines"
-      description = "Conplicity uses Duplicity, RClone and Restic as backends to give you full control of your backup mode."
+      description = "Bivac uses Duplicity, RClone and Restic as backends to give you full control of your backup mode."
       icon = "icon-puzzle"
 
   # About section

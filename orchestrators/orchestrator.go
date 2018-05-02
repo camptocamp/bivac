@@ -2,13 +2,13 @@ package orchestrators
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/handler"
-	"github.com/camptocamp/conplicity/volume"
+	"github.com/camptocamp/bivac/handler"
+	"github.com/camptocamp/bivac/volume"
 )
 
 // Orchestrator implements a container Orchestrator interface
 type Orchestrator interface {
-	GetHandler() *handler.Conplicity
+	GetHandler() *handler.Bivac
 	GetVolumes() ([]*volume.Volume, error)
 	LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error)
 	GetMountedVolumes() ([]*volume.MountedVolumes, error)
@@ -16,7 +16,7 @@ type Orchestrator interface {
 }
 
 // GetOrchestrator returns the Orchestrator as specified in configuration
-func GetOrchestrator(c *handler.Conplicity) Orchestrator {
+func GetOrchestrator(c *handler.Bivac) Orchestrator {
 	orch := c.Config.Orchestrator
 	log.Debugf("orchestrator=%s", orch)
 

@@ -6,7 +6,7 @@ docker build -t testtag .
 docker volume create --name test
 
 docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
-  -e CONPLICITY_TARGET_URL="file:///root/.cache/duplicity/.test_backup" \
+  -e BIVAC_TARGET_URL="file:///root/.cache/duplicity/.test_backup" \
   testtag -l debug
 
 if [ "$?" -ne 0 ]; then

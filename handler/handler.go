@@ -9,26 +9,26 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/config"
-	"github.com/camptocamp/conplicity/util"
-	"github.com/camptocamp/conplicity/volume"
+	"github.com/camptocamp/bivac/config"
+	"github.com/camptocamp/bivac/util"
+	"github.com/camptocamp/bivac/volume"
 )
 
-// Conplicity is the main handler struct
-type Conplicity struct {
+// Bivac is the main handler struct
+type Bivac struct {
 	Config   *config.Config
 	Hostname string
 }
 
-// NewConplicity returns a new Conplicity handler
-func NewConplicity(version string) (*Conplicity, error) {
-	c := &Conplicity{}
+// NewBivac returns a new Bivac handler
+func NewBivac(version string) (*Bivac, error) {
+	c := &Bivac{}
 	err := c.Setup(version)
 	return c, err
 }
 
-// Setup sets up a Conplicity struct
-func (c *Conplicity) Setup(version string) (err error) {
+// Setup sets up a Bivac struct
+func (c *Bivac) Setup(version string) (err error) {
 	c.Config = config.LoadConfig(version)
 
 	err = c.setupLoglevel()
@@ -41,7 +41,7 @@ func (c *Conplicity) Setup(version string) (err error) {
 }
 
 // GetHostname gets the host name
-func (c *Conplicity) GetHostname() (err error) {
+func (c *Bivac) GetHostname() (err error) {
 	if c.Config.HostnameFromRancher {
 		resp, err := http.Get("http://rancher-metadata/latest/self/host/name")
 		if err != nil {
@@ -60,8 +60,8 @@ func (c *Conplicity) GetHostname() (err error) {
 }
 
 // IsCheckScheduled checks if the backup must be verified
-func (c *Conplicity) IsCheckScheduled(vol *volume.Volume) (bool, error) {
-	logCheckPath := vol.Mountpoint + "/.conplicity_last_check"
+func (c *Bivac) IsCheckScheduled(vol *volume.Volume) (bool, error) {
+	logCheckPath := vol.Mountpoint + "/.bivac_last_check"
 
 	if vol.Config.NoVerify {
 		log.WithFields(log.Fields{
@@ -101,7 +101,7 @@ func (c *Conplicity) IsCheckScheduled(vol *volume.Volume) (bool, error) {
 	return true, nil
 }
 
-func (c *Conplicity) setupLoglevel() (err error) {
+func (c *Bivac) setupLoglevel() (err error) {
 	switch c.Config.Loglevel {
 	case "debug":
 		log.SetLevel(log.DebugLevel)

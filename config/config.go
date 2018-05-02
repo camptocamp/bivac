@@ -12,22 +12,22 @@ import (
 // Config stores the handler's configuration and UI interface parameters
 type Config struct {
 	Version             bool     `short:"V" long:"version" description:"Display version."`
-	Loglevel            string   `short:"l" long:"loglevel" description:"Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic')." env:"CONPLICITY_LOG_LEVEL" default:"info"`
-	VolumesBlacklist    []string `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"CONPLICITY_VOLUMES_BLACKLIST" env-delim:","`
+	Loglevel            string   `short:"l" long:"loglevel" description:"Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic')." env:"BIVAC_LOG_LEVEL" default:"info"`
+	VolumesBlacklist    []string `short:"b" long:"blacklist" description:"Volumes to blacklist in backups." env:"BIVAC_VOLUMES_BLACKLIST" env-delim:","`
 	Manpage             bool     `short:"m" long:"manpage" description:"Output manpage."`
-	NoVerify            bool     `long:"no-verify" description:"Do not verify backup." env:"CONPLICITY_NO_VERIFY"`
-	JSON                bool     `short:"j" long:"json" description:"Log as JSON (to stderr)." env:"CONPLICITY_JSON_OUTPUT"`
-	Engine              string   `short:"E" long:"engine" description:"Backup engine to use." env:"CONPLICITY_ENGINE" default:"duplicity"`
-	Orchestrator        string   `short:"o" long:"orchestrator" description:"Container orchestrator to use." env:"CONPLICITY_ORCHESTRATOR" default:"docker"`
-	TargetURL           string   `short:"u" long:"target-url" description:"The target URL to push to." env:"CONPLICITY_TARGET_URL"`
-	HostnameFromRancher bool     `short:"H" long:"hostname-from-rancher" description:"Retrieve hostname from Rancher metadata." env:"CONPLICITY_HOSTNAME_FROM_RANCHER"`
-	CheckEvery          string   `long:"check-every" description:"Time between backup checks." env:"CONPLICITY_CHECK_EVERY" default:"24h"`
-	RemoveOlderThan     string   `long:"remove-older-than" description:"Remove backups older than the specified interval." env:"CONPLICITY_REMOVE_OLDER_THAN" default:"30D"`
-	LabelPrefix         string   `long:"label-prefix" description:"The volume prefix label." env:"CONPLICITY_LABEL_PREFIX"`
+	NoVerify            bool     `long:"no-verify" description:"Do not verify backup." env:"BIVAC_NO_VERIFY"`
+	JSON                bool     `short:"j" long:"json" description:"Log as JSON (to stderr)." env:"BIVAC_JSON_OUTPUT"`
+	Engine              string   `short:"E" long:"engine" description:"Backup engine to use." env:"BIVAC_ENGINE" default:"duplicity"`
+	Orchestrator        string   `short:"o" long:"orchestrator" description:"Container orchestrator to use." env:"BIVAC_ORCHESTRATOR" default:"docker"`
+	TargetURL           string   `short:"u" long:"target-url" description:"The target URL to push to." env:"BIVAC_TARGET_URL"`
+	HostnameFromRancher bool     `short:"H" long:"hostname-from-rancher" description:"Retrieve hostname from Rancher metadata." env:"BIVAC_HOSTNAME_FROM_RANCHER"`
+	CheckEvery          string   `long:"check-every" description:"Time between backup checks." env:"BIVAC_CHECK_EVERY" default:"24h"`
+	RemoveOlderThan     string   `long:"remove-older-than" description:"Remove backups older than the specified interval." env:"BIVAC_REMOVE_OLDER_THAN" default:"30D"`
+	LabelPrefix         string   `long:"label-prefix" description:"The volume prefix label." env:"BIVAC_LABEL_PREFIX"`
 
 	Duplicity struct {
 		Image           string `long:"duplicity-image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
-		FullIfOlderThan string `long:"full-if-older-than" description:"The number of days after which a full backup must be performed." env:"CONPLICITY_FULL_IF_OLDER_THAN" default:"15D"`
+		FullIfOlderThan string `long:"full-if-older-than" description:"The number of days after which a full backup must be performed." env:"BIVAC_FULL_IF_OLDER_THAN" default:"15D"`
 	} `group:"Duplicity Options"`
 
 	RClone struct {
@@ -61,7 +61,7 @@ type Config struct {
 	} `group:"Docker Options"`
 
 	Kubernetes struct {
-		Namespace  string `long:"k8s-namespace" description:"Namespace where you want to run Conplicity." env:"K8S_NAMESPACE"`
+		Namespace  string `long:"k8s-namespace" description:"Namespace where you want to run Bivac." env:"K8S_NAMESPACE"`
 		KubeConfig string `long:"k8s-kubeconfig" description:"Path to your kubeconfig file." env:"K8S_KUBECONFIG"`
 	} `group:"Kubernetes Options"`
 }
@@ -75,16 +75,16 @@ func LoadConfig(version string) *Config {
 	}
 
 	if c.Version {
-		fmt.Printf("Conplicity v%v\n", version)
+		fmt.Printf("Bivac v%v\n", version)
 		os.Exit(0)
 	}
 
 	if c.Manpage {
 		var buf bytes.Buffer
 		parser.ShortDescription = "Docker volumes backup"
-		parser.LongDescription = `Conplicity lets you backup all your names Docker volumes using Duplicity or RClone.
+		parser.LongDescription = `Bivac lets you backup all your names Docker volumes using Duplicity or RClone.
 
-Conplicity supports multiple engines for performing the backup:
+Bivac supports multiple engines for performing the backup:
 
 * Duplicity (default engine)
 

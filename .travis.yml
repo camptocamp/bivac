@@ -18,10 +18,10 @@ deploy:
   api_key:
     secure: Ae95idY3YjwpFrMTysmsqMgbFQXxyjm3soTk5/UrWbGl0UvXU+4dEDDwzQBl3SZqLFIccXU2yn+XUMKeWmwjiDx4nOp6iPMsv7I3rbCe5t6yvnn8FaBtaHgql8H3mdPTK79GnB7XetkaFSoEojBhGXIWiDMpNL5sBIgkbKsBJIAD7/2uwGNzGNUe0dou5aArbY/dlqVsHwsxSrn9aSPJYq1FVqpZXvTJzQi6MsREQXTlWsYvchy0/DvEW6efkyR0ApKV0cMBUBZBE7ubPxBzyiEFwvEycIEoSHaKj1Mx/wfbU2vzHYRRioCo4sTWEHQ3Xex0JIVcWN7BBE2R3AxdJosj91fIf+TfzjlcT6GMoquLTM0/R/s74VkE/sihBHXL1JXrYp0rKpliQGVJh4se3coNxjr8o0RXg/82SYV6Rdxdia9u7ISDhmzJV2bUwh6dlPqGOeSd0CLpF/ogXexcSXgPES5p3wyRdUAy3eWTo2P9e5/T5I4pl9z0BySbUZDl1pRG453YJp88c0Tvabf+kGWekmqTZ+28/VHGQZGvDAGLuK/t0HFpl6pEKW417KXceGfkMGB3sKIbNDK6gABeJLCLaxGMCyWgtdXF5ozjZXy3RWpVQgjrd1rvAsU6caPB9jnXXSVBIBCN7smBBx5UON0k12uEplzu0DxN8TJfSVo=
   file:
-  - conplicity
-  - conplicity.1
+  - bivac
+  - bivac.1
   on:
-    repo: camptocamp/conplicity
+    repo: camptocamp/bivac
     tags: true
 env:
   global:

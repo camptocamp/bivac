@@ -7,8 +7,8 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/camptocamp/conplicity/handler"
-	"github.com/camptocamp/conplicity/volume"
+	"github.com/camptocamp/bivac/handler"
+	"github.com/camptocamp/bivac/volume"
 
 	log "github.com/Sirupsen/logrus"
 	apiv1 "k8s.io/api/core/v1"
@@ -22,12 +22,12 @@ import (
 
 // KubernetesOrchestrator implements a container orchestrator for Kubernetes
 type KubernetesOrchestrator struct {
-	Handler *handler.Conplicity
+	Handler *handler.Bivac
 	Client  *kubernetes.Clientset
 }
 
 // NewKubernetesOrchestrator creates a Kubernetes client
-func NewKubernetesOrchestrator(c *handler.Conplicity) (o *KubernetesOrchestrator) {
+func NewKubernetesOrchestrator(c *handler.Bivac) (o *KubernetesOrchestrator) {
 	var err error
 	o = &KubernetesOrchestrator{
 		Handler: c,
@@ -51,7 +51,7 @@ func (*KubernetesOrchestrator) GetName() string {
 }
 
 // GetHandler returns the Orchestrator's handler
-func (o *KubernetesOrchestrator) GetHandler() *handler.Conplicity {
+func (o *KubernetesOrchestrator) GetHandler() *handler.Bivac {
 	return o.Handler
 }
 
@@ -152,7 +152,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 
 	pod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: "conplicity-worker-",
+			GenerateName: "bivac-worker-",
 		},
 		Spec: apiv1.PodSpec{
 			NodeName:      node,
@@ -160,7 +160,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 			Volumes:       kvs,
 			Containers: []apiv1.Container{
 				{
-					Name:         "conplicity-worker",
+					Name:         "bivac-worker",
 					Image:        image,
 					Args:         cmd,
 					Env:          envVars,

@@ -6,10 +6,10 @@ import (
 	"testing"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/config"
-	"github.com/camptocamp/conplicity/handler"
-	"github.com/camptocamp/conplicity/orchestrators"
-	"github.com/camptocamp/conplicity/volume"
+	"github.com/camptocamp/bivac/config"
+	"github.com/camptocamp/bivac/handler"
+	"github.com/camptocamp/bivac/orchestrators"
+	"github.com/camptocamp/bivac/volume"
 )
 
 func TestPrepareBackupWithDocker(t *testing.T) {
@@ -18,7 +18,7 @@ func TestPrepareBackupWithDocker(t *testing.T) {
 	dir, _ := ioutil.TempDir("", "test_backup_volume")
 	defer os.RemoveAll(dir)
 
-	c := &handler.Conplicity{}
+	c := &handler.Bivac{}
 	c.Config = &config.Config{}
 	c.Config.Orchestrator = "docker"
 	c.Config.Duplicity.Image = "camptocamp/duplicity:latest"
@@ -51,7 +51,7 @@ func TestBaseGetHandler(t *testing.T) {
 
 	p := &BaseProvider{
 		orchestrator: &orchestrators.DockerOrchestrator{
-			Handler: &handler.Conplicity{},
+			Handler: &handler.Bivac{},
 		},
 	}
 	got := p.orchestrator.GetHandler().Hostname
