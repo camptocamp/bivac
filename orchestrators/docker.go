@@ -9,9 +9,9 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/camptocamp/conplicity/handler"
-	"github.com/camptocamp/conplicity/util"
-	"github.com/camptocamp/conplicity/volume"
+	"github.com/camptocamp/bivac/handler"
+	"github.com/camptocamp/bivac/util"
+	"github.com/camptocamp/bivac/volume"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -23,12 +23,12 @@ import (
 
 // DockerOrchestrator implements a container orchestrator for Docker
 type DockerOrchestrator struct {
-	Handler *handler.Conplicity
+	Handler *handler.Bivac
 	Client  *docker.Client
 }
 
 // NewDockerOrchestrator creates a Docker client
-func NewDockerOrchestrator(c *handler.Conplicity) (o *DockerOrchestrator) {
+func NewDockerOrchestrator(c *handler.Bivac) (o *DockerOrchestrator) {
 	var err error
 	o = &DockerOrchestrator{
 		Handler: c,
@@ -44,7 +44,7 @@ func (*DockerOrchestrator) GetName() string {
 }
 
 // GetHandler returns the Orchestrator's handler
-func (o *DockerOrchestrator) GetHandler() *handler.Conplicity {
+func (o *DockerOrchestrator) GetHandler() *handler.Bivac {
 	return o.Handler
 }
 

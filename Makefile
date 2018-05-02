@@ -1,17 +1,17 @@
 DEPS = $(wildcard */*.go)
 VERSION = $(shell git describe --always --dirty)
 
-all: test conplicity conplicity.1
+all: test bivac bivac.1
 
-conplicity: conplicity.go $(DEPS)
+bivac: bivac.go $(DEPS)
 	CGO_ENABLED=0 GOOS=linux \
 	  go build -a \
 		  -ldflags="-X main.version=$(VERSION)" \
 	    -installsuffix cgo -o $@ $<
 	strip $@
 
-conplicity.1: conplicity
-	./conplicity -m > $@
+bivac.1: bivac
+	./bivac -m > $@
 
 lint:
 	@ go get -v github.com/golang/lint/golint
@@ -21,10 +21,10 @@ lint:
 	done; \
 	exit $${status:-0}
 
-vet: conplicity.go
+vet: bivac.go
 	go vet $<
 
-imports: conplicity.go
+imports: bivac.go
 	dep ensure
 	goimports -d $<
 
@@ -35,11 +35,11 @@ coverage:
 	rm -rf *.out
 	go test -coverprofile=coverage.out
 	for i in config engines handler metrics providers util volume orchestrators; do \
-	 	go test -coverprofile=$$i.coverage.out github.com/camptocamp/conplicity/$$i; \
+	 	go test -coverprofile=$$i.coverage.out github.com/camptocamp/bivac/$$i; \
 		tail -n +2 $$i.coverage.out >> coverage.out; \
 		done
 
 clean:
-	rm -f conplicity conplicity.1
+	rm -f bivac bivac.1
 
 .PHONY: all imports lint vet test coverage clean

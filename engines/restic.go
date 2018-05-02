@@ -10,10 +10,10 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/camptocamp/conplicity/metrics"
-	"github.com/camptocamp/conplicity/orchestrators"
-	"github.com/camptocamp/conplicity/util"
-	"github.com/camptocamp/conplicity/volume"
+	"github.com/camptocamp/bivac/metrics"
+	"github.com/camptocamp/bivac/orchestrators"
+	"github.com/camptocamp/bivac/util"
+	"github.com/camptocamp/bivac/volume"
 )
 
 // ResticEngine implements a backup engine with Restic
@@ -172,12 +172,12 @@ func (r *ResticEngine) verify() (err error) {
 	}
 	if state == 0 {
 		now := time.Now().Local()
-		os.Chtimes(v.Mountpoint+"/.conplicity_last_check", now, now)
+		os.Chtimes(v.Mountpoint+"/.bivac_last_check", now, now)
 	} else {
 		err = fmt.Errorf("Restic exited with state %v while checking the backup", state)
 	}
 
-	metric := r.Volume.MetricsHandler.NewMetric("conplicity_verifyExitCode", "gauge")
+	metric := r.Volume.MetricsHandler.NewMetric("bivac_verifyExitCode", "gauge")
 	err = metric.UpdateEvent(
 		&metrics.Event{
 			Labels: map[string]string{

@@ -9,9 +9,9 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/config"
-	"github.com/camptocamp/conplicity/metrics"
-	"github.com/camptocamp/conplicity/util"
+	"github.com/camptocamp/bivac/config"
+	"github.com/camptocamp/bivac/metrics"
+	"github.com/camptocamp/bivac/util"
 	"github.com/go-ini/ini"
 )
 
@@ -75,7 +75,7 @@ func NewVolume(v *Volume, c *config.Config, h string) *Volume {
 
 // LogTime adds a new metric even with the current time
 func (v *Volume) LogTime(event string) (err error) {
-	metricName := fmt.Sprintf("conplicity_%s", event)
+	metricName := fmt.Sprintf("bivac_%s", event)
 	startTimeMetric := v.MetricsHandler.NewMetric(metricName, "counter")
 	err = startTimeMetric.UpdateEvent(
 		&metrics.Event{
@@ -100,7 +100,7 @@ func (v *Volume) setupMetrics(c *config.Config, h string) (err error) {
 
 func (v *Volume) getConfig(c *config.Config) error {
 	var iniOverrides *ini.File
-	overridesFile := v.Mountpoint + "/.conplicity.overrides"
+	overridesFile := v.Mountpoint + "/.bivac.overrides"
 	if f, err := os.Stat(overridesFile); err == nil && f.Mode().IsRegular() {
 		iniOverrides, err = ini.Load(overridesFile)
 		if err != nil {

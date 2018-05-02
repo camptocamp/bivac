@@ -3,9 +3,9 @@ package orchestrators
 import (
 	"testing"
 
-	"github.com/camptocamp/conplicity/config"
-	"github.com/camptocamp/conplicity/handler"
-	"github.com/camptocamp/conplicity/volume"
+	"github.com/camptocamp/bivac/config"
+	"github.com/camptocamp/bivac/handler"
+	"github.com/camptocamp/bivac/volume"
 )
 
 var fakeVolume = volume.Volume{
@@ -31,7 +31,7 @@ func TestBlacklistedVolume(t *testing.T) {
 	expectedSource := "blacklist config"
 
 	// Prepare
-	c := handler.Conplicity{
+	c := handler.Bivac{
 		Config: &config.Config{
 			VolumesBlacklist: []string{"foo", "bar"},
 		},
@@ -63,7 +63,7 @@ func TestBlacklistedVolumeIgnore(t *testing.T) {
 	expectedSource := "volume config"
 
 	// Prepare
-	c := handler.Conplicity{
+	c := handler.Bivac{
 		Config: &config.Config{
 			VolumesBlacklist: []string{"foo", "bar"},
 		},
@@ -95,7 +95,7 @@ func TestBlacklistedVolumeUnnamed(t *testing.T) {
 	expectedSource := ""
 
 	// Prepare
-	c := handler.Conplicity{
+	c := handler.Bivac{
 		Config: &config.Config{
 			VolumesBlacklist: []string{"foo", "bar"},
 		},
@@ -127,7 +127,7 @@ func TestNotBlacklistedVolume(t *testing.T) {
 	expectedSource := ""
 
 	// Prepare
-	c := handler.Conplicity{
+	c := handler.Bivac{
 		Config: &config.Config{
 			VolumesBlacklist: []string{"foo", "bar"},
 		},

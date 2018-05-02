@@ -10,10 +10,10 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/metrics"
-	"github.com/camptocamp/conplicity/orchestrators"
-	"github.com/camptocamp/conplicity/util"
-	"github.com/camptocamp/conplicity/volume"
+	"github.com/camptocamp/bivac/metrics"
+	"github.com/camptocamp/bivac/orchestrators"
+	"github.com/camptocamp/bivac/util"
+	"github.com/camptocamp/bivac/volume"
 )
 
 // DuplicityEngine implements a backup engine with Duplicity
@@ -160,12 +160,12 @@ func (d *DuplicityEngine) verify() (err error) {
 
 	if state == 0 {
 		now := time.Now().Local()
-		os.Chtimes(v.Mountpoint+"/.conplicity_last_check", now, now)
+		os.Chtimes(v.Mountpoint+"/.bivac_last_check", now, now)
 	} else {
 		err = fmt.Errorf("Duplicity exited with state %v while checking the backup", state)
 	}
 
-	metric := d.Volume.MetricsHandler.NewMetric("conplicity_verifyExitCode", "gauge")
+	metric := d.Volume.MetricsHandler.NewMetric("bivac_verifyExitCode", "gauge")
 	err = metric.UpdateEvent(
 		&metrics.Event{
 			Labels: map[string]string{
@@ -247,7 +247,7 @@ func (d *DuplicityEngine) status() (err error) {
 		return
 	}
 
-	lastBackupMetric := d.Volume.MetricsHandler.NewMetric("conplicity_lastBackup", "counter")
+	lastBackupMetric := d.Volume.MetricsHandler.NewMetric("bivac_lastBackup", "counter")
 	lastBackupMetric.UpdateEvent(
 		&metrics.Event{
 			Labels: map[string]string{},
@@ -255,7 +255,7 @@ func (d *DuplicityEngine) status() (err error) {
 		},
 	)
 
-	lastFullBackupMetric := d.Volume.MetricsHandler.NewMetric("conplicity_lastFullBackup", "counter")
+	lastFullBackupMetric := d.Volume.MetricsHandler.NewMetric("bivac_lastFullBackup", "counter")
 	lastFullBackupMetric.UpdateEvent(
 		&metrics.Event{
 			Labels: map[string]string{},
@@ -319,7 +319,7 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 		return
 	}
 
-	metric := d.Volume.MetricsHandler.NewMetric("conplicity_backupExitCode", "gauge")
+	metric := d.Volume.MetricsHandler.NewMetric("bivac_backupExitCode", "gauge")
 	metric.UpdateEvent(
 		&metrics.Event{
 			Labels: map[string]string{},

@@ -45,7 +45,7 @@ func ExampleBackup() {
 	// Output:
 	// Command: --full-if-older-than 3W --s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption --allow-source-mismatch --name Test /back /foo
 	// Mounts: /mnt duplicity_cache:/root/.cache/duplicity
-	// Metrics: conplicity{volume="Test",what="backupExitCode"} 42
+	// Metrics: bivac{volume="Test",what="backupExitCode"} 42
 }
 
 // ExampleRemoveOld checks the removal of old backups
@@ -71,7 +71,7 @@ func ExampleVerify() {
 	// Output:
 	// Command: verify --s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption --allow-source-mismatch --name Test /foo /back
 	// Mounts: /mnt duplicity_cache:/root/.cache/duplicity
-	// Metrics: conplicity{volume="Test",what="verifyExitCode"} 42
+	// Metrics: bivac{volume="Test",what="verifyExitCode"} 42
 }
 
 // ExampleStatus checks the status of a backup
@@ -82,8 +82,8 @@ func ExampleStatus() {
 	// Output:
 	// Command: collection-status --s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption --name Test /foo
 	// Mounts: /mnt duplicity_cache:/root/.cache/duplicity
-	// Metrics: conplicity{volume="Test",what="lastBackup"} 1136214245
-	// conplicity{volume="Test",what="lastFullBackup"} 1136214245
+	// Metrics: bivac{volume="Test",what="lastBackup"} 1136214245
+	// bivac{volume="Test",what="lastFullBackup"} 1136214245
 }
 
 // ExampleStatusNoFullBackup checks the status of a backup
@@ -94,8 +94,8 @@ func ExampleStatusNoFullBackup() {
 	// Output:
 	// Command: collection-status --s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption --name Test /foo
 	// Mounts: /mnt duplicity_cache:/root/.cache/duplicity
-	// Metrics: conplicity{volume="Test",what="lastBackup"} 0
-	// conplicity{volume="Test",what="lastFullBackup"} 0
+	// Metrics: bivac{volume="Test",what="lastBackup"} 0
+	// bivac{volume="Test",what="lastFullBackup"} 0
 }
 
 // TestStatusNoFullBackupDate checks the status of a backup

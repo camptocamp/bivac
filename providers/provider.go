@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/orchestrators"
-	"github.com/camptocamp/conplicity/volume"
+	"github.com/camptocamp/bivac/orchestrators"
+	"github.com/camptocamp/bivac/volume"
 )
 
 // A Provider is an interface for providers

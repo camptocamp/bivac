@@ -2,8 +2,8 @@ package engines
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/camptocamp/conplicity/orchestrators"
-	"github.com/camptocamp/conplicity/volume"
+	"github.com/camptocamp/bivac/orchestrators"
+	"github.com/camptocamp/bivac/volume"
 )
 
 // Engine implements a backup engine interface
