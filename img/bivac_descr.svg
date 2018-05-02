@@ -9,16 +9,16 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="131.02977mm"
-   height="120.36002mm"
-   viewBox="0 0 464.27871 426.47249"
+   width="126.79118mm"
+   height="127.28776mm"
+   viewBox="0 0 449.26008 451.01957"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="bivac_tent3_cont_orange_green.svg"
-   inkscape:export-filename="/Users/jimena/Pictures/Bivac/bivac_tent3_cont_orange_green3_front.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   sodipodi:docname="bivac_tent3_cont_orange_green_descr.svg"
+   inkscape:export-filename="/Users/jimena/Pictures/Bivac/bivac_tent3_cont_orange_green3_front_descr_400.png"
+   inkscape:export-xdpi="80.129997"
+   inkscape:export-ydpi="80.129997">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -28,16 +28,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.9899495"
-     inkscape:cx="251.83098"
-     inkscape:cy="224.32401"
+     inkscape:zoom="1.4"
+     inkscape:cx="238.92243"
+     inkscape:cy="252.86442"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     fit-margin-top="5"
-     fit-margin-left="5"
-     fit-margin-right="5"
-     fit-margin-bottom="5"
+     fit-margin-top="3"
+     fit-margin-left="3"
+     fit-margin-right="3"
+     fit-margin-bottom="3"
      inkscape:window-width="1440"
      inkscape:window-height="791"
      inkscape:window-x="0"
@@ -60,7 +60,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-36.343344,-466.69601)">
+     transform="translate(-44.275425,-473.53875)">
     <path
        sodipodi:type="star"
        style="fill:#d7f4d7;fill-opacity:1;stroke:none"
@@ -78,42 +78,45 @@
        d="m 356.30182,781.88528 -143.18178,0 -143.181778,0 71.590888,-123.99906 71.59089,-123.99906 71.59089,123.99906 z"
        inkscape:transform-center-y="-45.373659"
        transform="matrix(0.83420666,0,0,1.0977574,13.999778,-72.435103)" />
-    <rect
-       y="710.42737"
-       x="158.91537"
-       height="73.741135"
-       width="73.741135"
-       id="rect6623"
-       style="fill:#8a3500;fill-opacity:1;stroke:none" />
     <g
-       id="g6595"
-       transform="translate(0,-1.3552695)">
+       id="g4201">
       <rect
-         y="711.78265"
-         x="141.83572"
-         height="73.741135"
+         style="fill:#8a3500;fill-opacity:1;stroke:none"
+         id="rect6623"
          width="73.741135"
-         id="rect6547"
-         style="fill:#8a3500;fill-opacity:1;stroke:none" />
-      <path
-         inkscape:connector-curvature="0"
-         id="rect5323"
-         d="m 145.87621,715.82314 0,65.66016 65.66016,0 0,-65.66016 -65.66016,0 z m 6.30469,8.08008 5.05078,0 0,49.49805 -5.05078,0 0,-49.49805 z m 9.59961,0 5.05078,0 0,49.49805 -5.05078,0 0,-49.49805 z m 9.59961,0 5.05078,0 0,49.49805 -5.05078,0 0,-49.49805 z m 9.60156,0 5.05078,0 0,49.49805 -5.05078,0 0,-49.49805 z m 9.59961,0 5.05078,0 0,49.49805 -5.05078,0 0,-49.49805 z m 9.59961,0 5.05078,0 0,49.49805 -5.05078,0 0,-49.49805 z"
-         style="fill:#ff8133;fill-opacity:1" />
+         height="73.741135"
+         x="158.91537"
+         y="710.42737" />
+      <g
+         transform="translate(0,-1.3552695)"
+         id="g6595">
+        <rect
+           style="fill:#8a3500;fill-opacity:1;stroke:none"
+           id="rect6547"
+           width="73.741135"
+           height="73.741135"
+           x="141.83572"
+           y="711.78265" />
+        <path
+           style="fill:#ff8133;fill-opacity:1"
+           d="m 145.87621,715.82314 0,65.66016 65.66016,0 0,-65.66016 -65.66016,0 z m 6.30469,8.08008 5.05078,0 0,49.49805 -5.05078,0 0,-49.49805 z m 9.59961,0 5.05078,0 0,49.49805 -5.05078,0 0,-49.49805 z m 9.59961,0 5.05078,0 0,49.49805 -5.05078,0 0,-49.49805 z m 9.60156,0 5.05078,0 0,49.49805 -5.05078,0 0,-49.49805 z m 9.59961,0 5.05078,0 0,49.49805 -5.05078,0 0,-49.49805 z m 9.59961,0 5.05078,0 0,49.49805 -5.05078,0 0,-49.49805 z"
+           id="rect5323"
+           inkscape:connector-curvature="0" />
+      </g>
     </g>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:37.78108597px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#215419;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
-       x="49.43486"
-       y="825.91315"
+       style="font-style:normal;font-weight:normal;font-size:37.7796402px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#215419;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="50.33028"
+       y="825.91321"
        id="text3336"
        sodipodi:linespacing="125%"
        transform="scale(0.94452716,1.0587308)"><tspan
          sodipodi:role="line"
          id="tspan3338"
-         x="49.43486"
-         y="825.91315"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:97.5px;font-family:'20 db';-inkscape-font-specification:'20 db';fill:#215419;fill-opacity:1;">BIVAC</tspan></text>
+         x="50.33028"
+         y="825.91321"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:97.49627686px;font-family:'20 db';-inkscape-font-specification:'20 db';fill:#215419;fill-opacity:1">BIVAC</tspan></text>
     <rect
        style="fill:#388f2b;fill-opacity:1;stroke:none"
        id="rect6585"
@@ -151,5 +154,24 @@
        height="4"
        x="54.905552"
        y="784.16852" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40.0840683px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#215419;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="52.690701"
+       y="907.56128"
+       id="text3346"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3348"
+         x="52.690701"
+         y="907.56128"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:27.68305969px;font-family:'Densia Sans';-inkscape-font-specification:'Densia Sans';fill:#215419;fill-opacity:1">Backup Interface for Volumes Attached to Containers</tspan></text>
+    <rect
+       y="878.16852"
+       x="54.905552"
+       height="4"
+       width="428"
+       id="rect4171"
+       style="fill:#215419;fill-opacity:1" />
   </g>
 </svg>
