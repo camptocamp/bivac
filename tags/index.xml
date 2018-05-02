@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Tags on Conplicity</title>
-    <link>http://camptocamp.github.io/conplicity/tags/</link>
-    <description>Recent content in Tags on Conplicity</description>
+    <title>Tags on Bivac</title>
+    <link>http://camptocamp.github.io/bivac/tags/</link>
+    <description>Recent content in Tags on Bivac</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     
-	<atom:link href="http://camptocamp.github.io/conplicity/tags/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://camptocamp.github.io/bivac/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
   </channel>

@@ -3,17 +3,17 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://camptocamp.github.io/conplicity/categories/</loc>
+    <loc>http://camptocamp.github.io/bivac/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://camptocamp.github.io/conplicity/</loc>
+    <loc>http://camptocamp.github.io/bivac/categories/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://camptocamp.github.io/conplicity/tags/</loc>
+    <loc>http://camptocamp.github.io/bivac/tags/</loc>
     <priority>0</priority>
   </url>
   

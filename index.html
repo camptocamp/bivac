@@ -8,7 +8,7 @@
 	<meta name="generator" content="Hugo 0.38-DEV" />
             <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title> Conplicity</title>
+    <title> Bivac</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <meta name="author" content="Camptocamp">
@@ -19,18 +19,18 @@
 
     
     
-    <meta name="og:site_name" content="Conplicity">
-    <meta name="og:title" content="Conplicity">
-    <meta name="og:url" content="http://camptocamp.github.io/conplicity/">
-    <meta name="og:image" content="http://camptocamp.github.io/conplicity/images/">
-    <meta name="twitter:title" content="Conplicity" />
-    <meta name="twitter:url" content="http://camptocamp.github.io/conplicity/" />
-    <meta name="twitter:image" content="http://camptocamp.github.io/conplicity/images/" />
+    <meta name="og:site_name" content="Bivac">
+    <meta name="og:title" content="Bivac">
+    <meta name="og:url" content="http://camptocamp.github.io/bivac/">
+    <meta name="og:image" content="http://camptocamp.github.io/bivac/images/">
+    <meta name="twitter:title" content="Bivac" />
+    <meta name="twitter:url" content="http://camptocamp.github.io/bivac/" />
+    <meta name="twitter:image" content="http://camptocamp.github.io/bivac/images/" />
     <meta name="twitter:card" content="" />
     
     
     
-    <link rel="canonical" href="http://camptocamp.github.io/conplicity/"/>
+    <link rel="canonical" href="http://camptocamp.github.io/bivac/"/>
 
     
     <link rel="shortcut icon" href="favicon.ico">
@@ -68,7 +68,7 @@
                 <div class="navbar-header">
                     
                     <a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar"><i></i></a>
-                    <a class="navbar-brand" href="index.html">Conplicity</a>
+                    <a class="navbar-brand" href="index.html">Bivac</a>
                 </div>
                 <div id="navbar" class="navbar-collapse collapse">
                   <ul class="nav navbar-nav navbar-right">
@@ -111,12 +111,11 @@
 				<div class="text-inner">
 					<div class="row">
 						<div class="col-md-8 col-md-offset-2">
-							<h1 class="to-animate"><p><img src="images/conplicity.png" alt="Conplicity" /> <p>Conplicity</p></p>
-</h1>
-							<h2 class="to-animate"><p>Automatic backups for Docker containers.</p>
+							<h1 class="to-animate"><img src="images/bivac.png" alt="Bivac" /></h1>
+							<h2 class="to-animate"><p><em>/bee-vac/</em> French word imported by Swiss mercenaries from the German root <em>bewachen</em> (to keep guard): an extra guard added to a military camp at night to increase its safety.</p>
 
-<p><a href="https://github.com/camptocamp/conplicity"><img src="https://img.shields.io/github/stars/camptocamp/conplicity.svg?style=social&amp;logo=github&amp;label=Stars" alt="GitHub stars" /></a>
-<a href="https://hub.docker.com/r/camptocamp/conplicity/"><img src="https://img.shields.io/docker/pulls/camptocamp/conplicity.svg" alt="Docker Pulls" /></a>
+<p><a href="https://github.com/camptocamp/bivac"><img src="https://img.shields.io/github/stars/camptocamp/bivac.svg?style=social&amp;logo=github&amp;label=Stars" alt="GitHub stars" /></a>
+<a href="https://hub.docker.com/r/camptocamp/bivac/"><img src="https://img.shields.io/docker/pulls/camptocamp/bivac.svg" alt="Docker Pulls" /></a>
 <a href="http://www.camptocamp.com"><img src="https://img.shields.io/badge/by-camptocamp-fb7047.svg" alt="By Camptocamp" /></a></p>
 </h2>
 						</div>
@@ -137,7 +136,7 @@
 					<div class="fh5co-text">
 						<i class="fh5co-intro-icon icon-bulb"></i>
 						<h2>Install from source</h2>
-                        <p><pre><code class="language-shell">$ go get github.com/camptocamp/conplicity
+                        <p><pre><code class="language-shell">$ go get github.com/camptocamp/bivac
 </code></pre>
 </p>
                         
@@ -150,7 +149,7 @@
 					<div class="fh5co-text">
 						<i class="fh5co-intro-icon icon-wrench"></i>
 						<h2>Example usage</h2>
-                        <p><pre><code class="language-shell">$ conplicity \
+                        <p><pre><code class="language-shell">$ bivac \
   -u s3+http://s3-eu-west-1.amazonaws.com/&lt;my_bucket&gt;/&lt;my_dir&gt; \
   --aws-access-key-id=&lt;my_key_id&gt; \
   --aws-secret-key-id=&lt;my_secret_key&gt;
@@ -167,10 +166,10 @@
 						<i class="fh5co-intro-icon icon-rocket"></i>
 						<h2>Launch with Docker</h2>
                         <p><pre><code class="language-shell">$ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
-   -e CONPLICITY_TARGET_URL=s3+http://s3-eu-west-1.amazonaws.com/&lt;my_bucket&gt;/&lt;my_dir&gt; \
+   -e BIVAC_TARGET_URL=s3+http://s3-eu-west-1.amazonaws.com/&lt;my_bucket&gt;/&lt;my_dir&gt; \
    -e AWS_ACCESS_KEY_ID=&lt;my_key_id&gt; \
    -e AWS_SECRET_ACCESS_KEY=&lt;my_secret_key&gt; \
-     camptocamp/conplicity
+     camptocamp/bivac
 </code></pre>
 </p>
                         
@@ -195,7 +194,7 @@
 					<h2 class=" left-border to-animate">Features</h2>
 					<div class="row">
 						<div class="col-md-8 subtext to-animate">
-							<h3>Conplicity allows to backup Docker volumes using the Duplicity, RClone, and Restic engines.</h3>
+							<h3>Bivac allows to backup Container volumes using the Duplicity, RClone, and Restic engines.</h3>
 						</div>
 					</div>
 				</div>
@@ -204,29 +203,29 @@
 			
 				<div class="col-md-6 col-sm-6 fh5co-service to-animate">
 					<i class="icon to-animate-2 icon-anchor"></i>
-					<h3>Built for Docker</h3>
-					<p>Conplicity plugs onto the Docker socket to detect local volumes, automatically.</p>
+					<h3>Docker and Kubernetes Support</h3>
+					<p>Bivac plugs onto the Docker socket or the Kubernetes API to detect volumes and back them up, automatically.</p>
 				</div>
 				<div class="clearfix visible-sm-block"></div>
 			
 				<div class="col-md-6 col-sm-6 fh5co-service to-animate">
 					<i class="icon to-animate-2 icon-speedometer"></i>
 					<h3>Prometheus Ready</h3>
-					<p>Prometheus Support is built-in to easily ship metrics each time conplicity runs.</p>
+					<p>Prometheus Support is built-in to easily ship metrics each time bivac runs.</p>
 				</div>
 				<div class="clearfix visible-sm-block"></div>
 			
 				<div class="col-md-6 col-sm-6 fh5co-service to-animate">
 					<i class="icon to-animate-2 icon-cloud-upload"></i>
 					<h3>Multiple Clouds</h3>
-					<p>Conplicity supports both AWS and Swift as bucket providers.</p>
+					<p>Bivac supports both AWS and Swift as bucket providers.</p>
 				</div>
 				<div class="clearfix visible-sm-block"></div>
 			
 				<div class="col-md-6 col-sm-6 fh5co-service to-animate">
 					<i class="icon to-animate-2 icon-puzzle"></i>
 					<h3>Multiple Engines</h3>
-					<p>Conplicity uses Duplicity, RClone and Restic as backends to give you full control of your backup mode.</p>
+					<p>Bivac uses Duplicity, RClone and Restic as backends to give you full control of your backup mode.</p>
 				</div>
 				<div class="clearfix visible-sm-block"></div>
 			
