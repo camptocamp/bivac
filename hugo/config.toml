@@ -92,7 +92,7 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
   [params.services]
     enable = true
     title = "Features"
-    description = "Bivac allows to backup Container volumes using the Duplicity, RClone, and Restic engines."
+    description = "Bivac allows to backup Container volumes using the Restic, RClone, and Duplicity engines."
 
     [[params.services.item]]
       title = "Docker and Kubernetes Support"
@@ -111,7 +111,7 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
 
     [[params.services.item]]
       title = "Multiple Engines"
-      description = "Bivac uses Duplicity, RClone and Restic as backends to give you full control of your backup mode."
+      description = "Bivac uses Restic, RClone and Duplicity as backends to give you full control of your backup mode."
       icon = "icon-puzzle"
 
   # About section
