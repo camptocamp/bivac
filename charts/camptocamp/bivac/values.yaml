@@ -8,7 +8,7 @@ schedule: "0 * * * *"
 
 image:
   repository: camptocamp/bivac
-  tag: stable
+  tag: latest
   pullPolicy: Always
 
 resources: {}
