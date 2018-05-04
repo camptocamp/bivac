@@ -64,6 +64,13 @@ type Config struct {
 		Namespace  string `long:"k8s-namespace" description:"Namespace where you want to run Bivac." env:"K8S_NAMESPACE"`
 		KubeConfig string `long:"k8s-kubeconfig" description:"Path to your kubeconfig file." env:"K8S_KUBECONFIG"`
 	} `group:"Kubernetes Options"`
+
+	Cattle struct {
+		Environment string `long:"cattle-env" description:"The Cattle environment." env:"CATTLE_ENV"`
+		AccessKey   string `long:"cattle-accesskey" description:"The Cattle access key." env:"CATTLE_ACCESS_KEY"`
+		SecretKey   string `long:"cattle-secretkey" description:"The Cattle secretkey." env:"CATTLE_SECRET_KEY"`
+		URL         string `long:"cattle-url" description:"The Cattle url." env:"CATTLE_URL"`
+	} `group:"Cattle Options"`
 }
 
 // LoadConfig loads the config from flags & environment

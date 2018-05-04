@@ -18,13 +18,15 @@ type Orchestrator interface {
 // GetOrchestrator returns the Orchestrator as specified in configuration
 func GetOrchestrator(c *handler.Bivac) Orchestrator {
 	orch := c.Config.Orchestrator
-	log.Debugf("orchestrator=%s", orch)
+	log.Debugf("Using orchestrator: %s", orch)
 
 	switch orch {
 	case "docker":
 		return NewDockerOrchestrator(c)
 	case "kubernetes":
 		return NewKubernetesOrchestrator(c)
+	case "cattle":
+		return NewCattleOrchestrator(c)
 	}
 
 	log.Fatalf("Unknown orchestrator %s", orch)
