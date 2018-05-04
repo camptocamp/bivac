@@ -10,12 +10,10 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/camptocamp/bivac/handler"
-	"github.com/camptocamp/bivac/util"
 	"github.com/camptocamp/bivac/volume"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/mount"
 
 	log "github.com/Sirupsen/logrus"
 	docker "github.com/docker/docker/client"
@@ -34,7 +32,9 @@ func NewDockerOrchestrator(c *handler.Bivac) (o *DockerOrchestrator) {
 		Handler: c,
 	}
 	o.Client, err = docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
-	util.CheckErr(err, "failed to create a Docker client: %v", "fatal")
+	if err != nil {
+		log.Fatalf("failed to create a Docker client: %s", err)
+	}
 	return
 }
 
@@ -105,16 +105,14 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 		"environment": strings.Join(envVars, ", "),
 	}).Debug("Creating container")
 
-	var mounts []mount.Mount
+	var binds []string
 
 	for _, v := range volumes {
-		m := mount.Mount{
-			Type:     "volume",
-			Target:   v.Mountpoint,
-			Source:   v.Name,
-			ReadOnly: v.ReadOnly,
+		if v.ReadOnly == true {
+			binds = append(binds, v.Name+":"+v.Mountpoint+":ro")
+		} else {
+			binds = append(binds, v.Name+":"+v.Mountpoint)
 		}
-		mounts = append(mounts, m)
 	}
 
 	container, err := o.Client.ContainerCreate(
@@ -131,7 +129,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 			Tty:          true,
 		},
 		&container.HostConfig{
-			Mounts: mounts,
+			Binds: binds,
 		}, nil, "",
 	)
 	if err != nil {
@@ -143,7 +141,8 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 	log.Debugf("Launching with '%v'...", strings.Join(cmd, " "))
 	err = o.Client.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
 	if err != nil {
-		err = fmt.Errorf("failed to start container: %v", err)
+		log.Errorf("failed to start container: %s", err)
+		return
 	}
 
 	var exited bool
@@ -240,6 +239,7 @@ func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string
 	}
 
 	list := o.Handler.Config.VolumesBlacklist
+	sort.Strings(list)
 	i := sort.SearchStrings(list, vol.Name)
 	if i < len(list) && list[i] == vol.Name {
 		return true, "blacklisted", "blacklist config"
@@ -279,13 +279,16 @@ func pullImage(c *docker.Client, image string) (err error) {
 	return nil
 }
 
-func removeContainer(c *docker.Client, id string) {
+func removeContainer(c *docker.Client, id string) (err error) {
 	log.WithFields(log.Fields{
 		"container": id,
 	}).Debug("Removing container")
-	err := c.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{
+	err = c.ContainerRemove(context.Background(), id, types.ContainerRemoveOptions{
 		Force:         true,
 		RemoveVolumes: true,
 	})
-	util.CheckErr(err, "Failed to remove container "+id+": %v", "error")
+	if err != nil {
+		log.Errorf("failed to remove container %s: %s", id, err)
+	}
+	return
 }
