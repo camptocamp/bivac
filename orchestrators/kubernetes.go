@@ -160,11 +160,12 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 			Volumes:       kvs,
 			Containers: []apiv1.Container{
 				{
-					Name:         "bivac-worker",
-					Image:        image,
-					Args:         cmd,
-					Env:          envVars,
-					VolumeMounts: kvms,
+					Name:            "bivac-worker",
+					Image:           image,
+					Args:            cmd,
+					Env:             envVars,
+					VolumeMounts:    kvms,
+					ImagePullPolicy: apiv1.PullAlways,
 				},
 			},
 		},
