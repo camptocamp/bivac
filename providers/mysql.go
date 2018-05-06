@@ -16,7 +16,7 @@ func (p *MySQLProvider) GetPrepareCommand(volDestination string) []string {
 	return []string{
 		"sh",
 		"-c",
-		"mkdir -p " + volDestination + "/backups && mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD > " + volDestination + "/backups/all.sql",
+		"mkdir -p " + volDestination + "/backups && mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD",
 	}
 }
 

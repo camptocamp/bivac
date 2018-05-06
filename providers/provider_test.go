@@ -39,7 +39,7 @@ func TestPrepareBackupWithDocker(t *testing.T) {
 
 	log.SetLevel(log.DebugLevel)
 
-	err := PrepareBackup(p)
+	_, err := PrepareBackup(p)
 
 	if err != nil {
 		t.Fatalf("Expected no error, got error: %v", err)

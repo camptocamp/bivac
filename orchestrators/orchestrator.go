@@ -16,6 +16,7 @@ type Orchestrator interface {
 	LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error)
 	GetMountedVolumes() ([]*volume.MountedVolumes, error)
 	ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) error
+	ContainerPrepareBackup(mountedVolumes *volume.MountedVolumes, command []string) (backupVolume *volume.Volume, err error)
 }
 
 // GetOrchestrator returns the Orchestrator based on configuration or environment if not defined

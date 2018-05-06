@@ -54,13 +54,19 @@ func backupVolume(o orchestrators.Orchestrator, vol *volume.Volume) (err error) 
 		"provider": p.GetName(),
 	}).Info("Found data provider")
 
-	err = providers.PrepareBackup(p)
+	vp, err := providers.PrepareBackup(p)
 	if err != nil {
 		err = fmt.Errorf("failed to prepare backup: %v", err)
 		return
 	}
 
-	e := engines.GetEngine(o, vol)
+	var e engines.Engine
+	if vp != nil {
+		e = engines.GetEngine(o, vp)
+	} else {
+		e = engines.GetEngine(o, vol)
+	}
+
 	log.WithFields(log.Fields{
 		"volume": vol.Name,
 		"engine": e.GetName(),

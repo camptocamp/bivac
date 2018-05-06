@@ -235,6 +235,114 @@ func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes
 	return
 }
 
+// ContainerPrepareBackup executes a command to backup something into a volume
+func (o *DockerOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.MountedVolumes, command []string) (backupVolume *volume.Volume, err error) {
+	exec, err := o.Client.ContainerExecCreate(context.Background(), mountedVolumes.ContainerID, types.ExecConfig{
+		Cmd:          command,
+		AttachStdout: true,
+		AttachStderr: true,
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to create exec: %v", err)
+		return
+	}
+
+	resp, err := o.Client.ContainerExecAttach(context.Background(), exec.ID, types.ExecConfig{
+		Cmd:          command,
+		AttachStdout: true,
+		AttachStderr: true,
+	})
+	if err != nil {
+		log.Errorf("failed to attach container while executing backup command: %s", err)
+		return
+	}
+	body, err := ioutil.ReadAll(resp.Reader)
+	if err != nil {
+		log.Errorf("failed to read output from backup command: %s", err)
+	}
+	defer resp.Close()
+
+	inspect, err := o.Client.ContainerExecInspect(context.Background(), exec.ID)
+	if err != nil {
+		err = fmt.Errorf("failed to check prepare command exit code: %v", err)
+		return
+	}
+
+	if c := inspect.ExitCode; c != 0 {
+		err = fmt.Errorf("prepare command exited with code %v", c)
+		return
+	}
+
+	err = pullImage(o.Client, "busybox")
+	if err != nil {
+		err = fmt.Errorf("failed to pull image: %v", err)
+		return
+	}
+
+	nv := &volume.Volume{
+		Config:     &volume.Config{},
+		Mountpoint: "/data",
+		Name:       "bivac-data",
+	}
+
+	backupVolume = volume.NewVolume(nv, o.Handler.Config, o.Handler.Hostname)
+
+	cmd := []string{
+		"/bin/sh",
+		"-c",
+		"cat > /data/backup",
+	}
+
+	container, err := o.Client.ContainerCreate(
+		context.Background(),
+		&container.Config{
+			Cmd:          cmd,
+			Image:        "busybox",
+			OpenStdin:    true,
+			StdinOnce:    true,
+			AttachStdin:  true,
+			AttachStdout: false,
+			AttachStderr: false,
+		},
+		&container.HostConfig{
+			Binds: []string{
+				"bivac-data:/data",
+			},
+		}, nil, "",
+	)
+	if err != nil {
+		err = fmt.Errorf("failed to create container: %v", err)
+		return
+	}
+	defer removeContainer(o.Client, container.ID)
+
+	err = o.Client.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to start container: %v", err)
+	}
+
+	resp, err = o.Client.ContainerAttach(context.Background(), container.ID, types.ContainerAttachOptions{
+		Stream: true,
+		Stdin:  true,
+	})
+	if err != nil {
+		log.Errorf("failed to attach container while executing backup command: %s", err)
+		return
+	}
+	_, err = resp.Conn.Write(body)
+	if err != nil {
+		log.Errorf("failed to write output of backup command: %s", err)
+	}
+	defer resp.Close()
+
+	err = o.Client.ContainerKill(context.Background(), container.ID, "SIGKILL")
+	if err != nil {
+		log.Errorf("failed to stop container %s: %s", container.ID, err)
+	}
+
+	return
+}
+
 func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" || vol.Name == "lost+found" {
 		return true, "unnamed", ""

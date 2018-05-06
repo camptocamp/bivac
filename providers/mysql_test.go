@@ -26,7 +26,7 @@ func TestMySQLGetPrepareCommand(t *testing.T) {
 	expected := []string{
 		"sh",
 		"-c",
-		"mkdir -p /mnt/backups && mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD > /mnt/backups/all.sql",
+		"mkdir -p /mnt/backups && mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD",
 	}
 	got := (&MySQLProvider{}).GetPrepareCommand(mount)
 	if len(got) != 3 {

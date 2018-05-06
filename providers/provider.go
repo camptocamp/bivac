@@ -80,37 +80,38 @@ func GetProvider(o orchestrators.Orchestrator, v *volume.Volume) Provider {
 }
 
 // PrepareBackup sets up the data before backup
-func PrepareBackup(p Provider) (err error) {
+func PrepareBackup(p Provider) (backupVolume *volume.Volume, err error) {
 	p.SetVolumeBackupDir()
 
 	o := p.GetOrchestrator()
 
 	vol := p.GetVolume()
 
-	containers, err := o.GetMountedVolumes()
+	mountedVolumes, err := o.GetMountedVolumes()
 	if err != nil {
 		err = fmt.Errorf("failed to list containers: %v", err)
 		return
 	}
 
-	for _, container := range containers {
-		for volName, volDestination := range container.Volumes {
+	for _, mountedVolume := range mountedVolumes {
+		for volName, volDestination := range mountedVolume.Volumes {
 			if volName == vol.Name {
 				log.WithFields(log.Fields{
 					"volume":    volName,
-					"container": container.ContainerID,
+					"container": mountedVolume.ContainerID,
 				}).Debug("Container found using volume")
 
 				cmd := p.GetPrepareCommand(volDestination)
 				if cmd != nil {
-					err = o.ContainerExec(container, cmd)
+					backupVolume, err = o.ContainerPrepareBackup(mountedVolume, cmd)
 					if err != nil {
-						return fmt.Errorf("failed to execute command in container: %v", err)
+						err = fmt.Errorf("failed to execute command in container: %v", err)
+						return
 					}
 				} else {
 					log.WithFields(log.Fields{
 						"volume":    volName,
-						"container": container.ContainerID,
+						"container": mountedVolume.ContainerID,
 					}).Info("No prepare command to execute in container")
 				}
 			}

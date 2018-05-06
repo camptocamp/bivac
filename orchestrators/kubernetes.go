@@ -301,6 +301,11 @@ func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVol
 	return
 }
 
+// ContainerPrepareBackup executes a command in a container
+func (o *KubernetesOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.MountedVolumes, command []string) (backupVolume *volume.Volume, err error) {
+	return
+}
+
 func (o *KubernetesOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string, string) {
 
 	defaultBlacklistedVolumes := []string{
