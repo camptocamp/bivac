@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"sort"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/camptocamp/bivac/handler"
@@ -115,7 +116,8 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 		Command:     cmd,
 		Environment: environment,
 		RestartPolicy: &client.RestartPolicy{
-			Name: "no",
+			MaximumRetryCount: 1,
+			Name:              "on-failure",
 		},
 		DataVolumes: cvs,
 	})
@@ -125,14 +127,28 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 
 	defer o.DeleteWorker(container)
 
+	stopped := false
 	terminated := false
 	for !terminated {
 		container, err := o.Client.Container.ById(container.Id)
 		if err != nil {
 			log.Errorf("failed to inspect worker: %s", err)
 		}
+
+		// This workaround is awful but it's the only way to know if the container failed.
 		if container.State == "stopped" {
-			terminated = true
+			if container.StartCount == 1 {
+				if stopped == false {
+					stopped = true
+					time.Sleep(5 * time.Second)
+				} else {
+					terminated = true
+					state = 0
+				}
+			} else {
+				state = 1
+				terminated = true
+			}
 		}
 	}
 
