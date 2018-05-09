@@ -156,8 +156,9 @@ volumes directory for this feature to work, by adding `-v
 
 Bivac supports various engines for performing the backup:
 
+* Restic
+* RClone: use for heavy data that Restic or Duplicity cannot manage efficiently
 * Duplicity
-* RClone: use for heavy data that Duplicity cannot manage efficiently
 
 You can set the engine with either:
 
