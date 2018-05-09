@@ -134,22 +134,13 @@
 					<div class="overlay-darker"></div>
 					<div class="overlay"></div>
 					<div class="fh5co-text">
-						<i class="fh5co-intro-icon icon-bulb"></i>
-						<h2>Install from source</h2>
-                        <p><pre><code class="language-shell">$ go get github.com/camptocamp/bivac
-</code></pre>
-</p>
-                        
-					</div>
-				</div>
-				
-				<div class="fh5co-block to-animate" style="background-image: url(images/);">
-					<div class="overlay-darker"></div>
-					<div class="overlay"></div>
-					<div class="fh5co-text">
 						<i class="fh5co-intro-icon icon-wrench"></i>
-						<h2>Example usage</h2>
-                        <p><pre><code class="language-shell">$ bivac \
+						<h2>Install and use locally</h2>
+                        <p><pre><code class="language-shell"># install from source
+$ go get github.com/camptocamp/bivac
+
+# launch locally to backup local Docker volumes
+$ bivac \
   -u s3+http://s3-eu-west-1.amazonaws.com/&lt;my_bucket&gt;/&lt;my_dir&gt; \
   --aws-access-key-id=&lt;my_key_id&gt; \
   --aws-secret-key-id=&lt;my_secret_key&gt;
@@ -164,12 +155,26 @@
 					<div class="overlay"></div>
 					<div class="fh5co-text">
 						<i class="fh5co-intro-icon icon-rocket"></i>
-						<h2>Launch with Docker</h2>
+						<h2>Launch as a Docker Container</h2>
                         <p><pre><code class="language-shell">$ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
    -e BIVAC_TARGET_URL=s3+http://s3-eu-west-1.amazonaws.com/&lt;my_bucket&gt;/&lt;my_dir&gt; \
    -e AWS_ACCESS_KEY_ID=&lt;my_key_id&gt; \
    -e AWS_SECRET_ACCESS_KEY=&lt;my_secret_key&gt; \
      camptocamp/bivac
+</code></pre>
+</p>
+                        
+					</div>
+				</div>
+				
+				<div class="fh5co-block to-animate" style="background-image: url(images/);">
+					<div class="overlay-darker"></div>
+					<div class="overlay"></div>
+					<div class="fh5co-text">
+						<i class="fh5co-intro-icon icon-anchor"></i>
+						<h2>Launch on Kubernetes using Helm</h2>
+                        <p><pre><code class="language-shell">$ git clone https://github.com/camptocamp/bivac
+$ helm install ./bivac/charts/camptocamp/bivac
 </code></pre>
 </p>
                         
