@@ -2,6 +2,7 @@ package orchestrators
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"sort"
 	"strings"
@@ -14,15 +15,33 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/network"
+	volumetypes "github.com/docker/docker/api/types/volume"
 
 	log "github.com/Sirupsen/logrus"
 	docker "github.com/docker/docker/client"
 )
 
+type dockerInterface interface {
+	VolumeInspect(context.Context, string) (types.Volume, error)
+	VolumeList(context.Context, filters.Args) (volumetypes.VolumesListOKBody, error)
+	ContainerCreate(context.Context, *container.Config, *container.HostConfig, *network.NetworkingConfig, string) (container.ContainerCreateCreatedBody, error)
+	ContainerStart(context.Context, string, types.ContainerStartOptions) error
+	ContainerInspect(context.Context, string) (types.ContainerJSON, error)
+	ContainerLogs(context.Context, string, types.ContainerLogsOptions) (io.ReadCloser, error)
+	ContainerList(context.Context, types.ContainerListOptions) ([]types.Container, error)
+	ContainerExecCreate(context.Context, string, types.ExecConfig) (types.IDResponse, error)
+	ContainerExecStart(context.Context, string, types.ExecStartCheck) error
+	ContainerExecInspect(context.Context, string) (types.ContainerExecInspect, error)
+	ContainerRemove(context.Context, string, types.ContainerRemoveOptions) error
+	ImagePull(context.Context, string, types.ImagePullOptions) (io.ReadCloser, error)
+	ImageInspectWithRaw(context.Context, string) (types.ImageInspect, []byte, error)
+}
+
 // DockerOrchestrator implements a container orchestrator for Docker
 type DockerOrchestrator struct {
 	Handler *handler.Bivac
-	Client  *docker.Client
+	Client  dockerInterface
 }
 
 // NewDockerOrchestrator creates a Docker client
@@ -252,7 +271,7 @@ func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string
 	return false, "", ""
 }
 
-func pullImage(c *docker.Client, image string) (err error) {
+func pullImage(c dockerInterface, image string) (err error) {
 	if _, _, err = c.ImageInspectWithRaw(context.Background(), image); err != nil {
 		// TODO: output pull to logs
 		log.WithFields(log.Fields{
@@ -279,7 +298,7 @@ func pullImage(c *docker.Client, image string) (err error) {
 	return nil
 }
 
-func removeContainer(c *docker.Client, id string) (err error) {
+func removeContainer(c dockerInterface, id string) (err error) {
 	log.WithFields(log.Fields{
 		"container": id,
 	}).Debug("Removing container")

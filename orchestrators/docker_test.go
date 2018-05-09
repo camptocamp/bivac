@@ -1,42 +1,22 @@
 package orchestrators
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
+	gomock "github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/net/context"
 	"reflect"
 	"testing"
-	"time"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/gorilla/mux"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
+	volumetypes "github.com/docker/docker/api/types/volume"
 
 	"github.com/camptocamp/bivac/config"
 	"github.com/camptocamp/bivac/handler"
+	"github.com/camptocamp/bivac/metrics"
+	"github.com/camptocamp/bivac/mocks"
 	"github.com/camptocamp/bivac/volume"
 )
-
-const dockerEndpoint = "http://127.0.0.1:9878"
-
-func startFakeHTTPServer(r http.Handler) *http.Server {
-	srv := &http.Server{
-		Handler: r,
-		Addr:    "127.0.0.1:9878",
-	}
-
-	go func() {
-		srv.ListenAndServe()
-	}()
-
-	time.Sleep(100 * time.Millisecond)
-
-	return srv
-}
-
-type dockerConfigWrapper struct {
-	*container.Config
-	HostConfig *container.HostConfig
-}
 
 func sameStringSlice(x, y []string) bool {
 	if len(x) != len(y) {
@@ -64,19 +44,6 @@ func sameStringSlice(x, y []string) bool {
 	return false
 }
 
-// NewDockerOrchestrator
-func TestNewDockerOrchestratorValidEndpoint(t *testing.T) {
-	c := &handler.Bivac{
-		Config: &config.Config{},
-	}
-	c.Config.Docker.Endpoint = dockerEndpoint
-	o := NewDockerOrchestrator(c)
-
-	if o.Client == nil {
-		t.Fatalf("Expect docker client, got nil")
-	}
-}
-
 // GetName
 func TestDockerGetName(t *testing.T) {
 	expectedResult := "Docker"
@@ -95,7 +62,6 @@ func TestDockerGetHandler(t *testing.T) {
 	fakeHandler := &handler.Bivac{
 		Config: &config.Config{},
 	}
-	fakeHandler.Config.Docker.Endpoint = dockerEndpoint
 
 	expectedResult := fakeHandler
 
@@ -111,34 +77,91 @@ func TestDockerGetHandler(t *testing.T) {
 }
 
 // GetVolumes
-func TestDockerGetVolumesEmptyVolumeList(t *testing.T) {
-	r := mux.NewRouter()
-	r.HandleFunc("/volumes", func(w http.ResponseWriter, r *http.Request) {
-		content := []byte(`
-		{
-			"Volumes": [],
-			"Warnings": []
-		}
-		`)
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(content)
-	})
-	srv := startFakeHTTPServer(r)
+func TestDockerGetVolumes(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockDocker := mocks.NewDocker(mockCtrl)
 
-	c := &handler.Bivac{
-		Config: &config.Config{},
+	dockerVolumes := volumetypes.VolumesListOKBody{
+		Volumes: []*types.Volume{
+			&types.Volume{
+				Name:       "foo",
+				Mountpoint: "/foo",
+				Labels: map[string]string{
+					"Lorem": "ipsum",
+					"dolor": "sit",
+					"amet":  ".",
+				},
+			},
+			&types.Volume{
+				Name:       "bar",
+				Mountpoint: "/var/lib/bar",
+			},
+		},
 	}
-	c.Config.Docker.Endpoint = dockerEndpoint
-	o := NewDockerOrchestrator(c)
-	_, err := o.GetVolumes()
+	mockDocker.EXPECT().VolumeList(context.Background(), filters.NewArgs()).Return(dockerVolumes, nil).Times(1)
+	mockDocker.EXPECT().VolumeInspect(context.Background(), "foo").Return(types.Volume{
+		Name:       "foo",
+		Mountpoint: "/foo",
+		Labels: map[string]string{
+			"Lorem": "ipsum",
+			"dolor": "sit",
+			"amet":  ".",
+		},
+	}, nil).Times(1)
+	mockDocker.EXPECT().VolumeInspect(context.Background(), "bar").Return(types.Volume{
+		Name:       "bar",
+		Mountpoint: "/var/lib/bar",
+	}, nil).Times(1)
 
-	srv.Shutdown(nil)
-
-	if err != nil {
-		t.Fatalf("Got error: %s", err)
+	expectedResult := []*volume.Volume{
+		&volume.Volume{
+			Config: &volume.Config{},
+			MetricsHandler: &metrics.PrometheusMetrics{
+				Instance: "fakeNode",
+				Volume:   "foo",
+				Metrics:  make(map[string]*metrics.Metric),
+			},
+			Mountpoint: "/foo",
+			Name:       "foo",
+			Labels: map[string]string{
+				"Lorem": "ipsum",
+				"dolor": "sit",
+				"amet":  ".",
+			},
+			LabelPrefix: "pref",
+		},
+		&volume.Volume{
+			Config: &volume.Config{},
+			MetricsHandler: &metrics.PrometheusMetrics{
+				Instance: "fakeNode",
+				Volume:   "bar",
+				Metrics:  make(map[string]*metrics.Metric),
+			},
+			Mountpoint:  "/var/lib/bar",
+			Name:        "bar",
+			Labels:      nil,
+			LabelPrefix: "pref",
+		},
 	}
+
+	o := &DockerOrchestrator{
+		Handler: &handler.Bivac{
+			Config: &config.Config{
+				LabelPrefix: "pref",
+			},
+			Hostname: "fakeNode",
+		},
+		Client: mockDocker,
+	}
+	v, err := o.GetVolumes()
+
+	assert.Nil(t, err)
+
+	assert.Equal(t, expectedResult, v, "should be equal")
 }
 
+/*
 func TestDockerGetVolumesFailToParseVolumeList(t *testing.T) {
 	r := mux.NewRouter()
 	r.HandleFunc("/volumes", func(w http.ResponseWriter, r *http.Request) {
@@ -1097,3 +1120,4 @@ func TestDockerRemoveContainerFail(t *testing.T) {
 		t.Fatalf("Invalid content provided but no error raised.")
 	}
 }
+*/
