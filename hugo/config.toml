@@ -40,20 +40,13 @@ theme = "elate"
   [params.intro]
 
   [[params.intro.item]]
-    title = "Install from source"
+    title = "Install and use locally"
     description = '''
 ```shell
+# install from source
 $ go get github.com/camptocamp/bivac
-```
-'''
-    #url = "#"
-    #button = "Get In Touch"
-    icon = "icon-bulb"
 
-  [[params.intro.item]]
-    title = "Example usage"
-    description = '''
-```shell
+# launch locally to backup local Docker volumes
 $ bivac \
   -u s3+http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
   --aws-access-key-id=<my_key_id> \
@@ -63,10 +56,9 @@ $ bivac \
     #url = "#"
     #button = "Copy"
     icon = "icon-wrench"
-  #  img = "img_8.jpg"
 
   [[params.intro.item]]
-    title = "Launch with Docker"
+    title = "Launch as a Docker Container"
     description = '''
 ```shell
 $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
@@ -79,6 +71,19 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
     #url = "#"
     #button = "Why us?"
     icon = "icon-rocket"
+  #  img = "img_10.jpg"
+
+  [[params.intro.item]]
+    title = "Launch on Kubernetes using Helm"
+    description = '''
+```shell
+$ git clone https://github.com/camptocamp/bivac
+$ helm install ./bivac/charts/camptocamp/bivac
+```
+'''
+    #url = "#"
+    #button = "Why us?"
+    icon = "icon-anchor"
   #  img = "img_10.jpg"
 
   #[params.intro.video]
