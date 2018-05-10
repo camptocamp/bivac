@@ -161,6 +161,81 @@ func TestDockerGetVolumes(t *testing.T) {
 	assert.Equal(t, expectedResult, v, "should be equal")
 }
 
+// GetMountedVolumes
+func TestDockerGetMountedVolumes(t *testing.T) {
+	// Prepare tests
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockDocker := mocks.NewDocker(mockCtrl)
+
+	testCases := []struct {
+		name               string
+		givenContainerList []interface{}
+		expected           []interface{}
+	}{
+		{
+			name: "basic context",
+			givenContainerList: []interface{}{
+				[]types.Container{
+					types.Container{
+						ID: "foo",
+					},
+					types.Container{
+						ID: "bar",
+						Mounts: []types.MountPoint{
+							types.MountPoint{
+								Type:        "volume",
+								Name:        "fakeVolume",
+								Destination: "/fakeMountpoint",
+							},
+						},
+					},
+				},
+				nil,
+			},
+			expected: []interface{}{
+				[]*volume.MountedVolumes{
+					&volume.MountedVolumes{
+						ContainerID: "foo",
+						Volumes:     map[string]string{},
+					},
+					&volume.MountedVolumes{
+						ContainerID: "bar",
+						Volumes: map[string]string{
+							"fakeVolume": "/fakeMountpoint",
+						},
+					},
+				},
+				nil,
+			},
+		},
+		{
+			name: "no container",
+			givenContainerList: []interface{}{
+				[]types.Container{},
+				nil,
+			},
+			expected: []interface{}{
+				[]*volume.MountedVolumes(nil),
+				nil,
+			},
+		},
+	}
+
+	o := &DockerOrchestrator{
+		Client: mockDocker,
+	}
+
+	// Run test cases
+	for _, tc := range testCases {
+		mockDocker.EXPECT().ContainerList(context.Background(), types.ContainerListOptions{}).Return(tc.givenContainerList[0], tc.givenContainerList[1]).Times(1)
+		result, err := o.GetMountedVolumes()
+
+		assert.Nil(t, err)
+		assert.Equal(t, tc.expected[0], result, tc.name)
+	}
+}
+
 /*
 func TestDockerGetVolumesFailToParseVolumeList(t *testing.T) {
 	r := mux.NewRouter()
