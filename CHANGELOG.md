@@ -1,4 +1,4 @@
-# [1.0.0-alpha1](Unreleased)
+# 1.0.0-alpha1 (Unreleased)
 
 BUG FIXES:
 
