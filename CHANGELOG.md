@@ -1,4 +1,11 @@
-# [v1.0.0-alpha0](https://github.com/camptocamp/bivac/releases/tag/v1.0.0-alpha0) (2018-05-03)
+# [1.0.0-alpha1](Unreleased)
+
+BUG FIXES:
+
+- `orchestrator/kubernetes`: Always pull worker image.
+- `engine/restic`: Use hostname in Restic Path.
+
+# [1.0.0-alpha0](https://github.com/camptocamp/bivac/releases/tag/v1.0.0-alpha0) (2018-05-03)
 
 FEATURES:
 
