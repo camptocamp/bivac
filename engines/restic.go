@@ -49,7 +49,8 @@ func (r *ResticEngine) Backup() (err error) {
 		return
 	}
 
-	v.Target = targetURL.String() + "/" + v.Name
+	c := r.Orchestrator.GetHandler()
+	v.Target = targetURL.String() + "/" + c.Hostname + "/" + v.Name
 	v.BackupDir = v.Mountpoint + "/" + v.BackupDir
 	v.Mount = v.Name + ":" + v.Mountpoint + ":ro"
 
@@ -71,7 +72,6 @@ func (r *ResticEngine) Backup() (err error) {
 		return
 	}
 
-	c := r.Orchestrator.GetHandler()
 	if _, err := c.IsCheckScheduled(v); err == nil {
 		err = util.Retry(3, r.verify)
 		if err != nil {
