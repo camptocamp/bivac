@@ -2,6 +2,7 @@ package orchestrators
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"sort"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/pkg/stdcopy"
 
 	log "github.com/Sirupsen/logrus"
 	docker "github.com/docker/docker/client"
@@ -237,41 +239,40 @@ func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes
 
 // ContainerPrepareBackup executes a command to backup something into a volume
 func (o *DockerOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.MountedVolumes, command []string) (backupVolume *volume.Volume, err error) {
-	exec, err := o.Client.ContainerExecCreate(context.Background(), mountedVolumes.ContainerID, types.ExecConfig{
-		Cmd:          command,
-		AttachStdout: true,
-		AttachStderr: true,
-	})
-	if err != nil {
-		err = fmt.Errorf("failed to create exec: %v", err)
-		return
-	}
+	pr, pw := io.Pipe()
+	go func() {
+		exec, err := o.Client.ContainerExecCreate(context.Background(), mountedVolumes.ContainerID, types.ExecConfig{
+			Cmd:          command,
+			AttachStdout: true,
+			AttachStderr: true,
+		})
+		if err != nil {
+			err = fmt.Errorf("failed to create exec: %v", err)
+			return
+		}
 
-	resp, err := o.Client.ContainerExecAttach(context.Background(), exec.ID, types.ExecConfig{
-		Cmd:          command,
-		AttachStdout: true,
-		AttachStderr: true,
-	})
-	if err != nil {
-		log.Errorf("failed to attach container while executing backup command: %s", err)
-		return
-	}
-	body, err := ioutil.ReadAll(resp.Reader)
-	if err != nil {
-		log.Errorf("failed to read output from backup command: %s", err)
-	}
-	defer resp.Close()
+		resp, err := o.Client.ContainerExecAttach(context.Background(), exec.ID, types.ExecConfig{
+			AttachStdout: true,
+		})
+		if err != nil {
+			log.Errorf("failed to attach container while executing backup command: %s", err)
+			return
+		}
+		stdcopy.StdCopy(pw, ioutil.Discard, resp.Reader)
+		defer pw.Close()
+		defer resp.Close()
 
-	inspect, err := o.Client.ContainerExecInspect(context.Background(), exec.ID)
-	if err != nil {
-		err = fmt.Errorf("failed to check prepare command exit code: %v", err)
-		return
-	}
+		inspect, err := o.Client.ContainerExecInspect(context.Background(), exec.ID)
+		if err != nil {
+			err = fmt.Errorf("failed to check prepare command exit code: %v", err)
+			return
+		}
 
-	if c := inspect.ExitCode; c != 0 {
-		err = fmt.Errorf("prepare command exited with code %v", c)
-		return
-	}
+		if c := inspect.ExitCode; c != 0 {
+			err = fmt.Errorf("prepare command exited with code %v", c)
+			return
+		}
+	}()
 
 	err = pullImage(o.Client, "busybox")
 	if err != nil {
@@ -321,7 +322,7 @@ func (o *DockerOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.Mount
 		err = fmt.Errorf("failed to start container: %v", err)
 	}
 
-	resp, err = o.Client.ContainerAttach(context.Background(), container.ID, types.ContainerAttachOptions{
+	resp, err := o.Client.ContainerAttach(context.Background(), container.ID, types.ContainerAttachOptions{
 		Stream: true,
 		Stdin:  true,
 	})
@@ -329,17 +330,14 @@ func (o *DockerOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.Mount
 		log.Errorf("failed to attach container while executing backup command: %s", err)
 		return
 	}
-	_, err = resp.Conn.Write(body)
-	if err != nil {
-		log.Errorf("failed to write output of backup command: %s", err)
-	}
+	io.Copy(resp.Conn, pr)
+	defer pr.Close()
 	defer resp.Close()
 
 	err = o.Client.ContainerKill(context.Background(), container.ID, "SIGKILL")
 	if err != nil {
 		log.Errorf("failed to stop container %s: %s", container.ID, err)
 	}
-
 	return
 }
 
