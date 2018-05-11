@@ -70,11 +70,40 @@ func (o *CattleOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) 
 			mountpoint = v.Mounts[0].Path
 		}
 
+		var hostID, hostname string
+		var spc *client.StoragePoolCollection
+		err := o.rawAPICall("GET", v.Links["storagePools"], &spc)
+		if err != nil {
+			log.Errorf("failed to retrieve storage pool from volume %s: %s", v.Name, err)
+			continue
+		}
+
+		if len(spc.Data) == 0 {
+			log.Errorf("no storage pool for the volume %s: %s", v.Name, err)
+			continue
+		}
+
+		if len(spc.Data[0].HostIds) == 0 {
+			log.Errorf("no host for the volume %s: %s", v.Name, err)
+			continue
+		}
+
+		hostID = spc.Data[0].HostIds[0]
+
+		h, err := o.Client.Host.ById(hostID)
+		if err != nil {
+			log.Errorf("failed to retrieve host from id %s: %s", hostID, err)
+			hostname = ""
+		} else {
+			hostname = h.Hostname
+		}
+
 		nv := &volume.Volume{
 			Config:     &volume.Config{},
 			Mountpoint: mountpoint,
 			Name:       v.Name,
-			HostBind:   v.HostId,
+			HostBind:   hostID,
+			Hostname:   hostname,
 		}
 
 		v := volume.NewVolume(nv, c.Config, c.Hostname)
@@ -152,27 +181,10 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 		}
 	}
 
-	/*
-	 * TODO: Use go-rancher.
-	 * It was impossible to use it, maybe a problem in go-rancher or a lack of documentation.
-	 */
-	clientHTTP := &http.Client{}
-	v := url.Values{}
-	req, err := http.NewRequest("POST", container.Links["self"]+"/?action=logs", strings.NewReader(v.Encode()))
-	req.SetBasicAuth(o.Handler.Config.Cattle.AccessKey, o.Handler.Config.Cattle.SecretKey)
-	resp, err := clientHTTP.Do(req)
-	if err != nil {
-		log.Errorf("failed to execute POST request: %s", err)
-	}
-	bodyText, err := ioutil.ReadAll(resp.Body)
+	var hostAccess *client.HostAccess
+	err = o.rawAPICall("POST", container.Links["self"]+"/?action=logs", &hostAccess)
 	if err != nil {
 		log.Errorf("failed to read response from rancher: %s", err)
-	}
-
-	var hostAccess *client.HostAccess
-	err = json.Unmarshal(bodyText, &hostAccess)
-	if err != nil {
-		log.Errorf("failed to unmarshal: %s", err)
 	}
 
 	origin := o.Handler.Config.Cattle.URL
@@ -321,4 +333,26 @@ func (o *CattleOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string
 	}
 
 	return false, "", ""
+}
+
+func (o *CattleOrchestrator) rawAPICall(method, endpoint string, object interface{}) (err error) {
+	// TODO: Use go-rancher.
+	// It was impossible to use it, maybe a problem in go-rancher or a lack of documentation.
+	clientHTTP := &http.Client{}
+	v := url.Values{}
+	req, err := http.NewRequest(method, endpoint, strings.NewReader(v.Encode()))
+	req.SetBasicAuth(o.Handler.Config.Cattle.AccessKey, o.Handler.Config.Cattle.SecretKey)
+	resp, err := clientHTTP.Do(req)
+	if err != nil {
+		log.Errorf("failed to execute POST request: %s", err)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Errorf("failed to read response from rancher: %s", err)
+	}
+	err = json.Unmarshal(body, object)
+	if err != nil {
+		log.Errorf("failed to unmarshal: %s", err)
+	}
+	return
 }
