@@ -1,6 +1,7 @@
 package orchestrators
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -253,14 +254,20 @@ func (o *DockerOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.Mount
 
 		resp, err := o.Client.ContainerExecAttach(context.Background(), exec.ID, types.ExecConfig{
 			AttachStdout: true,
+			AttachStderr: true,
 		})
 		if err != nil {
 			log.Errorf("failed to attach container while executing backup command: %s", err)
 			return
 		}
-		stdcopy.StdCopy(pw, ioutil.Discard, resp.Reader)
+		stderr := new(bytes.Buffer)
+		stdcopy.StdCopy(pw, stderr, resp.Reader)
 		defer pw.Close()
 		defer resp.Close()
+
+		if stderr.Len() > 0 {
+			log.Warningf("STDERR of the prepare backup command: %s", stderr.String())
+		}
 
 		inspect, err := o.Client.ContainerExecInspect(context.Background(), exec.ID)
 		if err != nil {
