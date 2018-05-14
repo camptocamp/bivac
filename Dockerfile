@@ -6,6 +6,7 @@ RUN dep ensure
 RUN make bivac
 
 FROM scratch
+COPY --from=builder /etc/ssl /etc/ssl
 COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /
 ENTRYPOINT ["/bivac"]
 CMD [""]

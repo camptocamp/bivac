@@ -29,6 +29,7 @@ type Volume struct {
 	Config         *Config
 	MetricsHandler *metrics.PrometheusMetrics
 	HostBind       string
+	Hostname       string
 }
 
 // Config is the volume's configuration parameters
