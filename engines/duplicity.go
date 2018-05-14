@@ -50,7 +50,7 @@ func (d *DuplicityEngine) Backup() (err error) {
 
 	backupDir := vol.BackupDir
 	c := d.Orchestrator.GetHandler()
-	vol.Target = targetURL.String() + "/" + c.Hostname + "/" + vol.Name
+	vol.Target = targetURL.String() + "/" + vol.Hostname + "/" + vol.Name
 	vol.BackupDir = vol.Mountpoint + "/" + backupDir
 	vol.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
 
