@@ -70,6 +70,7 @@ func (o *DockerOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) 
 			Name:        voll.Name,
 			Labels:      voll.Labels,
 			LabelPrefix: c.Config.LabelPrefix,
+			Hostname:    c.Hostname,
 		}
 
 		v := volume.NewVolume(nv, c.Config, c.Hostname)

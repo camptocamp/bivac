@@ -85,6 +85,7 @@ func (o *KubernetesOrchestrator) GetVolumes() (volumes []*volume.Volume, err err
 			Mountpoint: mountpoint,
 			Name:       pvc.Name,
 			HostBind:   bindHostVolume[pvc.Name],
+			Hostname:   bindHostVolume[pvc.Name],
 		}
 
 		v := volume.NewVolume(nv, c.Config, c.Hostname)
