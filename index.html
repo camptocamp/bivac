@@ -141,7 +141,7 @@ $ go get github.com/camptocamp/bivac
 
 # launch locally to backup local Docker volumes
 $ bivac \
-  -u s3+http://s3-eu-west-1.amazonaws.com/&lt;my_bucket&gt;/&lt;my_dir&gt; \
+  -u s3://s3-eu-west-1.amazonaws.com/&lt;my_bucket&gt;/&lt;my_dir&gt; \
   --aws-access-key-id=&lt;my_key_id&gt; \
   --aws-secret-key-id=&lt;my_secret_key&gt;
 </code></pre>
@@ -157,7 +157,7 @@ $ bivac \
 						<i class="fh5co-intro-icon icon-rocket"></i>
 						<h2>Launch as a Docker Container</h2>
                         <p><pre><code class="language-shell">$ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
-   -e BIVAC_TARGET_URL=s3+http://s3-eu-west-1.amazonaws.com/&lt;my_bucket&gt;/&lt;my_dir&gt; \
+   -e BIVAC_TARGET_URL=s3://s3-eu-west-1.amazonaws.com/&lt;my_bucket&gt;/&lt;my_dir&gt; \
    -e AWS_ACCESS_KEY_ID=&lt;my_key_id&gt; \
    -e AWS_SECRET_ACCESS_KEY=&lt;my_secret_key&gt; \
      camptocamp/bivac
@@ -174,7 +174,19 @@ $ bivac \
 						<i class="fh5co-intro-icon icon-anchor"></i>
 						<h2>Launch on Kubernetes using Helm</h2>
                         <p><pre><code class="language-shell">$ git clone https://github.com/camptocamp/bivac
-$ helm install ./bivac/charts/camptocamp/bivac
+$ cat values.yaml
+schedule: &quot;0 4 * * *&quot;
+
+envVars:
+  - name: BIVAC_TARGET_URL
+    value: s3://&lt;bucket&gt;/&lt;path&gt;
+  - name: AWS_ACCESS_KEY_ID
+    value: &lt;AWS_ACCESS_KEY_ID&gt;
+  - name: AWS_SECRET_ACCESS_KEY
+    value: &lt;AWS_SECRET_ACCESS_KEY&gt;
+  - name: RESTIC_PASSWORD
+value: &lt;RESTIC_PASSWORD&gt;
+$ helm install -f values.yaml ./bivac/charts/camptocamp/bivac
 </code></pre>
 </p>
                         
