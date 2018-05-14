@@ -3,6 +3,8 @@ package orchestrators
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"sort"
 	"time"
 	"unicode/utf8"
@@ -12,6 +14,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -303,6 +306,159 @@ func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVol
 
 // ContainerPrepareBackup executes a command in a container
 func (o *KubernetesOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.MountedVolumes, command []string) (backupVolume *volume.Volume, err error) {
+	pr, pw := io.Pipe()
+	go func() {
+		var stderr bytes.Buffer
+
+		config, err := o.getConfig()
+		if err != nil {
+			log.Fatalf("failed to retrieve Kubernetes config: %s", err)
+		}
+
+		req := o.Client.Core().RESTClient().Post().
+			Resource("pods").
+			Name(mountedVolumes.PodID).
+			Namespace(o.Handler.Config.Kubernetes.Namespace).
+			SubResource("exec").
+			Param("container", mountedVolumes.ContainerID)
+		req.VersionedParams(&apiv1.PodExecOptions{
+			Container: mountedVolumes.ContainerID,
+			Command:   command,
+			Stdin:     false,
+			Stdout:    true,
+			Stderr:    true,
+			TTY:       false,
+		}, scheme.ParameterCodec)
+
+		exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+		if err != nil {
+			log.Errorf("failed to call the API: %s", err)
+			return
+		}
+		err = exec.Stream(remotecommand.StreamOptions{
+			Stdin:  nil,
+			Stdout: pw,
+			Stderr: &stderr,
+			Tty:    false,
+		})
+		defer pw.Close()
+		if stderr.Len() > 0 {
+			log.Warningf("STDERR of the prepare backup command: %s", stderr.String())
+		}
+		return
+	}()
+
+	_, err = o.Client.CoreV1().PersistentVolumeClaims(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "bivac-tmp",
+		},
+		Spec: apiv1.PersistentVolumeClaimSpec{
+			AccessModes: []apiv1.PersistentVolumeAccessMode{
+				apiv1.ReadWriteOnce,
+				apiv1.ReadWriteMany,
+			},
+			Resources: apiv1.ResourceRequirements{
+				Requests: apiv1.ResourceList{
+					apiv1.ResourceStorage: resource.MustParse("100Gi"),
+				},
+			},
+		},
+	})
+	if err != nil {
+		log.Errorf("failed to create temporary persistent volume: %s", err)
+	}
+	tmpVol := []apiv1.Volume{
+		{
+			Name: "bivac-tmp",
+			VolumeSource: apiv1.VolumeSource{
+				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+					ClaimName: "bivac-tmp",
+					ReadOnly:  false,
+				},
+			},
+		},
+	}
+
+	tmpMntVol := []apiv1.VolumeMount{
+		{
+			Name:      "bivac-tmp",
+			ReadOnly:  false,
+			MountPath: "/data",
+		},
+	}
+	pod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			GenerateName: "bivac-worker-",
+		},
+		Spec: apiv1.PodSpec{
+			RestartPolicy: "Never",
+			Volumes:       tmpVol,
+			Containers: []apiv1.Container{
+				{
+					Name:  "bivac-worker",
+					Image: "busybox",
+					Args: []string{
+						"sleep",
+						"100000",
+					},
+					VolumeMounts: tmpMntVol,
+				},
+			},
+		},
+	})
+	if err != nil {
+		log.Errorf("failed to create worker: %s", err)
+	}
+	workerName := pod.ObjectMeta.Name
+	defer o.DeleteWorker(workerName)
+
+	running := false
+	for !running {
+		pod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Get(workerName, metav1.GetOptions{})
+		if err != nil {
+			log.Errorf("failed to get pod: %s", err)
+		}
+
+		if pod.Status.Phase == apiv1.PodRunning {
+			running = true
+		}
+	}
+
+	config, err := o.getConfig()
+	if err != nil {
+		log.Fatalf("failed to retrieve Kubernetes config: %s", err)
+	}
+	req := o.Client.Core().RESTClient().Post().
+		Resource("pods").
+		Name(workerName).
+		Namespace(o.Handler.Config.Kubernetes.Namespace).
+		SubResource("exec").
+		Param("container", "bivac-worker")
+	req.VersionedParams(&apiv1.PodExecOptions{
+		Container: "bivac-worker",
+		Command: []string{
+			"/bin/sh",
+			"-c",
+			"cat > /data/backup",
+		},
+		Stdin:  true,
+		Stdout: false,
+		Stderr: false,
+		TTY:    false,
+	}, scheme.ParameterCodec)
+
+	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+	if err != nil {
+		log.Errorf("failed to call the API: %s", err)
+		return
+	}
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdout: ioutil.Discard,
+		Stderr: ioutil.Discard,
+		Stdin:  pr,
+		Tty:    false,
+	})
+	defer pr.Close()
 	return
 }
 
