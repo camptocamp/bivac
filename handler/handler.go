@@ -3,8 +3,6 @@ package handler
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"time"
 
@@ -42,20 +40,7 @@ func (c *Bivac) Setup(version string) (err error) {
 
 // GetHostname gets the host name
 func (c *Bivac) GetHostname() (err error) {
-	if c.Config.HostnameFromRancher {
-		resp, err := http.Get("http://rancher-metadata/latest/self/host/name")
-		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		c.Hostname = string(body)
-	} else {
-		c.Hostname, err = os.Hostname()
-	}
+	c.Hostname, err = os.Hostname()
 	return
 }
 

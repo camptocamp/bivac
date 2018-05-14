@@ -38,7 +38,6 @@ Application Options:
   -E, --engine=                Backup engine to use. (default: restic) [$BIVAC_ENGINE]
   -o, --orchestrator=          Container orchestrator to use. (default: docker) [$BIVAC_ORCHESTRATOR]
   -u, --target-url=            The target URL to push to. [$BIVAC_TARGET_URL]
-  -H, --hostname-from-rancher  Retrieve hostname from Rancher metadata. [$BIVAC_HOSTNAME_FROM_RANCHER]
       --check-every=           Time between backup checks. (default: 24h) [$BIVAC_CHECK_EVERY]
       --remove-older-than=     Remove backups older than the specified interval. (default: 30D) [$BIVAC_REMOVE_OLDER_THAN]
       --label-prefix=          The volume prefix label. [$BIVAC_LABEL_PREFIX]
