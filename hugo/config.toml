@@ -78,7 +78,19 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
     description = '''
 ```shell
 $ git clone https://github.com/camptocamp/bivac
-$ helm install ./bivac/charts/camptocamp/bivac
+$ cat values.yaml
+schedule: "0 4 * * *"
+
+envVars:
+  - name: BIVAC_TARGET_URL
+    value: s3://<bucket>/<path>
+  - name: AWS_ACCESS_KEY_ID
+    value: <AWS_ACCESS_KEY_ID>
+  - name: AWS_SECRET_ACCESS_KEY
+    value: <AWS_SECRET_ACCESS_KEY>
+  - name: RESTIC_PASSWORD
+value: <RESTIC_PASSWORD>
+$ helm install -f values.yaml ./bivac/charts/camptocamp/bivac
 ```
 '''
     #url = "#"
