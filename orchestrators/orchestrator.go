@@ -35,10 +35,10 @@ func GetOrchestrator(c *handler.Bivac) (orch Orchestrator, err error) {
 		}
 	} else {
 		log.Debugf("Detecting orchestrator based on environment...")
-		if detectCattle() {
-			orch = NewCattleOrchestrator(c)
-		} else if detectKubernetes() {
+		if detectKubernetes() {
 			orch = NewKubernetesOrchestrator(c)
+		} else if detectCattle() {
+			orch = NewCattleOrchestrator(c)
 		} else if detectDocker(c) {
 			orch = NewDockerOrchestrator(c)
 		} else {
