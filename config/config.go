@@ -18,7 +18,7 @@ type Config struct {
 	NoVerify         bool     `long:"no-verify" description:"Do not verify backup." env:"BIVAC_NO_VERIFY"`
 	JSON             bool     `short:"j" long:"json" description:"Log as JSON (to stderr)." env:"BIVAC_JSON_OUTPUT"`
 	Engine           string   `short:"E" long:"engine" description:"Backup engine to use." env:"BIVAC_ENGINE" default:"restic"`
-	Orchestrator     string   `short:"o" long:"orchestrator" description:"Container orchestrator to use." env:"BIVAC_ORCHESTRATOR" default:"docker"`
+	Orchestrator     string   `short:"o" long:"orchestrator" description:"Container orchestrator to use." env:"BIVAC_ORCHESTRATOR"`
 	TargetURL        string   `short:"u" long:"target-url" description:"The target URL to push to." env:"BIVAC_TARGET_URL"`
 	CheckEvery       string   `long:"check-every" description:"Time between backup checks." env:"BIVAC_CHECK_EVERY" default:"24h"`
 	RemoveOlderThan  string   `long:"remove-older-than" description:"Remove backups older than the specified interval." env:"BIVAC_REMOVE_OLDER_THAN" default:"30D"`

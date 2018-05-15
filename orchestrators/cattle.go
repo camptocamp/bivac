@@ -3,6 +3,7 @@ package orchestrators
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"sort"
@@ -355,4 +356,12 @@ func (o *CattleOrchestrator) rawAPICall(method, endpoint string, object interfac
 		log.Errorf("failed to unmarshal: %s", err)
 	}
 	return
+}
+
+func detectCattle() bool {
+	_, err := net.LookupHost("rancher-metadata")
+	if err != nil {
+		return false
+	}
+	return true
 }

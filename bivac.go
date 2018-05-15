@@ -24,7 +24,10 @@ func main() {
 
 	log.Infof("Bivac v%s starting backup...", version)
 
-	orch := orchestrators.GetOrchestrator(c)
+	orch, err := orchestrators.GetOrchestrator(c)
+	if err != nil {
+		log.Fatalf("Failed to get an orchestrator: %s", err)
+	}
 
 	vols, err := orch.GetVolumes()
 	util.CheckErr(err, "Failed to get Docker volumes: %v", "fatal")

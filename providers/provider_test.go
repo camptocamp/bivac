@@ -24,7 +24,7 @@ func TestPrepareBackupWithDocker(t *testing.T) {
 	c.Config.Duplicity.Image = "camptocamp/duplicity:latest"
 	c.Config.Docker.Endpoint = "unix:///var/run/docker.sock"
 
-	o := orchestrators.GetOrchestrator(c)
+	o, _ := orchestrators.GetOrchestrator(c)
 
 	p := &DefaultProvider{
 		BaseProvider: &BaseProvider{

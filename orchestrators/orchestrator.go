@@ -1,6 +1,8 @@
 package orchestrators
 
 import (
+	"fmt"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/bivac/handler"
 	"github.com/camptocamp/bivac/volume"
@@ -8,6 +10,7 @@ import (
 
 // Orchestrator implements a container Orchestrator interface
 type Orchestrator interface {
+	GetName() string
 	GetHandler() *handler.Bivac
 	GetVolumes() ([]*volume.Volume, error)
 	LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error)
@@ -16,19 +19,30 @@ type Orchestrator interface {
 }
 
 // GetOrchestrator returns the Orchestrator as specified in configuration
-func GetOrchestrator(c *handler.Bivac) Orchestrator {
-	orch := c.Config.Orchestrator
-	log.Debugf("Using orchestrator: %s", orch)
-
-	switch orch {
-	case "docker":
-		return NewDockerOrchestrator(c)
-	case "kubernetes":
-		return NewKubernetesOrchestrator(c)
-	case "cattle":
-		return NewCattleOrchestrator(c)
+func GetOrchestrator(c *handler.Bivac) (orch Orchestrator, err error) {
+	if c.Config.Orchestrator != "" {
+		log.Debugf("Choosing orchestrator based on configuration...")
+		switch c.Config.Orchestrator {
+		case "docker":
+			orch = NewDockerOrchestrator(c)
+		case "kubernetes":
+			orch = NewKubernetesOrchestrator(c)
+		case "cattle":
+			orch = NewCattleOrchestrator(c)
+		default:
+			err = fmt.Errorf("'%s' is not a valid orchestrator", c.Config.Orchestrator)
+			return
+		}
+	} else {
+		log.Debugf("Detecting orchestrator based on environment...")
+		if detectCattle() {
+			orch = NewCattleOrchestrator(c)
+		} else if detectKubernetes() {
+			orch = NewKubernetesOrchestrator(c)
+		} else {
+			orch = NewDockerOrchestrator(c)
+		}
 	}
-
-	log.Fatalf("Unknown orchestrator %s", orch)
-	return nil
+	log.Debugf("Using orchestrator: %s", orch.GetName())
+	return
 }

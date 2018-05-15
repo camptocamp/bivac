@@ -345,3 +345,11 @@ func (o *KubernetesOrchestrator) getConfig() (config *rest.Config, err error) {
 	}
 	return
 }
+
+func detectKubernetes() bool {
+	_, err := rest.InClusterConfig()
+	if err != nil {
+		return false
+	}
+	return true
+}
