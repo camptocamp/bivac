@@ -91,6 +91,9 @@ func (r *RCloneEngine) launchRClone(cmd []string, extraEnv map[string]string, vo
 	for en, ev := range extraEnv {
 		env[en] = ev
 	}
+	for k, v := range config.ExtraEnv {
+		env[k] = v
+	}
 
 	return r.Orchestrator.LaunchContainer(image, env, cmd, volumes)
 }
