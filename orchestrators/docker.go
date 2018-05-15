@@ -290,3 +290,15 @@ func removeContainer(c *docker.Client, id string) {
 	})
 	util.CheckErr(err, "Failed to remove container "+id+": %v", "error")
 }
+
+func detectDocker(c *handler.Bivac) bool {
+	client, err := docker.NewClient(c.Config.Docker.Endpoint, "", nil, nil)
+	if err != nil {
+		return false
+	}
+	_, err = client.Ping(context.Background())
+	if err != nil {
+		return false
+	}
+	return true
+}
