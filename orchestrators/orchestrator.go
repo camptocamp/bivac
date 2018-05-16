@@ -18,7 +18,7 @@ type Orchestrator interface {
 	ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) error
 }
 
-// GetOrchestrator returns the Orchestrator as specified in configuration
+// GetOrchestrator returns the Orchestrator based on configuration or environment if not defined
 func GetOrchestrator(c *handler.Bivac) (orch Orchestrator, err error) {
 	if c.Config.Orchestrator != "" {
 		log.Debugf("Choosing orchestrator based on configuration...")
