@@ -1,9 +1,22 @@
 # 1.0.0-alpha1 (Unreleased)
 
+BREAKING CHANGES:
+
+- `rancher-from-host` option has been removed in favor of Cattle orchestrator.
+
+NEW FEATURES:
+
+- Add Cattle orchestrator.
+
+IMPROVEMENTS:
+
+- Improve documentation.
+- Select orchestrator automatically.
+
 BUG FIXES:
 
 - `orchestrator/kubernetes`: Always pull worker image.
-- `engine/restic`: Use hostname in Restic Path.
+- `engine/restic`: Use worker's hostname in Restic Path.
 
 # [1.0.0-alpha0](https://github.com/camptocamp/bivac/releases/tag/v1.0.0-alpha0) (2018-05-03)
 
@@ -28,13 +41,13 @@ BUG FIXES:
 
 # [0.26.3](https://github.com/camptocamp/bivac/releases/tag/0.26.3) (2017-06-26)
 
-BU FIXES:
+BUG FIXES:
 
 - Fix collection-status truncation
 
 # [0.26.2](https://github.com/camptocamp/bivac/releases/tag/0.26.2) (2017-06-26)
 
-BU FIXES:
+BUG FIXES:
 
 - Avoid collection-status trunc bug
 
