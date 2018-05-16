@@ -277,5 +277,9 @@ func (r *ResticEngine) launchRestic(cmd []string, volumes []*volume.Volume) (sta
 		"RESTIC_PASSWORD":       config.Restic.Password,
 	}
 
+	for k, v := range config.ExtraEnv {
+		env[k] = v
+	}
+
 	return r.Orchestrator.LaunchContainer(image, env, cmd, volumes)
 }
