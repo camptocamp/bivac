@@ -1,4 +1,4 @@
-# 1.0.0-alpha1 (Unreleased)
+# [1.0.0-alpha1](https://github.com/camptocamp/bivac/releases/tag/v1.0.0-alpha1) (2018-05-16)
 
 BREAKING CHANGES:
 
