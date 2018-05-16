@@ -12,6 +12,7 @@ IMPROVEMENTS:
 
 - Improve documentation.
 - Select orchestrator automatically.
+- Allow to pass arbitrary environment variables to engines.
 
 BUG FIXES:
 
