@@ -337,7 +337,13 @@ func (o *KubernetesOrchestrator) getConfig() (config *rest.Config, err error) {
 			clientcmd.NewDefaultClientConfigLoadingRules(),
 			&clientcmd.ConfigOverrides{},
 		)
-		o.Handler.Config.Kubernetes.Namespace, _, err = kubeconfig.Namespace()
+
+		if o.Handler.Config.Kubernetes.Namespace != "" {
+			log.Warningf("Using provided Kubernetes namespace.")
+		} else {
+			o.Handler.Config.Kubernetes.Namespace, _, err = kubeconfig.Namespace()
+		}
+
 		if err != nil {
 			log.Errorf("Failed to retrieve the namespace from the cluster config: %v", err)
 		}
