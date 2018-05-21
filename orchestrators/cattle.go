@@ -315,15 +315,6 @@ func (o *CattleOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes
 }
 
 func (o *CattleOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string, string) {
-
-	defaultBlacklistedVolumes := []string{
-		"duplicity_cache",
-		"restic_cache",
-		"duplicity-cache",
-		"restic-cache",
-		"lost+found",
-	}
-
 	if utf8.RuneCountInString(vol.Name) == 64 || utf8.RuneCountInString(vol.Name) == 0 {
 		return true, "unnamed", ""
 	}
@@ -333,7 +324,6 @@ func (o *CattleOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string
 	}
 
 	list := o.Handler.Config.VolumesBlacklist
-	list = append(list, defaultBlacklistedVolumes...)
 	sort.Strings(list)
 	i := sort.SearchStrings(list, vol.Name)
 	if i < len(list) && list[i] == vol.Name {
