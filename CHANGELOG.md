@@ -3,7 +3,8 @@
 BUG FIXES:
 
 - `orchestrator/kubernetes`: Add `K8S_WORKER_SERVICE_ACCOUNT` configuration parameter to allow worker to run with a Service Account that have `anyuid` Security Constaint so that it can run as root to read the data.
-- `orchestrator/Cattle`: Fix pagination issue when using Cattle orchestrator.
+- `orchestrator/cattle`: Fix pagination issue when using Cattle orchestrator.
+- `orchestrator/cattle`: Fix volume blacklisting.
 
 # [1.0.0-alpha1](https://github.com/camptocamp/bivac/releases/tag/v1.0.0-alpha1) (2018-05-16)
 
