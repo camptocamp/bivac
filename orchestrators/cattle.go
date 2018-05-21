@@ -58,7 +58,12 @@ func (o *CattleOrchestrator) GetHandler() *handler.Bivac {
 func (o *CattleOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) {
 	c := o.Handler
 
-	vs, err := o.Client.Volume.List(&client.ListOpts{})
+	vs, err := o.Client.Volume.List(&client.ListOpts{
+		Filters: map[string]interface{}{
+			"limit": -2,
+			"all":   true,
+		},
+	})
 	if err != nil {
 		log.Errorf("failed to list volumes: %s", err)
 	}
@@ -238,7 +243,13 @@ func (o *CattleOrchestrator) DeleteWorker(container *client.Container) {
 
 // GetMountedVolumes returns mounted volumes
 func (o *CattleOrchestrator) GetMountedVolumes() (containers []*volume.MountedVolumes, err error) {
-	c, err := o.Client.Container.List(&client.ListOpts{})
+	c, err := o.Client.Container.List(&client.ListOpts{
+		Filters: map[string]interface{}{
+			"limit": -2,
+			"all":   true,
+		},
+	})
+
 	if err != nil {
 		log.Errorf("failed to list containers: %s", err)
 	}
