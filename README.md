@@ -133,7 +133,7 @@ remove_older_than = "5D"
 
 ## Orchestrators
 
-Bivac supports runing on either Docker Engine (using the Docker API) or Kubernetes (using the Kubernetes API).
+Bivac supports runing on either Docker Engine (using the Docker API), Kubernetes (using the Kubernetes API) or Rancher Cattle (using the Cattle API).
 
 ### Docker
 
@@ -143,8 +143,11 @@ Bivac will backup all named volumes by default.
 
 Bivac will backup all Persistent Volume Claims by default.
 
-## Providers
+### Cattle
 
+Bivac will backup all Volumes by default.
+
+## Providers
 
 Bivac detects automatically the kind of data that is stored on a volume and adapts its backup strategy to it. The following providers and associated strategies are currently supported:
 
@@ -152,11 +155,6 @@ Bivac detects automatically the kind of data that is stored on a volume and adap
 * MySQL: Run `mysqldump` before backup
 * OpenLDAP: Run `slapcat` before backup
 * Default: Backup volume data as is
-
-**Note:** in order to detect providers, bivac needs to access the files in the
-volume. When running in a Docker container, you need to mount the Docker
-volumes directory for this feature to work, by adding `-v
-/var/lib/docker/volumes:/var/lib/docker/volumes:ro` to the Docker command line.
 
 
 ## Engines
@@ -181,4 +179,3 @@ Bivac returns:
 * `0` if nothing failed
 * `1` if a backup failed
 * `2` if pushing metrics to Prometheus failed
-
