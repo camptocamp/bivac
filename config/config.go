@@ -61,8 +61,9 @@ type Config struct {
 	} `group:"Docker Options"`
 
 	Kubernetes struct {
-		Namespace  string `long:"k8s-namespace" description:"Namespace where you want to run Bivac." env:"K8S_NAMESPACE"`
-		KubeConfig string `long:"k8s-kubeconfig" description:"Path to your kubeconfig file." env:"K8S_KUBECONFIG"`
+		Namespace            string `long:"k8s-namespace" description:"Namespace where you want to run Bivac." env:"K8S_NAMESPACE"`
+		KubeConfig           string `long:"k8s-kubeconfig" description:"Path to your kubeconfig file." env:"K8S_KUBECONFIG"`
+		WorkerServiceAccount string `long:"k8s-worker-service-account" description:"Specify service account for workers." env:"K8S_WORKER_SERVICE_ACCOUNT"`
 	} `group:"Kubernetes Options"`
 
 	Cattle struct {

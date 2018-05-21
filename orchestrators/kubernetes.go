@@ -156,9 +156,10 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 			GenerateName: "bivac-worker-",
 		},
 		Spec: apiv1.PodSpec{
-			NodeName:      node,
-			RestartPolicy: "Never",
-			Volumes:       kvs,
+			NodeName:           node,
+			RestartPolicy:      "Never",
+			Volumes:            kvs,
+			ServiceAccountName: o.Handler.Config.Kubernetes.WorkerServiceAccount,
 			Containers: []apiv1.Container{
 				{
 					Name:            "bivac-worker",
