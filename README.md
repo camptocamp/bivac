@@ -29,53 +29,61 @@ Usage:
   bivac [OPTIONS]
 
 Application Options:
-  -V, --version                Display version.
-  -l, --loglevel=              Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic'). (default: info) [$BIVAC_LOG_LEVEL]
-  -b, --blacklist=             Volumes to blacklist in backups. [$BIVAC_VOLUMES_BLACKLIST]
-  -m, --manpage                Output manpage.
-      --no-verify              Do not verify backup. [$BIVAC_NO_VERIFY]
-  -j, --json                   Log as JSON (to stderr). [$BIVAC_JSON_OUTPUT]
-  -E, --engine=                Backup engine to use. (default: restic) [$BIVAC_ENGINE]
-  -o, --orchestrator=          Container orchestrator to use. (default: docker) [$BIVAC_ORCHESTRATOR]
-  -u, --target-url=            The target URL to push to. [$BIVAC_TARGET_URL]
-      --check-every=           Time between backup checks. (default: 24h) [$BIVAC_CHECK_EVERY]
-      --remove-older-than=     Remove backups older than the specified interval. (default: 30D) [$BIVAC_REMOVE_OLDER_THAN]
-      --label-prefix=          The volume prefix label. [$BIVAC_LABEL_PREFIX]
+  -V, --version                     Display version.
+  -l, --loglevel=                   Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic'). (default: info) [$BIVAC_LOG_LEVEL]
+  -b, --blacklist=                  Volumes to blacklist in backups. [$BIVAC_VOLUMES_BLACKLIST]
+  -m, --manpage                     Output manpage.
+      --no-verify                   Do not verify backup. [$BIVAC_NO_VERIFY]
+  -j, --json                        Log as JSON (to stderr). [$BIVAC_JSON_OUTPUT]
+  -E, --engine=                     Backup engine to use. (default: restic) [$BIVAC_ENGINE]
+  -o, --orchestrator=               Container orchestrator to use. [$BIVAC_ORCHESTRATOR]
+  -u, --target-url=                 The target URL to push to. [$BIVAC_TARGET_URL]
+      --check-every=                Time between backup checks. (default: 24h) [$BIVAC_CHECK_EVERY]
+      --remove-older-than=          Remove backups older than the specified interval. (default: 30D) [$BIVAC_REMOVE_OLDER_THAN]
+      --label-prefix=               The volume prefix label. [$BIVAC_LABEL_PREFIX]
+      --extra-env=                  Extra environment variables to share with workers. [$BIVAC_EXTRA_ENV]
 
 Restic Options:
-      --restic-image=          The restic docker image. (default: restic/restic:latest) [$RESTIC_DOCKER_IMAGE]
-      --restic-password=       The restic backup password. [$RESTIC_PASSWORD]
+      --restic-image=               The restic docker image. (default: restic/restic:latest) [$RESTIC_DOCKER_IMAGE]
+      --restic-password=            The restic backup password. [$RESTIC_PASSWORD]
 
 RClone Options:
-      --rclone-image=          The rclone docker image. (default: camptocamp/rclone:1.33-1) [$RCLONE_DOCKER_IMAGE]
+      --rclone-image=               The rclone docker image. (default: camptocamp/rclone:1.33-1) [$RCLONE_DOCKER_IMAGE]
 
 Duplicity Options:
-      --duplicity-image=       The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
-      --full-if-older-than=    The number of days after which a full backup must be performed. (default: 15D) [$BIVAC_FULL_IF_OLDER_THAN]
+      --duplicity-image=            The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
+      --full-if-older-than=         The number of days after which a full backup must be performed. (default: 15D) [$BIVAC_FULL_IF_OLDER_THAN]
 
 Metrics Options:
-  -g, --gateway-url=           The prometheus push gateway URL to use. [$PUSHGATEWAY_URL]
+  -g, --gateway-url=                The prometheus push gateway URL to use. [$PUSHGATEWAY_URL]
 
 AWS Options:
-      --aws-access-key-id=     The AWS access key ID. [$AWS_ACCESS_KEY_ID]
-      --aws-secret-key-id=     The AWS secret access key. [$AWS_SECRET_ACCESS_KEY]
+      --aws-access-key-id=          The AWS access key ID. [$AWS_ACCESS_KEY_ID]
+      --aws-secret-key-id=          The AWS secret access key. [$AWS_SECRET_ACCESS_KEY]
 
 Swift Options:
-      --swift-username=        The Swift user name. [$SWIFT_USERNAME]
-      --swift-password=        The Swift password. [$SWIFT_PASSWORD]
-      --swift-auth_url=        The Swift auth URL. [$SWIFT_AUTHURL]
-      --swift-tenant-name=     The Swift tenant name. [$SWIFT_TENANTNAME]
-      --swift-region-name=     The Swift region name. [$SWIFT_REGIONNAME]
+      --swift-username=             The Swift user name. [$SWIFT_USERNAME]
+      --swift-password=             The Swift password. [$SWIFT_PASSWORD]
+      --swift-auth_url=             The Swift auth URL. [$SWIFT_AUTHURL]
+      --swift-tenant-name=          The Swift tenant name. [$SWIFT_TENANTNAME]
+      --swift-region-name=          The Swift region name. [$SWIFT_REGIONNAME]
 
 Docker Options:
-  -e, --docker-endpoint=       The Docker endpoint. (default: unix:///var/run/docker.sock) [$DOCKER_ENDPOINT]
+  -e, --docker-endpoint=            The Docker endpoint. (default: unix:///var/run/docker.sock) [$DOCKER_ENDPOINT]
 
 Kubernetes Options:
-      --k8s-namespace=         Namespace where you want to run Bivac. [$K8S_NAMESPACE]
-      --k8s-kubeconfig=        Path to your kubeconfig file. [$K8S_KUBECONFIG]
+      --k8s-namespace=              Namespace where you want to run Bivac. [$K8S_NAMESPACE]
+      --k8s-kubeconfig=             Path to your kubeconfig file. [$K8S_KUBECONFIG]
+      --k8s-worker-service-account= Specify service account for workers. [$K8S_WORKER_SERVICE_ACCOUNT]
+
+Cattle Options:
+      --cattle-env=                 The Cattle environment. [$CATTLE_ENV]
+      --cattle-accesskey=           The Cattle access key. [$CATTLE_ACCESS_KEY]
+      --cattle-secretkey=           The Cattle secretkey. [$CATTLE_SECRET_KEY]
+      --cattle-url=                 The Cattle url. [$CATTLE_URL]
 
 Help Options:
-  -h, --help                   Show this help message
+  -h, --help                        Show this help message
 ```
 
 ## Examples
