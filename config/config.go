@@ -83,7 +83,7 @@ func LoadConfig(version string) *Config {
 	}
 
 	if c.Version {
-		fmt.Printf("Bivac v%v\n", version)
+		fmt.Printf("Bivac %v\n", version)
 		os.Exit(0)
 	}
 
