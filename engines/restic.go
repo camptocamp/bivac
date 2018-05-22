@@ -152,6 +152,16 @@ func (r *ResticEngine) resticBackup() (err error) {
 	if state != 0 {
 		err = fmt.Errorf("Restic exited with state %v while backuping the volume", state)
 	}
+
+	metric := r.Volume.MetricsHandler.NewMetric("bivac_backupExitCode", "gauge")
+	metric.UpdateEvent(
+		&metrics.Event{
+			Labels: map[string]string{
+				"volume": v.Name,
+			},
+			Value: strconv.Itoa(state),
+		},
+	)
 	return
 }
 
