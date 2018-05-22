@@ -112,7 +112,7 @@ func (o *CattleOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) 
 			Hostname:   hostname,
 		}
 
-		v := volume.NewVolume(nv, c.Config, c.Hostname)
+		v := volume.NewVolume(nv, c.Config, hostname)
 		if b, r, s := o.blacklistedVolume(v); b {
 			log.WithFields(log.Fields{
 				"volume": v.Name,
