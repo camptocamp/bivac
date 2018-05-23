@@ -1,8 +1,9 @@
 FROM golang:1.10 as builder
-WORKDIR /go/src/github.com/camptocamp/bivac
-COPY . .
 RUN go get -u github.com/golang/dep/cmd/dep
-RUN dep ensure
+WORKDIR /go/src/github.com/camptocamp/bivac
+COPY Gopkg.toml Gopkg.lock ./
+RUN dep ensure -vendor-only
+COPY . .
 RUN make bivac
 
 FROM scratch
