@@ -169,6 +169,7 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	})
 	if err != nil {
 		log.Errorf("failed to create worker container: %s", err)
+		return
 	}
 
 	defer o.DeleteWorker(container)
