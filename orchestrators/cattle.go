@@ -146,6 +146,7 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	}
 
 	container, err := o.Client.Container.Create(&client.Container{
+		Name:        "bivac-worker",
 		HostId:      hostbind,
 		ImageUuid:   "docker:" + image,
 		Command:     cmd,
