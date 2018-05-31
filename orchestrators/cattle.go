@@ -3,6 +3,7 @@ package orchestrators
 import (
 	"encoding/json"
 	"io/ioutil"
+	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -126,6 +127,15 @@ func (o *CattleOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) 
 	return
 }
 
+func createWorkerName() string {
+	var letter = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+	b := make([]rune, 10)
+	for i := range b {
+		b[i] = letter[rand.Intn(len(letter))]
+	}
+	return "bivac-worker-" + string(b)
+}
+
 // LaunchContainer starts a containe using the Cattle orchestrator
 func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
 	environment := make(map[string]interface{}, len(env))
@@ -146,7 +156,7 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	}
 
 	container, err := o.Client.Container.Create(&client.Container{
-		Name:        "bivac-worker",
+		Name:        createWorkerName(),
 		HostId:      hostbind,
 		ImageUuid:   "docker:" + image,
 		Command:     cmd,
