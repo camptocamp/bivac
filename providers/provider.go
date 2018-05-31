@@ -35,9 +35,9 @@ func GetProvider(o orchestrators.Orchestrator, v *volume.Volume) Provider {
 		orchestrator: o,
 		vol:          v,
 	}
-	shell := `([[ -d ` + v.Mountpoint + `/mysql ]] && echo -n 'mysql') || ` +
-		`([[ -f ` + v.Mountpoint + `/PG_VERSION ]] && echo -n 'postgresql') || ` +
-		`([[ -f ` + v.Mountpoint + `/DB_CONFIG ]] && echo -n 'openldap'); ` +
+	shell := `([[ -d ` + v.Mountpoint + `/mysql ]] && echo 'mysql') || ` +
+		`([[ -f ` + v.Mountpoint + `/PG_VERSION ]] && echo 'postgresql') || ` +
+		`([[ -f ` + v.Mountpoint + `/DB_CONFIG ]] && echo 'openldap'); ` +
 		`return 0`
 
 	cmd := []string{
