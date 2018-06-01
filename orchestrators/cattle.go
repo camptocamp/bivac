@@ -7,17 +7,18 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
 
-	"github.com/camptocamp/bivac/handler"
-	"github.com/camptocamp/bivac/volume"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/rancher/go-rancher/v2"
 	"golang.org/x/net/websocket"
+
+	"github.com/camptocamp/bivac/handler"
+	"github.com/camptocamp/bivac/volume"
 )
 
 // CattleOrchestrator implements a container orchestrator for Cattle
@@ -169,6 +170,7 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	})
 	if err != nil {
 		log.Errorf("failed to create worker container: %s", err)
+		return
 	}
 
 	defer o.DeleteWorker(container)
@@ -224,7 +226,12 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	if n, err = ws.Read(data); err != nil && err.Error() != "EOF" {
 		log.Errorf("failed to retrieve logs: %s", err)
 	}
-	stdout = string(data[:n])
+
+	re := regexp.MustCompile(`(?m)[0-9]{2,} [ZT\-\:\.0-9]+ (.*)`)
+	for _, line := range re.FindAllStringSubmatch(string(data[:n]), -1) {
+		stdout = strings.Join([]string{stdout, line[1]}, "\n")
+	}
+
 	log.WithFields(log.Fields{
 		"container": container.Id,
 		"volumes":   strings.Join(cvs[:], ","),
