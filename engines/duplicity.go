@@ -33,6 +33,11 @@ func (*DuplicityEngine) GetName() string {
 	return "Duplicity"
 }
 
+// StdinSupport returns true if the engine supports Stdin
+func (*DuplicityEngine) StdinSupport() bool {
+	return false
+}
+
 // Backup performs the backup of the passed volume
 func (d *DuplicityEngine) Backup() (err error) {
 	vol := d.Volume

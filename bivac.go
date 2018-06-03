@@ -48,34 +48,69 @@ func main() {
 }
 
 func backupVolume(o orchestrators.Orchestrator, vol *volume.Volume) (err error) {
+
+	e := engines.GetEngine(o, vol)
+	log.WithFields(log.Fields{
+		"volume": vol.Name,
+		"engine": e.GetName(),
+	}).Info("Found backup engine")
+
 	p := providers.GetProvider(o, vol)
 	log.WithFields(log.Fields{
 		"volume":   vol.Name,
 		"provider": p.GetName(),
 	}).Info("Found data provider")
 
-	vp, err := providers.PrepareBackup(p)
-	if err != nil {
-		err = fmt.Errorf("failed to prepare backup: %v", err)
-		return
-	}
-
-	var e engines.Engine
-	if vp != nil {
-		e = engines.GetEngine(o, vp)
+	if cmd := p.GetPrepareCommand(""); cmd != nil {
+		if e.StdinSupport() {
+			pbErr := make(chan error)
+			log.Debugf("preparing backup...")
+			go providers.PrepareBackup(p, pbErr)
+			log.Debugf("waiting for assignment")
+			err = <-pbErr
+			log.Debugf("error assigned")
+			if err != nil {
+				err = fmt.Errorf("failed to prepare backup: %s", err)
+				return
+			}
+			log.Debugf("Backuping...")
+			err = e.Backup()
+		} else {
+			_, err = providers.PrepareBackup(p, nil)
+			if err != nil {
+				err = fmt.Errorf("failed to prepare backup: %s", err)
+				return
+			}
+			err = e.Backup()
+		}
+		if err != nil {
+			err = fmt.Errorf("failed to backup volume: %s", err)
+			return
+		}
 	} else {
-		e = engines.GetEngine(o, vol)
+		err = e.Backup()
+		if err != nil {
+			err = fmt.Errorf("failed to backup volume: %s", err)
+			return
+		}
 	}
+	/*
 
-	log.WithFields(log.Fields{
-		"volume": vol.Name,
-		"engine": e.GetName(),
-	}).Info("Found backup engine")
+		if e.StdinSupport {
+			go providers.PrepareBackupToPipe(p)
+		} else {
+			vp, err := providers.PrepareBackupToVolume(p)
+			err = e.BackupVolume()
+			if err != nil {
+				err = fmt.Errorf("failed to backup volume: %v", err)
+				return
+			}
+		}
+		if err != nil {
+			err = fmt.Errorf("failed to prepare backup: %v", err)
+			return
+		}
 
-	err = e.Backup()
-	if err != nil {
-		err = fmt.Errorf("failed to backup volume: %v", err)
-		return
-	}
+	*/
 	return
 }

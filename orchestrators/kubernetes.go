@@ -305,7 +305,7 @@ func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVol
 }
 
 // ContainerPrepareBackup executes a command in a container
-func (o *KubernetesOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.MountedVolumes, command []string) (backupVolume *volume.Volume, err error) {
+func (o *KubernetesOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.MountedVolumes, command []string, pbErr chan error, v *volume.Volume) (backupVolume *volume.Volume, err error) {
 	pr, pw := io.Pipe()
 	go func() {
 		var stderr bytes.Buffer
@@ -332,7 +332,9 @@ func (o *KubernetesOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.M
 
 		exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
 		if err != nil {
-			log.Errorf("failed to call the API: %s", err)
+			err = fmt.Errorf("failed to call the API: %s", err)
+			pbErr <- err
+			log.Error(err)
 			return
 		}
 		err = exec.Stream(remotecommand.StreamOptions{
@@ -345,8 +347,14 @@ func (o *KubernetesOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.M
 		if stderr.Len() > 0 {
 			log.Warningf("STDERR of the prepare backup command: %s", stderr.String())
 		}
+		pbErr <- err
 		return
 	}()
+	if _, ok := (<-pbErr); ok {
+		v.PipeReader = pr
+		pbErr <- nil
+		return
+	}
 
 	_, err = o.Client.CoreV1().PersistentVolumeClaims(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{

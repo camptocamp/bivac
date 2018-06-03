@@ -239,7 +239,7 @@ func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes
 }
 
 // ContainerPrepareBackup executes a command to backup something into a volume
-func (o *DockerOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.MountedVolumes, command []string) (backupVolume *volume.Volume, err error) {
+func (o *DockerOrchestrator) ContainerPrepareBackup(mountedVolumes *volume.MountedVolumes, command []string, pbErr chan error, v *volume.Volume) (backupVolume *volume.Volume, err error) {
 	pr, pw := io.Pipe()
 	go func() {
 		exec, err := o.Client.ContainerExecCreate(context.Background(), mountedVolumes.ContainerID, types.ExecConfig{

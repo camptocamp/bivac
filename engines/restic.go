@@ -38,6 +38,11 @@ func (*ResticEngine) GetName() string {
 	return "Restic"
 }
 
+// StdinSupport returns true if the engine supports Stdin
+func (*ResticEngine) StdinSupport() bool {
+	return true
+}
+
 // Backup performs the backup of the passed volume
 func (r *ResticEngine) Backup() (err error) {
 

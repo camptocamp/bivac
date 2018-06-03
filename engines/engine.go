@@ -10,6 +10,7 @@ import (
 type Engine interface {
 	Backup() error
 	GetName() string
+	StdinSupport() bool
 }
 
 // GetEngine returns the engine for passed volume

@@ -80,7 +80,7 @@ func GetProvider(o orchestrators.Orchestrator, v *volume.Volume) Provider {
 }
 
 // PrepareBackup sets up the data before backup
-func PrepareBackup(p Provider) (backupVolume *volume.Volume, err error) {
+func PrepareBackup(p Provider, pbErr chan error) (backupVolume *volume.Volume, err error) {
 	p.SetVolumeBackupDir()
 
 	o := p.GetOrchestrator()
@@ -90,6 +90,7 @@ func PrepareBackup(p Provider) (backupVolume *volume.Volume, err error) {
 	mountedVolumes, err := o.GetMountedVolumes()
 	if err != nil {
 		err = fmt.Errorf("failed to list containers: %v", err)
+		pbErr <- err
 		return
 	}
 
@@ -103,9 +104,10 @@ func PrepareBackup(p Provider) (backupVolume *volume.Volume, err error) {
 
 				cmd := p.GetPrepareCommand(volDestination)
 				if cmd != nil {
-					backupVolume, err = o.ContainerPrepareBackup(mountedVolume, cmd)
+					backupVolume, err = o.ContainerPrepareBackup(mountedVolume, cmd, pbErr, vol)
 					if err != nil {
 						err = fmt.Errorf("failed to execute command in container: %v", err)
+						pbErr <- err
 						return
 					}
 				} else {

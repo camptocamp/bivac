@@ -20,6 +20,11 @@ func (*RCloneEngine) GetName() string {
 	return "RClone"
 }
 
+// StdinSupport returns true if the engine supports Stdin
+func (*RCloneEngine) StdinSupport() bool {
+	return false
+}
+
 // Backup performs the backup of the passed volume
 func (r *RCloneEngine) Backup() (err error) {
 	v := r.Volume
