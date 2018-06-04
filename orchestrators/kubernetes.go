@@ -214,6 +214,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 	buf.ReadFrom(readCloser)
 	stdout = buf.String()
 
+	log.Debug(stdout)
 	return
 }
 
