@@ -7,6 +7,7 @@ BUG FIXES:
 - `orchestrator/cattle`: Fix volume blacklisting.
 - `orchestrator/cattle`: Use Rancher Host's hostname for metrics.
 - `orchestrator/cattle`: Set random name for workers.
+- `orchestrator/cattle`: Fix provider detection issue.
 - `engine/restic`: Add backupExitCode metric.
 
 # [1.0.0-alpha1](https://github.com/camptocamp/bivac/releases/tag/v1.0.0-alpha1) (2018-05-16)
