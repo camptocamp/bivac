@@ -106,7 +106,7 @@ $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
    -e BIVAC_TARGET_URL=s3:http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
    -e AWS_ACCESS_KEY_ID=<my_key_id> \
    -e AWS_SECRET_ACCESS_KEY=<my_secret_key> \
-   -e RESTIC_PASSWORD=<my_restic_password>
+   -e RESTIC_PASSWORD=<my_restic_password> \
      camptocamp/bivac
 ```
 
