@@ -70,6 +70,7 @@ Swift Options:
 
 Docker Options:
   -e, --docker-endpoint=            The Docker endpoint. (default: unix:///var/run/docker.sock) [$DOCKER_ENDPOINT]
+  -n, --docker-network=             The Docker network settings. (default: bridge) [$DOCKER_NETWORK]
 
 Kubernetes Options:
       --k8s-namespace=              Namespace where you want to run Bivac. [$K8S_NAMESPACE]
