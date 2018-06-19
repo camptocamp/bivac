@@ -58,6 +58,7 @@ type Config struct {
 
 	Docker struct {
 		Endpoint string `short:"e" long:"docker-endpoint" description:"The Docker endpoint." env:"DOCKER_ENDPOINT" default:"unix:///var/run/docker.sock"`
+		Network string `short:"n" long:"docker-network" description:"The Docker network settings." env:"DOCKER_NETWORK" default:"bridge"`
 	} `group:"Docker Options"`
 
 	Kubernetes struct {

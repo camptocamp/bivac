@@ -133,6 +133,8 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 		},
 		&container.HostConfig{
 			Mounts: mounts,
+			NetworkMode: container.NetworkMode(
+				o.Handler.Config.Docker.Network),
 		}, nil, "",
 	)
 	if err != nil {
