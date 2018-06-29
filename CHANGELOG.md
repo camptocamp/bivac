@@ -1,3 +1,14 @@
+# [1.0.0-alpha3](https://github.com/camptocamp/bivac/releases/tag/v1.0.0-alpha3) (2018-06-29)
+
+IMPROVEMENTS:
+
+- `orchestrator/kubernetes`: print worker logs if debug is enabled
+
+BUG FIXES:
+
+- `orchestrator/cattle`: fix node selector
+- `orchestrator/cattle`: fix EOF error while reading logs
+
 # [1.0.0-alpha2](https://github.com/camptocamp/bivac/releases/tag/v1.0.0-alpha2) (2018-06-04)
 
 BUG FIXES:
