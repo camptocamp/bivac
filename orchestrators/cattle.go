@@ -157,11 +157,11 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	}
 
 	container, err := o.Client.Container.Create(&client.Container{
-		Name:        createWorkerName(),
-		HostId:      hostbind,
-		ImageUuid:   "docker:" + image,
-		Command:     cmd,
-		Environment: environment,
+		Name:            createWorkerName(),
+		RequestedHostId: hostbind,
+		ImageUuid:       "docker:" + image,
+		Command:         cmd,
+		Environment:     environment,
 		RestartPolicy: &client.RestartPolicy{
 			MaximumRetryCount: 1,
 			Name:              "on-failure",
