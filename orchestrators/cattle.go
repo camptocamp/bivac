@@ -2,6 +2,7 @@ package orchestrators
 
 import (
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"net"
@@ -223,8 +224,12 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 
 	var data = make([]byte, 1024)
 	var n int
-	if n, err = ws.Read(data); err != nil && err.Error() != "EOF" {
-		log.Errorf("failed to retrieve logs: %s", err)
+	if n, err = ws.Read(data); err != nil {
+		if err == io.EOF {
+			err = nil
+		} else {
+			log.Errorf("failed to retrieve logs: %s", err)
+		}
 	}
 
 	re := regexp.MustCompile(`(?m)[0-9]{2,} [ZT\-\:\.0-9]+ (.*)`)
@@ -322,8 +327,12 @@ func (o *CattleOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes
 
 	var data = make([]byte, 1024)
 	var n int
-	if n, err = ws.Read(data); err != nil && err.Error() != "EOF" {
-		log.Errorf("failed to retrieve logs: %s", err)
+	if n, err = ws.Read(data); err != nil {
+		if err == io.EOF {
+			err = nil
+		} else {
+			log.Errorf("failed to retrieve logs: %s", err)
+		}
 	}
 	log.WithFields(log.Fields{
 		"container": mountedVolumes.ContainerID,
