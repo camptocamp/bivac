@@ -80,13 +80,16 @@ func (r *RCloneEngine) launchRClone(cmd []string, extraEnv map[string]string, vo
 	image := config.RClone.Image
 
 	env := map[string]string{
-		"AWS_ACCESS_KEY_ID":     config.AWS.AccessKeyID,
-		"AWS_SECRET_ACCESS_KEY": config.AWS.SecretAccessKey,
-		"OS_USERNAME":           config.Swift.Username,
-		"OS_PASSWORD":           config.Swift.Password,
-		"OS_AUTH_URL":           config.Swift.AuthURL,
-		"OS_TENANT_NAME":        config.Swift.TenantName,
-		"OS_REGION_NAME":        config.Swift.RegionName,
+		"AWS_ACCESS_KEY_ID":                 config.AWS.AccessKeyID,
+		"AWS_SECRET_ACCESS_KEY":             config.AWS.SecretAccessKey,
+		"RCLONE_CONFIG_SWIFT_TYPE":          "swift",
+		"RCLONE_CONFIG_SWIFT_AUTH":          config.Swift.AuthURL,
+		"RCLONE_CONFIG_SWIFT_USER":          config.Swift.Username,
+		"RCLONE_CONFIG_SWIFT_KEY":           config.Swift.Password,
+		"RCLONE_CONFIG_SWIFT_REGION":        config.Swift.RegionName,
+		"RCLONE_CONFIG_SWIFT_TENANT":        config.Swift.TenantName,
+		"RCLONE_CONFIG_SWIFT_DOMAIN":        config.Swift.UserDomainName,
+		"RCLONE_CONFIG_SWIFT_TENANT_DOMAIN": config.Swift.ProjectDomainName,
 	}
 	for en, ev := range extraEnv {
 		env[en] = ev
