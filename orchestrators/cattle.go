@@ -350,6 +350,17 @@ func (o *CattleOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string
 		return true, "blacklisted", "path"
 	}
 
+	// Use whitelist if defined
+	if l := o.Handler.Config.VolumesWhitelist; l != nil {
+		sort.Strings(l)
+		i := sort.SearchStrings(l, vol.Name)
+		if i < len(l) && l[i] == vol.Name {
+			return false, "", ""
+		} else {
+			return true, "blacklisted", "whitelist config"
+		}
+	}
+
 	list := o.Handler.Config.VolumesBlacklist
 	sort.Strings(list)
 	i := sort.SearchStrings(list, vol.Name)

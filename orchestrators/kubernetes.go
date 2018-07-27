@@ -316,6 +316,17 @@ func (o *KubernetesOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, st
 		return true, "unnamed", ""
 	}
 
+	// Use whitelist if defined
+	if l := o.Handler.Config.VolumesWhitelist; l != nil {
+		sort.Strings(l)
+		i := sort.SearchStrings(l, vol.Name)
+		if i < len(l) && l[i] == vol.Name {
+			return false, "", ""
+		} else {
+			return true, "blacklisted", "whitelist config"
+		}
+	}
+
 	list := o.Handler.Config.VolumesBlacklist
 	list = append(list, defaultBlacklistedVolumes...)
 	sort.Strings(list)

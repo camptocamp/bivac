@@ -240,6 +240,17 @@ func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string
 		return true, "unnamed", ""
 	}
 
+	// Use whitelist if defined
+	if l := o.Handler.Config.VolumesWhitelist; l != nil {
+		sort.Strings(l)
+		i := sort.SearchStrings(l, vol.Name)
+		if i < len(l) && l[i] == vol.Name {
+			return false, "", ""
+		} else {
+			return true, "blacklisted", "whitelist config"
+		}
+	}
+
 	list := o.Handler.Config.VolumesBlacklist
 	i := sort.SearchStrings(list, vol.Name)
 	if i < len(list) && list[i] == vol.Name {
