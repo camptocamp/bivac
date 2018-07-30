@@ -57,7 +57,7 @@ type Config struct {
 		RegionName        string `long:"swift-region-name" description:"The Swift region name." env:"SWIFT_REGIONNAME"`
 		UserDomainName    string `long:"swift-user-domain-name" description:"The Swift user domain name." env:"SWIFT_USER_DOMAIN_NAME"`
 		ProjectName       string `long:"swift-project-name" description:"The Swift project name." env:"SWIFT_PROJECT_NAME"`
-		ProjectDomainName string `long:"swift-project-domain-name" description:"The Swift project domain name." env:"SWIFT_DOMAIN_PROJECT_NAME"`
+		ProjectDomainName string `long:"swift-project-domain-name" description:"The Swift project domain name." env:"SWIFT_PROJECT_DOMAIN_NAME"`
 	} `group:"Swift Options"`
 
 	Docker struct {
