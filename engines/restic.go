@@ -277,14 +277,17 @@ func (r *ResticEngine) launchRestic(cmd []string, volumes []*volume.Volume) (sta
 	cmd = append(cmd, "--no-cache")
 
 	env := map[string]string{
-		"AWS_ACCESS_KEY_ID":     config.AWS.AccessKeyID,
-		"AWS_SECRET_ACCESS_KEY": config.AWS.SecretAccessKey,
-		"OS_USERNAME":           config.Swift.Username,
-		"OS_PASSWORD":           config.Swift.Password,
-		"OS_AUTH_URL":           config.Swift.AuthURL,
-		"OS_TENANT_NAME":        config.Swift.TenantName,
-		"OS_REGION_NAME":        config.Swift.RegionName,
-		"RESTIC_PASSWORD":       config.Restic.Password,
+		"AWS_ACCESS_KEY_ID":      config.AWS.AccessKeyID,
+		"AWS_SECRET_ACCESS_KEY":  config.AWS.SecretAccessKey,
+		"OS_USERNAME":            config.Swift.Username,
+		"OS_PASSWORD":            config.Swift.Password,
+		"OS_AUTH_URL":            config.Swift.AuthURL,
+		"OS_TENANT_NAME":         config.Swift.TenantName,
+		"OS_REGION_NAME":         config.Swift.RegionName,
+		"OS_USER_DOMAIN_NAME":    config.Swift.UserDomainName,
+		"OS_PROJECT_NAME":        config.Swift.ProjectName,
+		"OS_PROJECT_DOMAIN_NAME": config.Swift.ProjectDomainName,
+		"RESTIC_PASSWORD":        config.Restic.Password,
 	}
 
 	for k, v := range config.ExtraEnv {
