@@ -189,6 +189,9 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 		}
 
 		if pod.Status.Phase == apiv1.PodSucceeded || pod.Status.Phase == apiv1.PodFailed {
+			if len(pod.Status.ContainerStatuses) == 0 {
+				return 0, "", fmt.Errorf("no container statuses found")
+			}
 			state = int(pod.Status.ContainerStatuses[0].State.Terminated.ExitCode)
 			terminated = true
 		} else if pod.Status.Phase != apiv1.PodRunning {
