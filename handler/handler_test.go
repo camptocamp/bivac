@@ -61,7 +61,7 @@ func TestSchedulerVolumeNoVerify(t *testing.T) {
 
 	c := Bivac{}
 
-	result, err := c.IsCheckScheduled(&vol)
+	result := c.IsCheckScheduled(&vol)
 
 	if result != false {
 		t.Fatal("Expected vol.Config.NoVerify equals to false")
@@ -92,7 +92,7 @@ func TestSchedulerVolumePermissionDenied(t *testing.T) {
 		},
 	}
 
-	result, err := c.IsCheckScheduled(&vol)
+	result := c.IsCheckScheduled(&vol)
 
 	if result != false {
 		t.Fatal("Expected false, got true.")
@@ -122,7 +122,7 @@ func TestSchedulerVolumeInvalidCheckEvery(t *testing.T) {
 		},
 	}
 
-	result, err := c.IsCheckScheduled(&vol)
+	result := c.IsCheckScheduled(&vol)
 
 	if result != false {
 		t.Fatal("Expected false, got true.")
@@ -150,7 +150,7 @@ func TestSchedulerVolumeVerifyNotRequired(t *testing.T) {
 		},
 	}
 
-	result, err := c.IsCheckScheduled(&vol)
+	result := c.IsCheckScheduled(&vol)
 
 	if result != false {
 		t.Fatal("Expected false, got true.")
@@ -182,7 +182,7 @@ func TestSchedulerVolumeVerifyRequired(t *testing.T) {
 		},
 	}
 
-	result, err := c.IsCheckScheduled(&vol)
+	result := c.IsCheckScheduled(&vol)
 
 	if result != true {
 		t.Fatal("Expected true, got false.")

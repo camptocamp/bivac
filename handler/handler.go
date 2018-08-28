@@ -45,7 +45,7 @@ func (c *Bivac) GetHostname() (err error) {
 }
 
 // IsCheckScheduled checks if the backup must be verified
-func (c *Bivac) IsCheckScheduled(vol *volume.Volume) (bool, error) {
+func (c *Bivac) IsCheckScheduled(vol *volume.Volume) bool {
 	logCheckPath := vol.Mountpoint + "/.bivac_last_check"
 
 	if vol.Config.NoVerify {
@@ -53,7 +53,7 @@ func (c *Bivac) IsCheckScheduled(vol *volume.Volume) (bool, error) {
 			"volume": vol.Name,
 		}).Info("Skipping verification")
 
-		return false, nil
+		return false
 	}
 
 	if _, err := os.Stat(logCheckPath); os.IsNotExist(err) {
@@ -64,26 +64,28 @@ func (c *Bivac) IsCheckScheduled(vol *volume.Volume) (bool, error) {
 	if err != nil {
 		log.WithFields(log.Fields{
 			"volume": vol.Name,
-		}).Warning("Cannot retrieve the last check date, skipping verification")
-		return false, nil
+		}).Warning("Cannot retrieve the last check date, skipping verification.")
+		return false
 	}
 
 	checkEvery, err := time.ParseDuration(c.Config.CheckEvery)
 	if err != nil {
-		err = fmt.Errorf("failed to parse the parameter 'check-every': %v", err)
-		return false, err
+		log.WithFields(log.Fields{
+			"volume": vol.Name,
+		}).Error("failed to parse the parameter 'check-every': %v", err)
+		return false
 	}
 
 	checkExpiration := info.ModTime().Add(checkEvery)
 	if time.Now().Before(checkExpiration) {
-		return false, nil
+		return false
 	}
 
 	log.WithFields(log.Fields{
 		"volume": vol.Name,
 	}).Info("Verifying backup")
 
-	return true, nil
+	return true
 }
 
 func (c *Bivac) setupLoglevel() (err error) {
