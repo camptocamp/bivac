@@ -265,7 +265,7 @@ func (o *CattleOrchestrator) DeleteWorker(container *client.Container) {
 }
 
 // GetMountedVolumes returns mounted volumes
-func (o *CattleOrchestrator) GetMountedVolumes() (containers []*volume.MountedVolumes, err error) {
+func (o *CattleOrchestrator) GetMountedVolumes(v *volume.Volume) (containers []*volume.MountedVolumes, err error) {
 	c, err := o.Client.Container.List(&client.ListOpts{
 		Filters: map[string]interface{}{
 			"limit": -2,
@@ -339,10 +339,6 @@ func (o *CattleOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes
 		"cmd":       strings.Join(command[:], " "),
 	}).Debug(string(data[:n]))
 	return
-}
-
-// SetNamespace will update Kubernetes namespace
-func (o *CattleOrchestrator) SetNamespace(namespace string) {
 }
 
 func (o *CattleOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string, string) {

@@ -63,35 +63,27 @@ func (o *KubernetesOrchestrator) GetVolumes() (volumes []*volume.Volume, err err
 	namespaces, err := o.getNamespaces()
 
 	for _, namespace := range namespaces {
-		o.SetNamespace(namespace)
+		o.setNamespace(namespace)
 		pvcs, err := o.Client.CoreV1().PersistentVolumeClaims(o.Handler.Config.Kubernetes.Namespace).List(metav1.ListOptions{})
 		if err != nil {
 			log.Errorf("failed to retrieve the list of PVCs: %v", err)
 		}
 
-		containers, err := o.GetMountedVolumes()
-		mountedVolumes := make(map[string]string)
-		bindHostVolume := make(map[string]string)
-		for _, container := range containers {
-			for volName, volMountpath := range container.Volumes {
-				mountedVolumes[volName] = volMountpath
-				bindHostVolume[volName] = container.HostID
-			}
-		}
-		var mountpoint string
 		for _, pvc := range pvcs.Items {
-			if value, ok := mountedVolumes[pvc.Name]; ok {
-				mountpoint = value
-			} else {
-				mountpoint = "/data"
-			}
 			nv := &volume.Volume{
 				Config:     &volume.Config{},
-				Mountpoint: mountpoint,
+				Mountpoint: "/data",
 				Name:       pvc.Name,
-				HostBind:   bindHostVolume[pvc.Name],
-				Hostname:   bindHostVolume[pvc.Name],
 				Namespace:  namespace,
+			}
+
+			containers, _ := o.GetMountedVolumes(nv)
+			for _, container := range containers {
+				for _, volMountPath := range container.Volumes {
+					nv.HostBind = container.HostID
+					nv.Hostname = container.HostID
+					nv.Mountpoint = volMountPath
+				}
 			}
 
 			v := volume.NewVolume(nv, c.Config, c.Hostname)
@@ -127,6 +119,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 	var node string
 
 	for _, v := range volumes {
+		o.setNamespace(v.Namespace)
 		pvc, err := o.Client.CoreV1().PersistentVolumeClaims(o.Handler.Config.Kubernetes.Namespace).Get(v.Name, metav1.GetOptions{})
 		if err != nil {
 			log.Errorf("failed to retrieve PersistentVolumeClaim \""+v.Name+"\": %s", err)
@@ -238,7 +231,9 @@ func (o *KubernetesOrchestrator) DeleteWorker(name string) {
 }
 
 // GetMountedVolumes returns mounted volumes
-func (o *KubernetesOrchestrator) GetMountedVolumes() (containers []*volume.MountedVolumes, err error) {
+func (o *KubernetesOrchestrator) GetMountedVolumes(v *volume.Volume) (containers []*volume.MountedVolumes, err error) {
+
+	o.setNamespace(v.Namespace)
 
 	pods, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).List(metav1.ListOptions{})
 	if err != nil {
@@ -263,7 +258,13 @@ func (o *KubernetesOrchestrator) GetMountedVolumes() (containers []*volume.Mount
 			}
 			for _, volumeMount := range container.VolumeMounts {
 				if c, ok := mapVolClaim[volumeMount.Name]; ok {
-					mv.Volumes[c] = volumeMount.MountPath
+					if c == v.Name {
+						mv.Volumes[c] = volumeMount.MountPath
+					}
+					log.WithFields(log.Fields{
+						"volume":    c,
+						"container": container.Name,
+					}).Debug("Container found using volume")
 				}
 			}
 			containers = append(containers, mv)
@@ -312,8 +313,7 @@ func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVol
 	return
 }
 
-// SetNamespace will update the Kubernetes namespace
-func (o *KubernetesOrchestrator) SetNamespace(namespace string) {
+func (o *KubernetesOrchestrator) setNamespace(namespace string) {
 	o.Handler.Config.Kubernetes.Namespace = namespace
 }
 

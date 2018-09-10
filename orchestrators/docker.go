@@ -188,7 +188,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 }
 
 // GetMountedVolumes returns mounted volumes
-func (o *DockerOrchestrator) GetMountedVolumes() (containers []*volume.MountedVolumes, err error) {
+func (o *DockerOrchestrator) GetMountedVolumes(v *volume.Volume) (containers []*volume.MountedVolumes, err error) {
 	c, err := o.Client.ContainerList(context.Background(), types.ContainerListOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to list containers: %v", err)
@@ -233,10 +233,6 @@ func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes
 		return fmt.Errorf("prepare command exited with code %v", c)
 	}
 	return
-}
-
-// SetNamespace will update Kubernetes namespace
-func (o *DockerOrchestrator) SetNamespace(namespace string) {
 }
 
 func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string, string) {

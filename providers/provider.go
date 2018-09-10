@@ -46,8 +46,6 @@ func GetProvider(o orchestrators.Orchestrator, v *volume.Volume) Provider {
 		shell,
 	}
 
-	o.SetNamespace(v.Namespace)
-
 	_, stdout, err := o.LaunchContainer("busybox", map[string]string{}, cmd, []*volume.Volume{v})
 	if err != nil && err.Error() != "EOF" {
 		log.Errorf("failed to run provider detection: %s", err)
@@ -90,10 +88,7 @@ func PrepareBackup(p Provider) (err error) {
 
 	vol := p.GetVolume()
 
-	// For Kubernetes only
-	o.SetNamespace(vol.Namespace)
-
-	containers, err := o.GetMountedVolumes()
+	containers, err := o.GetMountedVolumes(vol)
 	if err != nil {
 		err = fmt.Errorf("failed to list containers: %v", err)
 		return
@@ -101,24 +96,17 @@ func PrepareBackup(p Provider) (err error) {
 
 	for _, container := range containers {
 		for volName, volDestination := range container.Volumes {
-			if volName == vol.Name {
+			cmd := p.GetPrepareCommand(volDestination)
+			if cmd != nil {
+				err = o.ContainerExec(container, cmd)
+				if err != nil {
+					return fmt.Errorf("failed to execute command in container: %v", err)
+				}
+			} else {
 				log.WithFields(log.Fields{
 					"volume":    volName,
 					"container": container.ContainerID,
-				}).Debug("Container found using volume")
-
-				cmd := p.GetPrepareCommand(volDestination)
-				if cmd != nil {
-					err = o.ContainerExec(container, cmd)
-					if err != nil {
-						return fmt.Errorf("failed to execute command in container: %v", err)
-					}
-				} else {
-					log.WithFields(log.Fields{
-						"volume":    volName,
-						"container": container.ContainerID,
-					}).Info("No prepare command to execute in container")
-				}
+				}).Info("No prepare command to execute in container")
 			}
 		}
 	}
