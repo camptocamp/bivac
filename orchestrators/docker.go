@@ -235,6 +235,10 @@ func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes
 	return
 }
 
+// SetNamespace will update Kubernetes namespace
+func (o *DockerOrchestrator) SetNamespace(namespace string) {
+}
+
 func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "duplicity_cache" || vol.Name == "lost+found" {
 		return true, "unnamed", ""

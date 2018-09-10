@@ -66,6 +66,7 @@ type Config struct {
 
 	Kubernetes struct {
 		Namespace            string `long:"k8s-namespace" description:"Namespace where you want to run Bivac." env:"K8S_NAMESPACE"`
+		AllNamespaces        bool   `long:"k8s-all-namespaces" description:"Backup volumes of all namespaces." env:"K8S_ALL_NAMESPACES"`
 		KubeConfig           string `long:"k8s-kubeconfig" description:"Path to your kubeconfig file." env:"K8S_KUBECONFIG"`
 		WorkerServiceAccount string `long:"k8s-worker-service-account" description:"Specify service account for workers." env:"K8S_WORKER_SERVICE_ACCOUNT"`
 	} `group:"Kubernetes Options"`

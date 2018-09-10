@@ -59,46 +59,53 @@ func (o *KubernetesOrchestrator) GetHandler() *handler.Bivac {
 func (o *KubernetesOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) {
 	c := o.Handler
 
-	pvcs, err := o.Client.CoreV1().PersistentVolumeClaims(o.Handler.Config.Kubernetes.Namespace).List(metav1.ListOptions{})
-	if err != nil {
-		log.Errorf("failed to retrieve the list of PVCs: %v", err)
-	}
+	// Get namespaces
+	namespaces, err := o.getNamespaces()
 
-	containers, err := o.GetMountedVolumes()
-	mountedVolumes := make(map[string]string)
-	bindHostVolume := make(map[string]string)
-	for _, container := range containers {
-		for volName, volMountpath := range container.Volumes {
-			mountedVolumes[volName] = volMountpath
-			bindHostVolume[volName] = container.HostID
-		}
-	}
-	var mountpoint string
-	for _, pvc := range pvcs.Items {
-		if value, ok := mountedVolumes[pvc.Name]; ok {
-			mountpoint = value
-		} else {
-			mountpoint = "/data"
-		}
-		nv := &volume.Volume{
-			Config:     &volume.Config{},
-			Mountpoint: mountpoint,
-			Name:       pvc.Name,
-			HostBind:   bindHostVolume[pvc.Name],
-			Hostname:   bindHostVolume[pvc.Name],
+	for _, namespace := range namespaces {
+		o.SetNamespace(namespace)
+		pvcs, err := o.Client.CoreV1().PersistentVolumeClaims(o.Handler.Config.Kubernetes.Namespace).List(metav1.ListOptions{})
+		if err != nil {
+			log.Errorf("failed to retrieve the list of PVCs: %v", err)
 		}
 
-		v := volume.NewVolume(nv, c.Config, c.Hostname)
-		if b, r, s := o.blacklistedVolume(v); b {
-			log.WithFields(log.Fields{
-				"volume": pvc.Name,
-				"reason": r,
-				"source": s,
-			}).Info("Ignoring volume")
-			continue
+		containers, err := o.GetMountedVolumes()
+		mountedVolumes := make(map[string]string)
+		bindHostVolume := make(map[string]string)
+		for _, container := range containers {
+			for volName, volMountpath := range container.Volumes {
+				mountedVolumes[volName] = volMountpath
+				bindHostVolume[volName] = container.HostID
+			}
 		}
-		volumes = append(volumes, v)
-		log.Infof("%+v", v)
+		var mountpoint string
+		for _, pvc := range pvcs.Items {
+			if value, ok := mountedVolumes[pvc.Name]; ok {
+				mountpoint = value
+			} else {
+				mountpoint = "/data"
+			}
+			nv := &volume.Volume{
+				Config:     &volume.Config{},
+				Mountpoint: mountpoint,
+				Name:       pvc.Name,
+				HostBind:   bindHostVolume[pvc.Name],
+				Hostname:   bindHostVolume[pvc.Name],
+				Namespace:  namespace,
+			}
+
+			v := volume.NewVolume(nv, c.Config, c.Hostname)
+			if b, r, s := o.blacklistedVolume(v); b {
+				log.WithFields(log.Fields{
+					"volume": pvc.Name,
+					"reason": r,
+					"source": s,
+				}).Info("Ignoring volume")
+				continue
+			}
+			volumes = append(volumes, v)
+			log.Infof("Detected volume: %s.%s", namespace, v.Name)
+		}
 	}
 	return
 }
@@ -305,6 +312,11 @@ func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVol
 	return
 }
 
+// SetNamespace will update the Kubernetes namespace
+func (o *KubernetesOrchestrator) SetNamespace(namespace string) {
+	o.Handler.Config.Kubernetes.Namespace = namespace
+}
+
 func (o *KubernetesOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string, string) {
 
 	defaultBlacklistedVolumes := []string{
@@ -363,6 +375,22 @@ func (o *KubernetesOrchestrator) getConfig() (config *rest.Config, err error) {
 			log.Errorf("Failed to retrieve the namespace from the cluster config: %v", err)
 		}
 		config, err = rest.InClusterConfig()
+	}
+	return
+}
+
+func (o *KubernetesOrchestrator) getNamespaces() (namespaces []string, err error) {
+	if o.Handler.Config.Kubernetes.AllNamespaces == true {
+		nms, err := o.Client.CoreV1().Namespaces().List(metav1.ListOptions{})
+		if err != nil {
+			err = fmt.Errorf("failed to retrieve the list of namespaces: %v", err)
+			return []string{}, err
+		}
+		for _, namespace := range nms.Items {
+			namespaces = append(namespaces, namespace.Name)
+		}
+	} else {
+		namespaces = append(namespaces, o.Handler.Config.Kubernetes.Namespace)
 	}
 	return
 }

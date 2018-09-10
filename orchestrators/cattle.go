@@ -341,6 +341,10 @@ func (o *CattleOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes
 	return
 }
 
+// SetNamespace will update Kubernetes namespace
+func (o *CattleOrchestrator) SetNamespace(namespace string) {
+}
+
 func (o *CattleOrchestrator) blacklistedVolume(vol *volume.Volume) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || utf8.RuneCountInString(vol.Name) == 0 {
 		return true, "unnamed", ""
