@@ -96,17 +96,24 @@ func PrepareBackup(p Provider) (err error) {
 
 	for _, container := range containers {
 		for volName, volDestination := range container.Volumes {
-			cmd := p.GetPrepareCommand(volDestination)
-			if cmd != nil {
-				err = o.ContainerExec(container, cmd)
-				if err != nil {
-					return fmt.Errorf("failed to execute command in container: %v", err)
-				}
-			} else {
+			if volName == vol.Name {
 				log.WithFields(log.Fields{
 					"volume":    volName,
 					"container": container.ContainerID,
-				}).Info("No prepare command to execute in container")
+				}).Debug("Container found using volume")
+
+				cmd := p.GetPrepareCommand(volDestination)
+				if cmd != nil {
+					err = o.ContainerExec(container, cmd)
+					if err != nil {
+						return fmt.Errorf("failed to execute command in container: %v", err)
+					}
+				} else {
+					log.WithFields(log.Fields{
+						"volume":    volName,
+						"container": container.ContainerID,
+					}).Info("No prepare command to execute in container")
+				}
 			}
 		}
 	}
