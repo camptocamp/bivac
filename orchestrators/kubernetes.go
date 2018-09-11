@@ -50,6 +50,11 @@ func (*KubernetesOrchestrator) GetName() string {
 	return "Kubernetes"
 }
 
+// GetPath returns the path of the backup
+func (*KubernetesOrchestrator) GetPath(v *volume.Volume) string {
+	return v.Namespace + "/" + v.Name
+}
+
 // GetHandler returns the Orchestrator's handler
 func (o *KubernetesOrchestrator) GetHandler() *handler.Bivac {
 	return o.Handler
