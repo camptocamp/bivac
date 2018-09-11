@@ -33,7 +33,7 @@ func (r *RCloneEngine) Backup() (err error) {
 	// Format targetURL for RClone
 	extraEnv := formatURL(targetURL)
 
-	target := targetURL.String() + "/" + v.Hostname + "/" + v.Name
+	target := targetURL.String() + "/" + r.Orchestrator.GetPath(v)
 	backupDir := v.Mountpoint + "/" + v.BackupDir
 
 	state, _, err := r.launchRClone(
