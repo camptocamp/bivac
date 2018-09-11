@@ -1,3 +1,21 @@
+# [1.0.0-alpha4](unreleased)
+
+BREAKING CHANGES:
+
+- `orchestrator/kubernetes`: backup path now contains namespace instead of node name
+
+IMPROVEMENTS:
+
+- `core`: Add `whitelist` option to whitelist volumes
+- `orchestrator/kubernetes`: Add `--k8s-all-namespaces` option to backup accross all namespaces
+- `engine/restic`: Add support for swift auth v3
+- `engine/rclone`: Add support for swift auth v3
+
+BUG FIXES:
+
+- `core`: Fix verification skipping if IsCheckScheduled is false
+- `orchestrator/kubernetes`: Check for empty container statuses in Launchcontainer
+
 # [1.0.0-alpha3](https://github.com/camptocamp/bivac/releases/tag/v1.0.0-alpha3) (2018-06-29)
 
 IMPROVEMENTS:
@@ -504,7 +522,7 @@ We don't use a specific path separator when using the duplicity engine for swift
 
 # [0.3.1](https://github.com/camptocamp/bivac/releases/tag/0.3.1) (2016-04-06)
 
-* Internals: 
+* Internals:
 
   - Lint with `golint` and `goimports`
 
