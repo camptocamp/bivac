@@ -52,6 +52,11 @@ func (*CattleOrchestrator) GetName() string {
 	return "Cattle"
 }
 
+// GetPath returns the path of the backup
+func (*CattleOrchestrator) GetPath(v *volume.Volume) string {
+	return v.Hostname + "/" + v.Name
+}
+
 // GetHandler returns the Orchestrator's handler
 func (o *CattleOrchestrator) GetHandler() *handler.Bivac {
 	return o.Handler
@@ -265,7 +270,7 @@ func (o *CattleOrchestrator) DeleteWorker(container *client.Container) {
 }
 
 // GetMountedVolumes returns mounted volumes
-func (o *CattleOrchestrator) GetMountedVolumes() (containers []*volume.MountedVolumes, err error) {
+func (o *CattleOrchestrator) GetMountedVolumes(v *volume.Volume) (containers []*volume.MountedVolumes, err error) {
 	c, err := o.Client.Container.List(&client.ListOpts{
 		Filters: map[string]interface{}{
 			"limit": -2,

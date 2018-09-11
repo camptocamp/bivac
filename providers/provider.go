@@ -45,6 +45,7 @@ func GetProvider(o orchestrators.Orchestrator, v *volume.Volume) Provider {
 		"-c",
 		shell,
 	}
+
 	_, stdout, err := o.LaunchContainer("busybox", map[string]string{}, cmd, []*volume.Volume{v})
 	if err != nil && err.Error() != "EOF" {
 		log.Errorf("failed to run provider detection: %s", err)
@@ -87,7 +88,7 @@ func PrepareBackup(p Provider) (err error) {
 
 	vol := p.GetVolume()
 
-	containers, err := o.GetMountedVolumes()
+	containers, err := o.GetMountedVolumes(vol)
 	if err != nil {
 		err = fmt.Errorf("failed to list containers: %v", err)
 		return

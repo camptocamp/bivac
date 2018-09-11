@@ -50,7 +50,7 @@ func (r *ResticEngine) Backup() (err error) {
 	}
 
 	c := r.Orchestrator.GetHandler()
-	v.Target = targetURL.String() + "/" + v.Hostname + "/" + v.Name
+	v.Target = targetURL.String() + "/" + r.Orchestrator.GetPath(v)
 	v.BackupDir = v.Mountpoint + "/" + v.BackupDir
 	v.Mount = v.Name + ":" + v.Mountpoint + ":ro"
 

@@ -43,6 +43,11 @@ func (*DockerOrchestrator) GetName() string {
 	return "Docker"
 }
 
+// GetPath returns the path of the backup
+func (*DockerOrchestrator) GetPath(v *volume.Volume) string {
+	return v.Hostname + "/" + v.Name
+}
+
 // GetHandler returns the Orchestrator's handler
 func (o *DockerOrchestrator) GetHandler() *handler.Bivac {
 	return o.Handler
@@ -188,7 +193,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 }
 
 // GetMountedVolumes returns mounted volumes
-func (o *DockerOrchestrator) GetMountedVolumes() (containers []*volume.MountedVolumes, err error) {
+func (o *DockerOrchestrator) GetMountedVolumes(v *volume.Volume) (containers []*volume.MountedVolumes, err error) {
 	c, err := o.Client.ContainerList(context.Background(), types.ContainerListOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to list containers: %v", err)
