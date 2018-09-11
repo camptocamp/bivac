@@ -43,6 +43,11 @@ func (*DockerOrchestrator) GetName() string {
 	return "Docker"
 }
 
+// GetPath returns the path of the backup
+func (*DockerOrchestrator) GetPath(v *volume.Volume) string {
+	return v.Hostname + "/" + v.Name
+}
+
 // GetHandler returns the Orchestrator's handler
 func (o *DockerOrchestrator) GetHandler() *handler.Bivac {
 	return o.Handler

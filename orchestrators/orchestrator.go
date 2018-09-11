@@ -11,6 +11,7 @@ import (
 // Orchestrator implements a container Orchestrator interface
 type Orchestrator interface {
 	GetName() string
+	GetPath(v *volume.Volume) string
 	GetHandler() *handler.Bivac
 	GetVolumes() ([]*volume.Volume, error)
 	LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error)
