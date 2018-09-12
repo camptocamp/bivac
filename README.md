@@ -181,3 +181,9 @@ Bivac returns:
 * `0` if nothing failed
 * `1` if a backup failed
 * `2` if pushing metrics to Prometheus failed
+
+
+## Architecture
+
+![Bivac architecture](img/architecture.png)
+
