@@ -57,18 +57,21 @@ func (r *ResticEngine) Backup() (err error) {
 	err = util.Retry(3, r.init)
 	if err != nil {
 		err = fmt.Errorf("failed to create a secure repository: %v", err)
+		r.sendBackupStatus(1, v.Name)
 		return
 	}
 
 	err = util.Retry(3, r.resticBackup)
 	if err != nil {
 		err = fmt.Errorf("failed to backup the volume: %v", err)
+		r.sendBackupStatus(1, v.Name)
 		return
 	}
 
 	err = util.Retry(3, r.forget)
 	if err != nil {
 		err = fmt.Errorf("failed to forget the oldest snapshots: %v", err)
+		r.sendBackupStatus(1, v.Name)
 		return
 	}
 
@@ -76,9 +79,12 @@ func (r *ResticEngine) Backup() (err error) {
 		err = util.Retry(3, r.verify)
 		if err != nil {
 			err = fmt.Errorf("failed to verify backup: %v", err)
+			r.sendBackupStatus(1, v.Name)
 			return err
 		}
 	}
+
+	r.sendBackupStatus(0, v.Name)
 
 	return
 }
@@ -266,6 +272,22 @@ func (r *ResticEngine) snapshots() (snapshots []Snapshot, err error) {
 		return snapshots, err
 	}
 	return
+}
+
+// sendBackupStatus creates a metric which represents the backup status. 0 == OK / 1 == KO
+func (r *ResticEngine) sendBackupStatus(status int, volume string) {
+	metric := r.Volume.MetricsHandler.NewMetric("bivac_backupExitCode", "gauge")
+	err := metric.UpdateEvent(
+		&metrics.Event{
+			Labels: map[string]string{
+				"volume": volume,
+			},
+			Value: strconv.Itoa(status),
+		},
+	)
+	if err != nil {
+		log.Errorf("failed to send metric: %v", err)
+	}
 }
 
 // launchRestic starts a restic container with the given command
