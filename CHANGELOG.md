@@ -1,4 +1,4 @@
-# [1.0.0-alpha4](unreleased)
+# [1.0.0-alpha4](https://github.com/camptocamp/bivac/releases/tag/1.0.0-alpha4) (2018-09-18)
 
 BREAKING CHANGES:
 
@@ -15,6 +15,7 @@ BUG FIXES:
 
 - `core`: Fix verification skipping if IsCheckScheduled is false
 - `orchestrator/kubernetes`: Check for empty container statuses in Launchcontainer
+- `engine/restic`: Prevent backup from silently failing
 
 # [1.0.0-alpha3](https://github.com/camptocamp/bivac/releases/tag/v1.0.0-alpha3) (2018-06-29)
 
