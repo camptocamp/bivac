@@ -1,14 +1,14 @@
-FROM golang:1.10 as builder
-RUN go get -u github.com/golang/dep/cmd/dep
+FROM golang:1.11 as builder
 WORKDIR /go/src/github.com/camptocamp/bivac
-COPY Gopkg.toml Gopkg.lock ./
-RUN dep ensure -vendor-only
 COPY . .
 RUN make bivac
 
-FROM scratch
+FROM restic/restic:latest as restic
+
+FROM busybox
 COPY --from=builder /etc/ssl /etc/ssl
-COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /
+COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /bin/
 COPY --from=builder /go/src/github.com/camptocamp/bivac/providers-config.default.toml /
-ENTRYPOINT ["/bivac"]
+COPY --from=restic /usr/bin/restic /bin/restic
+ENTRYPOINT ["/bin/bivac"]
 CMD [""]
