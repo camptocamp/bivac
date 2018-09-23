@@ -1,3 +1,4 @@
 .*.swp
 hugo/public
 vendor/
+*.out
