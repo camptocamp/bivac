@@ -1,6 +1,7 @@
 package orchestrators
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"sort"
@@ -16,6 +17,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/pkg/stdcopy"
 
 	log "github.com/Sirupsen/logrus"
 	docker "github.com/docker/docker/client"
@@ -216,27 +218,31 @@ func (o *DockerOrchestrator) GetMountedVolumes(v *volume.Volume) (containers []*
 }
 
 // ContainerExec executes a command in a container
-func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) (err error) {
+func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) (stdout string, err error) {
 	exec, err := o.Client.ContainerExecCreate(context.Background(), mountedVolumes.ContainerID, types.ExecConfig{
-		Cmd: command,
+		AttachStdout: true,
+		AttachStderr: true,
+		Cmd:          command,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to create exec: %v", err)
+		err = fmt.Errorf("failed to create exec: %v", err)
 	}
+
+	conn, err := o.Client.ContainerExecAttach(context.Background(), exec.ID, types.ExecConfig{})
+	if err != nil {
+		err = fmt.Errorf("failed to attach: %s", err)
+	}
+	defer conn.Close()
 
 	err = o.Client.ContainerExecStart(context.Background(), exec.ID, types.ExecStartCheck{})
 	if err != nil {
-		return fmt.Errorf("failed to start exec: %v", err)
+		err = fmt.Errorf("failed to start exec: %v", err)
 	}
 
-	inspect, err := o.Client.ContainerExecInspect(context.Background(), exec.ID)
-	if err != nil {
-		return fmt.Errorf("failed to check prepare command exit code: %v", err)
-	}
+	stdoutput := new(bytes.Buffer)
+	stdcopy.StdCopy(stdoutput, ioutil.Discard, conn.Reader)
 
-	if c := inspect.ExitCode; c != 0 {
-		return fmt.Errorf("prepare command exited with code %v", c)
-	}
+	stdout = stdoutput.String()
 	return
 }
 
