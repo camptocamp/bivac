@@ -1,6 +1,7 @@
 package orchestrators
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -296,7 +297,7 @@ func (o *CattleOrchestrator) GetMountedVolumes(v *volume.Volume) (containers []*
 }
 
 // ContainerExec executes a command in a container
-func (o *CattleOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) (err error) {
+func (o *CattleOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) (stdout string, err error) {
 
 	container, err := o.Client.Container.ById(mountedVolumes.ContainerID)
 	if err != nil {
@@ -339,10 +340,13 @@ func (o *CattleOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes
 			log.Errorf("failed to retrieve logs: %s", err)
 		}
 	}
+	rawStdout, _ := base64.StdEncoding.DecodeString(string(data[:n]))
+	stdout = string(rawStdout)
+
 	log.WithFields(log.Fields{
 		"container": mountedVolumes.ContainerID,
 		"cmd":       strings.Join(command[:], " "),
-	}).Debug(string(data[:n]))
+	}).Debug(stdout)
 	return
 }
 

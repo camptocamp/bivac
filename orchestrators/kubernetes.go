@@ -280,8 +280,8 @@ func (o *KubernetesOrchestrator) GetMountedVolumes(v *volume.Volume) (containers
 }
 
 // ContainerExec executes a command in a container
-func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) (err error) {
-	var stdout, stderr bytes.Buffer
+func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) (stdout string, err error) {
+	var stdoutput, stderr bytes.Buffer
 
 	config, err := o.getConfig()
 	if err != nil {
@@ -306,15 +306,16 @@ func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVol
 	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
 	if err != nil {
 		log.Errorf("failed to call the API: %s", err)
-		return err
+		return
 	}
 	err = exec.Stream(remotecommand.StreamOptions{
 		Stdin:  nil,
-		Stdout: &stdout,
+		Stdout: &stdoutput,
 		Stderr: &stderr,
 		Tty:    false,
 	})
 
+	stdout = stdoutput.String()
 	return
 }
 

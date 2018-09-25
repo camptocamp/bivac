@@ -104,7 +104,7 @@ func PrepareBackup(p Provider) (err error) {
 
 				cmd := p.GetPrepareCommand(volDestination)
 				if cmd != nil {
-					err = o.ContainerExec(container, cmd)
+					_, err = o.ContainerExec(container, cmd)
 					if err != nil {
 						return fmt.Errorf("failed to execute command in container: %v", err)
 					}
