@@ -4,50 +4,78 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/BurntSushi/toml"
 	log "github.com/Sirupsen/logrus"
+
 	"github.com/camptocamp/bivac/orchestrators"
 	"github.com/camptocamp/bivac/volume"
 )
 
-// A Provider is an interface for providers
-type Provider interface {
-	GetName() string
-	GetPrepareCommand(string) []string
-	GetOrchestrator() orchestrators.Orchestrator
-	GetVolume() *volume.Volume
-	GetBackupDir() string
-	SetVolumeBackupDir()
+// Providers stores the list of available providers
+type Providers struct {
+	Providers map[string]Provider
 }
 
-// BaseProvider is a struct implementing the Provider interface
-type BaseProvider struct {
-	orchestrator orchestrators.Orchestrator
-	vol          *volume.Volume
-	backupDir    string
+// Provider stores data for one provider
+type Provider struct {
+	Name         string `toml:"-"`
+	PreCmd       string `toml:"pre_cmd"`
+	PostCmd      string `toml:"post_cmd"`
+	BackupCmd    string `toml:"backup_cmd"`
+	DetectionCmd string `toml:"detect_cmd"`
+	BackupDir    string `toml:"backup_dir"`
 }
 
-// GetProvider detects which provider suits the passed volume and returns it
-func GetProvider(o orchestrators.Orchestrator, v *volume.Volume) Provider {
-	log.WithFields(log.Fields{
-		"volume": v.Name,
-	}).Info("Detecting provider")
-	p := &BaseProvider{
-		orchestrator: o,
-		vol:          v,
-	}
-	shell := `([[ -d ` + v.Mountpoint + `/mysql ]] && echo 'mysql') || ` +
-		`([[ -f ` + v.Mountpoint + `/PG_VERSION ]] && echo 'postgresql') || ` +
-		`([[ -f ` + v.Mountpoint + `/DB_CONFIG ]] && echo 'openldap'); ` +
-		`return 0`
+type configToml struct {
+	Providers map[string]Provider `toml:"providers"`
+}
 
-	cmd := []string{
-		"sh",
-		"-c",
-		shell,
+// LoadProviders returns the list of providers from the provider config file
+func LoadProviders(path string) (providers Providers, err error) {
+	c := &configToml{}
+	providers.Providers = make(map[string]Provider)
+	_, err = toml.DecodeFile(path, &c)
+	if err != nil {
+		err = fmt.Errorf("failed to load providers from config file: %s", err)
+		return
 	}
 
-	_, stdout, err := o.LaunchContainer("busybox", map[string]string{}, cmd, []*volume.Volume{v})
-	if err != nil && err.Error() != "EOF" {
+	for key, value := range c.Providers {
+		provider := Provider{
+			Name:         key,
+			PreCmd:       value.PreCmd,
+			PostCmd:      value.PostCmd,
+			BackupCmd:    value.BackupCmd,
+			DetectionCmd: value.DetectionCmd,
+			BackupDir:    value.BackupDir,
+		}
+		providers.Providers[key] = provider
+	}
+	return
+}
+
+// GetProvider returns a provider based on detection commands
+func (providers *Providers) GetProvider(o orchestrators.Orchestrator, v *volume.Volume) (prov Provider, err error) {
+	detectionCmds := []string{}
+	for _, p := range providers.Providers {
+		detectionCmds = append(detectionCmds, fmt.Sprintf("(%s && echo '%s')", p.DetectionCmd, p.Name))
+	}
+	detectionCmds = append(detectionCmds, "true")
+	fullDetectionCmd := strings.Join(detectionCmds, " || ")
+
+	container, err := getContainer(o, v)
+	if err != nil {
+		return
+	}
+	if container == nil {
+		log.WithFields(log.Fields{
+			"volume": v.Name,
+		}).Info("No running container found using the volume.")
+		return
+	}
+
+	stdout, err := o.ContainerExec(container, []string{"bash", "-c", fullDetectionCmd})
+	if err != nil {
 		log.Errorf("failed to run provider detection: %s", err)
 	}
 
@@ -56,86 +84,45 @@ func GetProvider(o orchestrators.Orchestrator, v *volume.Volume) Provider {
 		log.WithFields(log.Fields{
 			"volume": v.Name,
 		}).Debug("mysql directory found, this should be MySQL datadir")
-		return &MySQLProvider{
-			BaseProvider: p,
-		}
-	case "postgresql":
-		log.WithFields(log.Fields{
-			"volume": v.Name,
-		}).Debug("PG_VERSION file found, this should be a PostgreSQL datadir")
-		return &PostgreSQLProvider{
-			BaseProvider: p,
-		}
-	case "openldap":
-		log.WithFields(log.Fields{
-			"volume": v.Name,
-		}).Debug("DB_CONFIG file found, this should be and OpenLDAP datadir")
-		return &OpenLDAPProvider{
-			BaseProvider: p,
-		}
-	default:
-		return &DefaultProvider{
-			BaseProvider: p,
-		}
+		prov = providers.Providers["mysql"]
+		v.BackupDir = prov.BackupDir
 	}
+	return
 }
 
-// PrepareBackup sets up the data before backup
-func PrepareBackup(p Provider) (err error) {
-	p.SetVolumeBackupDir()
+// RunCmd runs a command into a container
+func RunCmd(p Provider, o orchestrators.Orchestrator, v *volume.Volume, cmd string) (err error) {
+	container, err := getContainer(o, v)
+	if err != nil {
+		return err
+	}
 
-	o := p.GetOrchestrator()
+	cmd = strings.Replace(cmd, "$volume", container.Volumes[v.Name], -1)
+	stdout, err := o.ContainerExec(container, []string{"bash", "-c", cmd})
+	if err != nil {
+		return fmt.Errorf("failed to execute command in container: %v", err)
+	}
+	log.WithFields(log.Fields{
+		"volume": v.Name,
+		"cmd":    cmd,
+	}).Debugf("stdout: %s", stdout)
+	return
+}
 
-	vol := p.GetVolume()
-
-	containers, err := o.GetMountedVolumes(vol)
+func getContainer(o orchestrators.Orchestrator, v *volume.Volume) (mountedVolumes *volume.MountedVolumes, err error) {
+	containers, err := o.GetMountedVolumes(v)
 	if err != nil {
 		err = fmt.Errorf("failed to list containers: %v", err)
 		return
 	}
 
-	for _, container := range containers {
-		for volName, volDestination := range container.Volumes {
-			if volName == vol.Name {
-				log.WithFields(log.Fields{
-					"volume":    volName,
-					"container": container.ContainerID,
-				}).Debug("Container found using volume")
-
-				cmd := p.GetPrepareCommand(volDestination)
-				if cmd != nil {
-					_, err = o.ContainerExec(container, cmd)
-					if err != nil {
-						return fmt.Errorf("failed to execute command in container: %v", err)
-					}
-				} else {
-					log.WithFields(log.Fields{
-						"volume":    volName,
-						"container": container.ContainerID,
-					}).Info("No prepare command to execute in container")
-				}
+	for _, c := range containers {
+		for volName := range c.Volumes {
+			if volName == v.Name {
+				mountedVolumes = c
+				return
 			}
 		}
 	}
 	return
-}
-
-// GetOrchestrator returns the orchestrator associated with the provider
-func (p *BaseProvider) GetOrchestrator() orchestrators.Orchestrator {
-	return p.orchestrator
-}
-
-// GetVolume returns the volume associated with the provider
-func (p *BaseProvider) GetVolume() *volume.Volume {
-	return p.vol
-}
-
-// GetBackupDir returns the backup directory used by the provider
-func (p *BaseProvider) GetBackupDir() string {
-	return p.backupDir
-}
-
-// SetVolumeBackupDir sets the backup dir for the volume
-func (p *BaseProvider) SetVolumeBackupDir() {
-	p.vol.BackupDir = p.GetBackupDir()
 }

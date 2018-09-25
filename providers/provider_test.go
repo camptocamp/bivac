@@ -1,5 +1,6 @@
 package providers
 
+/*
 import (
 	"io/ioutil"
 	"os"
@@ -73,3 +74,4 @@ func TestBaseGetBackupDir(t *testing.T) {
 		t.Fatalf("Expected to get nil, got %s", got)
 	}
 }
+*/
