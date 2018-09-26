@@ -66,20 +66,6 @@ func backupVolume(o orchestrators.Orchestrator, vol *volume.Volume) (err error) 
 		}
 	}
 
-	if provider.BackupCmd != "" {
-		err = providers.RunCmd(provider, o, vol, provider.BackupCmd)
-		if err != nil {
-			log.Warningf("failed to prepare backup: %s", err)
-		}
-	}
-
-	if provider.PostCmd != "" {
-		err = providers.RunCmd(provider, o, vol, provider.PostCmd)
-		if err != nil {
-			log.Warningf("failed to run post-command: %s", err)
-		}
-	}
-
 	e := engines.GetEngine(o, vol)
 	log.WithFields(log.Fields{
 		"volume": vol.Name,
@@ -91,5 +77,13 @@ func backupVolume(o orchestrators.Orchestrator, vol *volume.Volume) (err error) 
 		err = fmt.Errorf("failed to backup volume: %v", err)
 		return
 	}
+
+	if provider.PostCmd != "" {
+		err = providers.RunCmd(provider, o, vol, provider.PostCmd)
+		if err != nil {
+			log.Warningf("failed to run post-command: %s", err)
+		}
+	}
+
 	return
 }
