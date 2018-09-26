@@ -21,7 +21,6 @@ type Provider struct {
 	Name         string `toml:"-"`
 	PreCmd       string `toml:"pre_cmd"`
 	PostCmd      string `toml:"post_cmd"`
-	BackupCmd    string `toml:"backup_cmd"`
 	DetectionCmd string `toml:"detect_cmd"`
 	BackupDir    string `toml:"backup_dir"`
 }
@@ -45,7 +44,6 @@ func LoadProviders(path string) (providers Providers, err error) {
 			Name:         key,
 			PreCmd:       value.PreCmd,
 			PostCmd:      value.PostCmd,
-			BackupCmd:    value.BackupCmd,
 			DetectionCmd: value.DetectionCmd,
 			BackupDir:    value.BackupDir,
 		}

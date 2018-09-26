@@ -11,12 +11,12 @@
 	backup_dir = "backups"
 
 	[providers.postgresql]
-	pre_cmd = "pg_dumpall --clean -Upostgres > $volume/backups/all.sql"
+	pre_cmd = "mkdir -p $volumes/backups && pg_dumpall --clean -Upostgres > $volume/backups/all.sql"
 	post_cmd = ""
 	detect_cmd = "[[ -f $volume/PG_VERSION ]]"
 	backup_dir = "backups"
 
 	[providers.openldap]
-	backup_cmd = "slapcat > $volume/backups/all.ldif"
+	pre_cmd = "mkdir -p $volumes/backups && slapcat > $volume/backups/all.ldif"
 	detect_cmd = "[[ -f $volume/DB_CONFIG ]]"
 	backup_dir = "backups"
