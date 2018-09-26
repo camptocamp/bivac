@@ -136,7 +136,7 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 			AttachStdin:  true,
 			AttachStdout: true,
 			AttachStderr: true,
-			Tty:          true,
+			Tty:          false,
 		},
 		&container.HostConfig{
 			Mounts: mounts,
@@ -181,14 +181,14 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 		return
 	}
 
+	stdoutput := new(bytes.Buffer)
 	defer body.Close()
-	content, err := ioutil.ReadAll(body)
+	_, err = stdcopy.StdCopy(stdoutput, ioutil.Discard, body)
 	if err != nil {
 		err = fmt.Errorf("failed to read logs from response: %v", err)
 		return
 	}
-
-	stdout = string(content)
+	stdout = stdoutput.String()
 	log.Debug(stdout)
 
 	return
