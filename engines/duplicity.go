@@ -94,7 +94,7 @@ func (d *DuplicityEngine) Backup() (err error) {
 // removeOld cleans up old backup data
 func (d *DuplicityEngine) removeOld() (err error) {
 	v := d.Volume
-	_, _, err = d.launchDuplicity(
+	_, _, _, err = d.launchDuplicity(
 		[]string{
 			"remove-older-than", v.Config.RemoveOlderThan,
 			"--s3-use-new-style",
@@ -116,7 +116,7 @@ func (d *DuplicityEngine) removeOld() (err error) {
 // cleanup removes old index data from duplicity
 func (d *DuplicityEngine) cleanup() (err error) {
 	v := d.Volume
-	_, _, err = d.launchDuplicity(
+	_, _, _, err = d.launchDuplicity(
 		[]string{
 			"cleanup",
 			"--s3-use-new-style",
@@ -138,7 +138,7 @@ func (d *DuplicityEngine) cleanup() (err error) {
 // verify checks that the backup is usable
 func (d *DuplicityEngine) verify() (err error) {
 	v := d.Volume
-	state, _, err := d.launchDuplicity(
+	state, _, _, err := d.launchDuplicity(
 		[]string{
 			"verify",
 			"--s3-use-new-style",
@@ -184,7 +184,7 @@ func (d *DuplicityEngine) status() (err error) {
 	attempts := 3
 	v := d.Volume
 	for i := 0; i < attempts; i++ {
-		_, stdout, err = d.launchDuplicity(
+		_, stdout, _, err = d.launchDuplicity(
 			[]string{
 				"collection-status",
 				"--s3-use-new-style",
@@ -201,6 +201,7 @@ func (d *DuplicityEngine) status() (err error) {
 			err = fmt.Errorf("failed to launch duplicity: %v", err)
 			return
 		}
+		// TODO Check where the following message is send : stdout or stderr
 		if strings.Contains(stdout, "No orphaned or incomplete backup sets found.") {
 			collectionComplete = true
 			break
@@ -267,7 +268,7 @@ func (d *DuplicityEngine) status() (err error) {
 }
 
 // launchDuplicity starts a duplicity container with given command
-func (d *DuplicityEngine) launchDuplicity(cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
+func (d *DuplicityEngine) launchDuplicity(cmd []string, volumes []*volume.Volume) (state int, stdout string, stderr string, err error) {
 	config := d.Orchestrator.GetHandler().Config
 	image := config.Duplicity.Image
 
@@ -303,7 +304,7 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 	// TODO
 	// Init engine
 
-	state, _, err := d.launchDuplicity(
+	state, _, _, err := d.launchDuplicity(
 		[]string{
 			"--full-if-older-than", v.Config.Duplicity.FullIfOlderThan,
 			"--s3-use-new-style",

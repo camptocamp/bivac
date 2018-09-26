@@ -95,7 +95,7 @@ func (r *ResticEngine) init() (err error) {
 	v := r.Volume
 
 	// Check if the repository already exists
-	state, _, err := r.launchRestic(
+	state, _, _, err := r.launchRestic(
 		[]string{
 			"-r",
 			v.Target,
@@ -115,7 +115,7 @@ func (r *ResticEngine) init() (err error) {
 	}
 
 	// Initialize the repository
-	state, _, err = r.launchRestic(
+	state, _, _, err = r.launchRestic(
 		[]string{
 			"-r",
 			v.Target,
@@ -140,7 +140,7 @@ func (r *ResticEngine) init() (err error) {
 func (r *ResticEngine) resticBackup() (err error) {
 	c := r.Orchestrator.GetHandler()
 	v := r.Volume
-	state, _, err := r.launchRestic(
+	state, _, _, err := r.launchRestic(
 		[]string{
 			"--hostname",
 			c.Hostname,
@@ -175,7 +175,7 @@ func (r *ResticEngine) resticBackup() (err error) {
 // verify checks that the backup is usable
 func (r *ResticEngine) verify() (err error) {
 	v := r.Volume
-	state, _, err := r.launchRestic(
+	state, _, _, err := r.launchRestic(
 		[]string{
 			"-r",
 			v.Target,
@@ -234,7 +234,7 @@ func (r *ResticEngine) forget() (err error) {
 		}
 	}
 
-	state, output, err := r.launchRestic(
+	state, output, stderr, err := r.launchRestic(
 		[]string{
 			"-r",
 			v.Target,
@@ -251,7 +251,7 @@ func (r *ResticEngine) forget() (err error) {
 	}
 
 	if state != 0 {
-		err = fmt.Errorf("restic failed to forget old snapshots: %v", output)
+		err = fmt.Errorf("restic failed to forget old snapshots: %v %v", output, stderr)
 		return err
 	}
 	return
@@ -261,7 +261,7 @@ func (r *ResticEngine) forget() (err error) {
 func (r *ResticEngine) snapshots() (snapshots []Snapshot, err error) {
 	v := r.Volume
 
-	_, output, err := r.launchRestic(
+	_, output, _, err := r.launchRestic(
 		[]string{
 			"-r",
 			v.Target,
@@ -299,7 +299,7 @@ func (r *ResticEngine) sendBackupStatus(status int, volume string) {
 }
 
 // launchRestic starts a restic container with the given command
-func (r *ResticEngine) launchRestic(cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
+func (r *ResticEngine) launchRestic(cmd []string, volumes []*volume.Volume) (state int, stdout string, stderr string, err error) {
 	config := r.Orchestrator.GetHandler().Config
 	image := config.Restic.Image
 

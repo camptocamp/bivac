@@ -146,7 +146,7 @@ func createWorkerName() string {
 }
 
 // LaunchContainer starts a containe using the Cattle orchestrator
-func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
+func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, stderr string, err error) {
 	environment := make(map[string]interface{}, len(env))
 	for envKey, envVal := range env {
 		environment[envKey] = envVal
@@ -274,16 +274,27 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 		}
 	}
 
-	re := regexp.MustCompile(`(?m)[0-9]{2,} [ZT\-\:\.0-9]+ (.*)`)
+	re := regexp.MustCompile(`(?m)([0-9]{2,}) [ZT\-\:\.0-9]+ (.*)`)
 	for _, line := range re.FindAllStringSubmatch(string(data[:n]), -1) {
-		stdout = strings.Join([]string{stdout, line[1]}, "\n")
+		if line[1] == "01" {
+			stdout = strings.Join([]string{stdout, line[2]}, "\n")
+		}
+		if line[1] == "02" {
+			stderr = strings.Join([]string{stderr, line[2]}, "\n")
+		}
 	}
 
 	log.WithFields(log.Fields{
 		"container": container.Id,
 		"volumes":   strings.Join(cvs[:], ","),
 		"cmd":       strings.Join(cmd[:], " "),
-	}).Debug(stdout)
+	}).Debugf("STDOUT: %s", stdout)
+
+	log.WithFields(log.Fields{
+		"container": container.Id,
+		"volumes":   strings.Join(cvs[:], ","),
+		"cmd":       strings.Join(cmd[:], " "),
+	}).Debugf("STDERR: %s", stderr)
 	return
 }
 

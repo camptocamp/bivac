@@ -36,7 +36,7 @@ func (r *RCloneEngine) Backup() (err error) {
 	target := targetURL.String() + "/" + r.Orchestrator.GetPath(v)
 	backupDir := v.Mountpoint + "/" + v.BackupDir
 
-	state, _, err := r.launchRClone(
+	state, _, _, err := r.launchRClone(
 		[]string{
 			"sync",
 			backupDir,
@@ -75,7 +75,7 @@ func formatURL(u *url.URL) (env map[string]string) {
 }
 
 // launchRClone starts an rclone container with a given command
-func (r *RCloneEngine) launchRClone(cmd []string, extraEnv map[string]string, volumes []*volume.Volume) (state int, stdout string, err error) {
+func (r *RCloneEngine) launchRClone(cmd []string, extraEnv map[string]string, volumes []*volume.Volume) (state int, stdout string, stderr string, err error) {
 	config := r.Orchestrator.GetHandler().Config
 	image := config.RClone.Image
 

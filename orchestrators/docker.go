@@ -96,7 +96,7 @@ func (o *DockerOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) 
 }
 
 // LaunchContainer starts a container using the Docker orchestrator
-func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
+func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, stderr string, err error) {
 	err = pullImage(o.Client, image)
 	if err != nil {
 		err = fmt.Errorf("failed to pull image: %v", err)
@@ -196,15 +196,20 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 		return
 	}
 
-	stdoutput := new(bytes.Buffer)
+	stdoutStream := new(bytes.Buffer)
+	stderrStream := new(bytes.Buffer)
 	defer body.Close()
-	_, err = stdcopy.StdCopy(stdoutput, ioutil.Discard, body)
+	_, err = stdcopy.StdCopy(stdoutStream, stderrStream, body)
+
 	if err != nil {
-		err = fmt.Errorf("failed to read logs from response: %v", err)
+		err = fmt.Errorf("failed to demultiplex stdout and stderr streams from logs : %v", err)
 		return
 	}
-	stdout = stdoutput.String()
-	log.Debug(stdout)
+
+	stdout = stdoutStream.String()
+	stderr = stderrStream.String()
+	log.Debugf("STDOUT : %s", stdout)
+	log.Debugf("STDERR : %s", stderr)
 
 	return
 }

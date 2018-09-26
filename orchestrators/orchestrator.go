@@ -14,7 +14,7 @@ type Orchestrator interface {
 	GetPath(v *volume.Volume) string
 	GetHandler() *handler.Bivac
 	GetVolumes() ([]*volume.Volume, error)
-	LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error)
+	LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, stderr string, err error)
 	GetMountedVolumes(v *volume.Volume) ([]*volume.MountedVolumes, error)
 	ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) (string, error)
 }

@@ -109,7 +109,7 @@ func (o *KubernetesOrchestrator) GetVolumes() (volumes []*volume.Volume, err err
 }
 
 // LaunchContainer starts a container using the Kubernetes orchestrator
-func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
+func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, stderr string, err error) {
 
 	var envVars []apiv1.EnvVar
 	for envName, envValue := range env {
@@ -210,7 +210,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 
 		if pod.Status.Phase == apiv1.PodSucceeded || pod.Status.Phase == apiv1.PodFailed {
 			if len(pod.Status.ContainerStatuses) == 0 {
-				return 0, "", fmt.Errorf("no container statuses found")
+				return 0, "", "", fmt.Errorf("no container statuses found")
 			}
 			state = int(pod.Status.ContainerStatuses[0].State.Terminated.ExitCode)
 			terminated = true
@@ -218,7 +218,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 			select {
 			case <-timeout:
 				err = fmt.Errorf("failed to start worker: timeout")
-				return -1, "", err
+				return -1, "", "", err
 			default:
 				continue
 			}
