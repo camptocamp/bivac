@@ -25,6 +25,7 @@ type Config struct {
 	RemoveOlderThan  string            `long:"remove-older-than" description:"Remove backups older than the specified interval." env:"BIVAC_REMOVE_OLDER_THAN" default:"30D"`
 	LabelPrefix      string            `long:"label-prefix" description:"The volume prefix label." env:"BIVAC_LABEL_PREFIX"`
 	ExtraEnv         map[string]string `long:"extra-env" description:"Extra environment variables to share with workers." env:"BIVAC_EXTRA_ENV"`
+	ProvidersFile    string            `short:"p" long:"providers-file" description:"Path to providers configuration file." env:"BIVAC_PROVIDERS_FILE" default:"/providers-config.default.toml"`
 
 	Restic struct {
 		Image    string `long:"restic-image" description:"The restic docker image." env:"RESTIC_DOCKER_IMAGE" default:"restic/restic:latest"`

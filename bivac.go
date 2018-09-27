@@ -14,12 +14,13 @@ import (
 )
 
 var version = "undefined"
+var c *handler.Bivac
 
 func main() {
 	var err error
 	var exitCode int
 
-	c, err := handler.NewBivac(version)
+	c, err = handler.NewBivac(version)
 	util.CheckErr(err, "Failed to setup Bivac handler: %v", "fatal")
 
 	log.Infof("Bivac v%s starting backup...", version)
@@ -48,16 +49,21 @@ func main() {
 }
 
 func backupVolume(o orchestrators.Orchestrator, vol *volume.Volume) (err error) {
-	p := providers.GetProvider(o, vol)
-	log.WithFields(log.Fields{
-		"volume":   vol.Name,
-		"provider": p.GetName(),
-	}).Info("Found data provider")
-
-	err = providers.PrepareBackup(p)
+	p, err := providers.LoadProviders(c.Config.ProvidersFile)
 	if err != nil {
-		err = fmt.Errorf("failed to prepare backup: %v", err)
 		return
+	}
+
+	provider, err := p.GetProvider(o, vol)
+	if err != nil {
+		return
+	}
+
+	if provider.PreCmd != "" {
+		err = providers.RunCmd(provider, o, vol, provider.PreCmd)
+		if err != nil {
+			log.Warningf("failed to run pre-command: %s", err)
+		}
 	}
 
 	e := engines.GetEngine(o, vol)
@@ -71,5 +77,13 @@ func backupVolume(o orchestrators.Orchestrator, vol *volume.Volume) (err error) 
 		err = fmt.Errorf("failed to backup volume: %v", err)
 		return
 	}
+
+	if provider.PostCmd != "" {
+		err = providers.RunCmd(provider, o, vol, provider.PostCmd)
+		if err != nil {
+			log.Warningf("failed to run post-command: %s", err)
+		}
+	}
+
 	return
 }

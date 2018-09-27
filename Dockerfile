@@ -9,5 +9,6 @@ RUN make bivac
 FROM scratch
 COPY --from=builder /etc/ssl /etc/ssl
 COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /
+COPY --from=builder /go/src/github.com/camptocamp/bivac/providers-config.default.toml /
 ENTRYPOINT ["/bivac"]
 CMD [""]
