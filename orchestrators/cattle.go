@@ -41,6 +41,7 @@ func NewCattleOrchestrator(c *handler.Bivac) (o *CattleOrchestrator) {
 		Url:       o.Handler.Config.Cattle.URL,
 		AccessKey: o.Handler.Config.Cattle.AccessKey,
 		SecretKey: o.Handler.Config.Cattle.SecretKey,
+		Timeout:   30 * time.Second,
 	})
 	if err != nil {
 		log.Errorf("failed to create a new Rancher client: %s", err)
