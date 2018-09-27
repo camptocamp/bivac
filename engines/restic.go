@@ -231,6 +231,28 @@ func (r *ResticEngine) forget() (err error) {
 		},
 	)
 
+	// Send oldest backup date to pushgateway
+	metric = r.Volume.MetricsHandler.NewMetric("bivac_oldestBackup", "counter")
+	metric.UpdateEvent(
+		&metrics.Event{
+			Labels: map[string]string{
+				"volume": v.Name,
+			},
+			Value: strconv.FormatInt(snapshots[0].Time.Unix(), 10),
+		},
+	)
+
+	// Send snapshots count to pushgateway
+	metric = r.Volume.MetricsHandler.NewMetric("bivac_backupCount", "gauge")
+	metric.UpdateEvent(
+		&metrics.Event{
+			Labels: map[string]string{
+				"volume": v.Name,
+			},
+			Value: strconv.FormatInt(int64(len(snapshots)), 10),
+		},
+	)
+
 	duration, err := util.GetDurationFromInterval(v.Config.RemoveOlderThan)
 	if err != nil {
 		return err
