@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"errors"
 
 	log "github.com/Sirupsen/logrus"
 
@@ -211,6 +212,13 @@ func (r *ResticEngine) forget() (err error) {
 	v := r.Volume
 
 	snapshots, err := r.snapshots()
+	if err != nil {
+		return
+	}
+	if len(snapshots) == 0 {
+		err = errors.New("No snapshots found but bucket should contains at least current backup")
+		return
+	}
 
 	duration, err := util.GetDurationFromInterval(v.Config.RemoveOlderThan)
 	if err != nil {
