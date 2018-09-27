@@ -3,6 +3,7 @@ package orchestrators
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"sort"
 	"time"
 	"unicode/utf8"
@@ -154,6 +155,20 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 			MountPath: v.Mountpoint,
 		}
 		kvms = append(kvms, kvm)
+	}
+
+	managerHostname, err := os.Hostname()
+	if err != nil {
+		log.Errorf("failed to get hostname: %s", err)
+		return
+	}
+	managerPod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Get(managerHostname, metav1.GetOptions{})
+	if err != nil {
+		log.Errorf("failed to get current pod: %s", err)
+		return
+	}
+	for _, env := range managerPod.Spec.Containers[0].Env {
+		envVars = append(envVars, env)
 	}
 
 	pod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.Pod{
