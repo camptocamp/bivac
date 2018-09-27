@@ -181,6 +181,12 @@
   revision = "5d4e55e3f5de872bd5136d538139fffad238ad3a"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/rancher/go-rancher-metadata"
+  packages = ["metadata"]
+  revision = "d2103caca5873119ff423d29cba09b4d03cd69b8"
+
+[[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
   revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
@@ -399,6 +405,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d7a3d74720a888f7fbe8d98733a0e61b7c1ca4c021009e8807f3cf63e46f5a1a"
+  inputs-digest = "c0699d4933b4f5713defcbacb37a0598ede4a7c3843b32dd5bb2b95cf7b71c11"
   solver-name = "gps-cdcl"
   solver-version = 1

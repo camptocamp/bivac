@@ -16,6 +16,7 @@ import (
 	"unicode/utf8"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/rancher/go-rancher-metadata/metadata"
 	"github.com/rancher/go-rancher/v2"
 	"golang.org/x/net/websocket"
 
@@ -161,6 +162,41 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	cvs := []string{}
 	for _, v := range volumes {
 		cvs = append(cvs, v.Name+":"+v.Mountpoint)
+	}
+
+	metadataClient, err := metadata.NewClientAndWait("http://rancher-metadata/latest/")
+	if err != nil {
+		log.Errorf("Error initiating metadata client: %v", err)
+		return
+	}
+	managerCont, err := metadataClient.GetSelfContainer()
+	if err != nil {
+		log.Errorf("failed to get current container: %s", err)
+		return
+	}
+	containers, err := o.Client.Container.List(&client.ListOpts{
+		Filters: map[string]interface{}{
+			"limit": -2,
+			"all":   true,
+		},
+	})
+	if err != nil {
+		log.Errorf("failed to get container list: %s", err)
+		return
+	}
+	var managerContainer *client.Container
+	for _, container := range containers.Data {
+		if container.Name == managerCont.Name {
+			managerContainer = &container
+			break
+		}
+	}
+	if managerContainer == nil {
+		log.Errorf("failed to get manager container: %v", err)
+		return
+	}
+	for envKey, envVal := range managerContainer.Environment {
+		environment[envKey] = envVal
 	}
 
 	container, err := o.Client.Container.Create(&client.Container{
