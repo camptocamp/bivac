@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"sort"
 	"strings"
 	"unicode/utf8"
@@ -123,6 +124,20 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 			ReadOnly: v.ReadOnly,
 		}
 		mounts = append(mounts, m)
+	}
+
+	managerHostname, err := os.Hostname()
+	if err != nil {
+		err = fmt.Errorf("failed to get hostname: %s", err)
+		return
+	}
+	managerContainer, err := o.Client.ContainerInspect(context.Background(), managerHostname)
+	if err != nil {
+		err = fmt.Errorf("failed to inspect container: %v", err)
+		return
+	}
+	for _, env := range managerContainer.Config.Env {
+		envVars = append(envVars, env)
 	}
 
 	container, err := o.Client.ContainerCreate(
