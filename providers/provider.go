@@ -72,6 +72,8 @@ func (providers *Providers) GetProvider(o orchestrators.Orchestrator, v *volume.
 		return
 	}
 
+	fullDetectionCmd = strings.Replace(fullDetectionCmd, "$volume", container.Volumes[v.Name], -1)
+
 	stdout, err := o.ContainerExec(container, []string{"bash", "-c", fullDetectionCmd})
 	if err != nil {
 		log.Errorf("failed to run provider detection: %s", err)
