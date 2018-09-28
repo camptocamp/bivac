@@ -1,6 +1,7 @@
 package orchestrators
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"io"
@@ -265,18 +266,13 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 		log.Errorf("failed to open websocket with rancher server: %s", err)
 	}
 
-	var data = make([]byte, 1024)
-	var n int
-	if n, err = ws.Read(data); err != nil {
-		if err == io.EOF {
-			err = nil
-		} else {
-			log.Errorf("failed to retrieve logs: %s", err)
-		}
-	}
+	defer ws.Close()
+
+	var data bytes.Buffer
+	io.Copy(&data, ws)
 
 	re := regexp.MustCompile(`(?m)[0-9]{2,} [ZT\-\:\.0-9]+ (.*)`)
-	for _, line := range re.FindAllStringSubmatch(string(data[:n]), -1) {
+	for _, line := range re.FindAllStringSubmatch(data.String(), -1) {
 		stdout = strings.Join([]string{stdout, line[1]}, "\n")
 	}
 
