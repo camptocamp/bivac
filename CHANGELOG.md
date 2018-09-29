@@ -1,3 +1,26 @@
+# [1.0.0-alpha5](unreleased)
+
+NOTES:
+
+As we now forward environment variables from manager to workers, we plan to
+remove the AWS and Swift options in the next release.
+If you are using the Duplicity engine to backup on Swift, you'll probably have
+to change the environment variables you pass to use the more standard `OS__*`
+environment variables.
+
+IMPROVEMENTS:
+
+- `core`: Add template for OpenShift
+- `providers`: Rewrite to make it more flexible
+- `core`: Forward manager environment variables to worker
+
+BUG FIXES:
+
+- `engine/restic`: Check errors when retrieving snapshots
+- `orchestrator/docker`: Don't allocate pseudo-tty to worker so that stdout and stderr are not merged
+- `orchestrator/cattle`: Increase client timeout
+- `orchestrator/cattle`: Improve log reading
+
 # [1.0.0-alpha4](https://github.com/camptocamp/bivac/releases/tag/1.0.0-alpha4) (2018-09-18)
 
 BREAKING CHANGES:
