@@ -78,9 +78,6 @@ func (r *RCloneEngine) launchRClone(cmd []string, volumes []*volume.Volume) (sta
 		"RCLONE_CONFIG_SWIFT_DOMAIN":        config.Swift.UserDomainName,
 		"RCLONE_CONFIG_SWIFT_TENANT_DOMAIN": config.Swift.ProjectDomainName,
 	}
-	for k, v := range config.ExtraEnv {
-		env[k] = v
-	}
 
 	return r.Orchestrator.LaunchContainer(image, env, r.replaceArgs(cmd), volumes)
 }

@@ -10,7 +10,6 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-
 	"github.com/camptocamp/bivac/metrics"
 	"github.com/camptocamp/bivac/orchestrators"
 	"github.com/camptocamp/bivac/util"
@@ -358,10 +357,6 @@ func (r *ResticEngine) launchRestic(cmd []string, volumes []*volume.Volume) (sta
 		"OS_PROJECT_NAME":        config.Swift.ProjectName,
 		"OS_PROJECT_DOMAIN_NAME": config.Swift.ProjectDomainName,
 		"RESTIC_PASSWORD":        config.Restic.Password,
-	}
-
-	for k, v := range config.ExtraEnv {
-		env[k] = v
 	}
 
 	return r.Orchestrator.LaunchContainer(image, env, r.replaceArgs(cmd), volumes)

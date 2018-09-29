@@ -42,7 +42,6 @@ Application Options:
       --check-every=                Time between backup checks. (default: 24h) [$BIVAC_CHECK_EVERY]
       --remove-older-than=          Remove backups older than the specified interval. (default: 30D) [$BIVAC_REMOVE_OLDER_THAN]
       --label-prefix=               The volume prefix label. [$BIVAC_LABEL_PREFIX]
-      --extra-env=                  Extra environment variables to share with workers. [$BIVAC_EXTRA_ENV]
   -p, --providers-file=             Path to providers configuration file. (default: /providers-config.default.toml) [$BIVAC_PROVIDERS_FILE]
 
 Restic Options:

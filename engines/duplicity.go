@@ -289,10 +289,6 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, volumes []*volume.Volume
 		"SWIFT_AUTHVERSION":     "2",
 	}
 
-	for k, v := range config.ExtraEnv {
-		env[k] = v
-	}
-
 	return d.Orchestrator.LaunchContainer(image, env, d.replaceArgs(cmd), volumes)
 }
 
