@@ -105,11 +105,7 @@ func (r *ResticEngine) init() (err error) {
 
 	// Check if the repository already exists
 	state, _, err := r.launchRestic(
-		[]string{
-			"-r",
-			"%B/%P/%V",
-			"snapshots",
-		},
+		[]string{"snapshots"},
 		[]*volume.Volume{},
 	)
 	if err != nil {
@@ -125,11 +121,7 @@ func (r *ResticEngine) init() (err error) {
 
 	// Initialize the repository
 	state, _, err = r.launchRestic(
-		[]string{
-			"-r",
-			"%B/%P/%V",
-			"init",
-		},
+		[]string{"init"},
 		[]*volume.Volume{
 			v,
 		},
@@ -147,17 +139,13 @@ func (r *ResticEngine) init() (err error) {
 
 // resticBackup performs the backup of a volume with Restic
 func (r *ResticEngine) resticBackup() (err error) {
-	c := r.Orchestrator.GetHandler()
+	config := r.Orchestrator.GetHandler().Config
 	v := r.Volume
 	state, _, err := r.launchRestic(
-		[]string{
-			"--hostname",
-			c.Hostname,
-			"-r",
-			"%B/%P/%V",
-			"backup",
-			"%D",
-		},
+		append(
+			[]string{"backup"},
+			config.Restic.BackupArgs...,
+		),
 		[]*volume.Volume{
 			v,
 		},
@@ -185,11 +173,7 @@ func (r *ResticEngine) resticBackup() (err error) {
 func (r *ResticEngine) verify() (err error) {
 	v := r.Volume
 	state, _, err := r.launchRestic(
-		[]string{
-			"-r",
-			"%B/%P/%V",
-			"check",
-		},
+		[]string{"check"},
 		[]*volume.Volume{},
 	)
 	if err != nil {
@@ -217,6 +201,7 @@ func (r *ResticEngine) verify() (err error) {
 
 // forget removes a snapshot
 func (r *ResticEngine) forget() (err error) {
+	config := r.Orchestrator.GetHandler().Config
 
 	v := r.Volume
 
@@ -262,29 +247,11 @@ func (r *ResticEngine) forget() (err error) {
 		},
 	)
 
-	duration, err := util.GetDurationFromInterval(v.Config.RemoveOlderThan)
-	if err != nil {
-		return err
-	}
-
-	validSnapshots := 0
-	now := time.Now()
-	for _, snapshot := range snapshots {
-		expiration := snapshot.Time.Add(duration)
-		if now.Before(expiration) {
-			validSnapshots++
-		}
-	}
-
 	state, output, err := r.launchRestic(
-		[]string{
-			"-r",
-			"%B/%P/%V",
-			"forget",
-			"--prune",
-			"--keep-last",
-			fmt.Sprintf("%d", validSnapshots),
-		},
+		append(
+			[]string{"forget"},
+			config.Restic.ForgetArgs...,
+		),
 		[]*volume.Volume{},
 	)
 	if err != nil {
@@ -302,12 +269,10 @@ func (r *ResticEngine) forget() (err error) {
 // snapshots lists snapshots
 func (r *ResticEngine) snapshots() (snapshots []Snapshot, err error) {
 	_, output, err := r.launchRestic(
-		[]string{
-			"-r",
-			"%B/%P/%V",
-			"snapshots",
-			"--json",
-		},
+		append(
+			[]string{"snapshots"},
+			[]string{"--json"}...,
+		),
 		[]*volume.Volume{},
 	)
 	if err != nil {
@@ -364,5 +329,5 @@ func (r *ResticEngine) launchRestic(cmd []string, volumes []*volume.Volume) (sta
 		env[k] = v
 	}
 
-	return r.Orchestrator.LaunchContainer(image, env, r.replaceArgs(cmd), volumes)
+	return r.Orchestrator.LaunchContainer(image, env, r.replaceArgs(append(cmd, config.Restic.CommonArgs...)), volumes)
 }
