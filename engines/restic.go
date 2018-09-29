@@ -2,12 +2,12 @@ package engines
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
-	"errors"
 
 	log "github.com/Sirupsen/logrus"
 
