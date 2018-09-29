@@ -13,7 +13,7 @@
 	[providers.postgresql]
 	pre_cmd = "mkdir -p $volume/backups && pg_dumpall --clean -Upostgres > $volume/backups/all.sql"
 	post_cmd = ""
-	detect_cmd = "[[ -f $volume/PG_VERSION ]]"
+	detect_cmd = "$(ps auxww | grep -q ^postgres) || [[ -f $volume/PG_VERSION ]]"
 	backup_dir = "backups"
 
 	[providers.openldap]
