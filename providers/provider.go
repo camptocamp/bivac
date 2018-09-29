@@ -79,13 +79,17 @@ func (providers *Providers) GetProvider(o orchestrators.Orchestrator, v *volume.
 		log.Errorf("failed to run provider detection: %s", err)
 	}
 
-	switch strings.TrimSpace(stdout) {
-	case "mysql":
-		log.WithFields(log.Fields{
-			"volume": v.Name,
-		}).Debug("mysql directory found, this should be MySQL datadir")
-		prov = providers.Providers["mysql"]
-		v.BackupDir = prov.BackupDir
+	stdout = strings.TrimSpace(stdout)
+
+	for _, p := range providers.Providers {
+		if p.Name == stdout {
+			log.WithFields(log.Fields{
+				"volume": v.Name,
+			}).Infof("This volume should be a %s datadir", p.Name)
+			prov = p
+			v.BackupDir = p.BackupDir
+			return
+		}
 	}
 	return
 }
