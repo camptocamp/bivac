@@ -207,6 +207,7 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 		ImageUuid:       "docker:" + image,
 		Command:         cmd,
 		Environment:     environment,
+		Secrets:         managerContainer.Secrets,
 		RestartPolicy: &client.RestartPolicy{
 			MaximumRetryCount: 1,
 			Name:              "on-failure",
