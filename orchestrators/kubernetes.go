@@ -171,6 +171,33 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 		envVars = append(envVars, env)
 	}
 
+	// Forward manager volumes to worker
+	for _, volume := range managerPod.Spec.Volumes {
+		vs := volume.VolumeSource
+		if vs.Secret != nil || vs.ConfigMap != nil || vs.GitRepo != nil {
+			kvs = append(kvs, volume)
+		}
+		if vs.PersistentVolumeClaim != nil {
+			pvc, err := o.Client.CoreV1().PersistentVolumeClaims(o.Handler.Config.Kubernetes.Namespace).Get(vs.PersistentVolumeClaim.ClaimName, metav1.GetOptions{})
+			if err != nil {
+				log.Errorf("failed to retrieve PersistentVolumeClaim \""+vs.PersistentVolumeClaim.ClaimName+"\": %s", err)
+				continue
+			}
+			for _, accessMode := range pvc.Spec.AccessModes {
+				if accessMode == apiv1.ReadWriteMany || accessMode == apiv1.ReadOnlyMany {
+					kvs = append(kvs, volume)
+				}
+			}
+		}
+	}
+	for _, volumeMount := range managerPod.Spec.Containers[0].VolumeMounts {
+		for _, volume := range kvs {
+			if volumeMount.Name == volume.Name {
+				kvms = append(kvms, volumeMount)
+			}
+		}
+	}
+
 	pod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "bivac-worker-",
