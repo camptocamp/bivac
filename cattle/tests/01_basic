@@ -1,0 +1,105 @@
+#!/bin/bash
+
+
+# Prepare environment
+test_valid=true
+canary=8ft8HJ3teCg8S1WeH5bwhNBZEtBJNs
+export AWS_ACCESS_KEY_ID=OBQZY3DV6VOEZ9PG6NIM
+export AWS_SECRET_ACCESS_KEY=7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty
+export RANCHER_URL=http://192.168.42.3:8080/v2-beta
+
+cat <<EOF > test01-docker-compose.yml
+---
+version: '2'
+services:
+  canary:
+    image: busybox
+    volumes:
+      - canary:/data
+    command: "echo $canary > /data/canary; mkdir -p /data/foo/bar; echo $canary > /data/foo/bar/canary"
+    labels:
+      io.rancher.container.start_once: true
+
+  postgresql:
+    image: postgres:latest
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  mysql:
+    image: mysql
+    volumes:
+      - mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: foo
+      MYSQL_USER: foo
+      MYSQL_PASSWORD: bar
+      MYSQL_ROOT_PASSWORD: root
+EOF
+
+rancher stack create --start -f services-docker-compose.yml
+
+sleep 20
+
+
+
+# Start Bivac
+cat <<EOF > bivac-docker-compose.yml
+---
+version: '2'
+services:
+  bivac:
+    image: $1
+    environment:
+      BIVAC_VOLUMES_WHITELIST: "canary,mysql,postgresql"
+      BIVAC_TARGET_URL: s3:http://192.168.42.3:8080/bivac-testing/cattle
+      BIVAC_LOG_LEVEL: $2
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      RESTIC_PASSWORD: toto
+    labels:
+      io.rancher.container.start_once: 'true'
+      io.rancher.container.agent.role: environmentAdmin
+      io.rancher.container.create_agent: 'true'
+EOF
+
+rancher stack create --start -s -f bivac-docker-compose.yml
+
+## Canaries
+#dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://172.17.0.2:9000/bivac-testing/docker/testing/canary dump latest /var/lib/docker/volumes/canary/_data/canary)
+#dump=${dump%$'\r'}
+#if [[ $dump != $canary ]]; then
+#  test_valid=false
+#fi
+#dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://172.17.0.2:9000/bivac-testing/docker/testing/canary dump latest /var/lib/docker/volumes/canary/_data/foo/bar/canary)
+#dump=${dump%$'\r'}
+#if [[ $dump != $canary ]]; then
+#  test_valid=false
+#fi
+#
+## MySQL
+#dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://172.17.0.2:9000/bivac-testing/docker/testing/mysql dump latest /var/lib/docker/volumes/mysql/_data/backups/all.sql)
+#dump=${dump%$'\r'}
+#if [[ $dump != *"Dump completed"* ]]; then
+#  test_valid=false
+#fi
+#
+## PostgreSQL
+#dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://172.17.0.2:9000/bivac-testing/docker/testing/postgres dump latest /var/lib/docker/volumes/postgres/_data/backups/all.sql)
+#dump=${dump%$'\r'}
+#if [[ $dump != *"dump complete"* ]]; then
+#  test_valid=false
+#fi
+#
+#
+#
+#
+#if [ "$test_valid" = true ]; then
+#  echo -e "\e[32m[+] Basic : Docker + Restic\e[39m"
+#else
+#  echo -e "\e[31m[-] Basic : Docker + Restic\e[39m"
+#fi
+
+# Clean up environment
+#rancher volume rm canary
+#rancher volume rm mysql
+#rancher volume rm postgres
