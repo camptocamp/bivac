@@ -1,5 +1,7 @@
 apiVersion: v1
 kind: Template
+labels:
+  app: bivac
 metadata:
   name: bivac
   annotations:
@@ -50,6 +52,13 @@ objects:
                     value: ${RESTIC_PASSWORD}
                   - name: K8S_WORKER_SERVICE_ACCOUNT
                     value: ${K8S_WORKER_SERVICE_ACCOUNT}
+                volumeMounts:
+                  - name: providers-config
+                    mountPath: /
+            volumes:
+              - name: providers-config
+                configMap:
+                  name: ${APP_NAME}
             restartPolicy: OnFailure
 - kind: Role
   apiVersion: v1
@@ -95,6 +104,33 @@ objects:
   subjects:
   - kind: ServiceAccount
     name: ${APP_NAME}
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: ${APP_NAME}
+  data:
+    providers-config: |-
+      [providers]
+        [providers.mysql]
+        pre_cmd = """
+        ${MYSQL_PRE_CMD}"""
+        detect_cmd = """
+        ${MYSQL_DETECT_CMD}"""
+        post_cmd = """
+        ${MYSQL_POST_CMD}"""
+        backup_dir = "${MYSQL_BACKUP_DIR}"
+
+        [providers.postgresql]
+        pre_cmd = "mkdir -p $volume/backups && pg_dumpall --clean -Upostgres > $volume/backups/all.sql"
+        post_cmd = ""
+        detect_cmd = "[[ -f $volume/PG_VERSION ]]"
+        backup_dir = "backups"
+
+        [providers.openldap]
+        pre_cmd = "mkdir -p $volume/backups && slapcat > $volume/backups/all.ldif"
+        detect_cmd = "[[ -f $volume/DB_CONFIG ]]"
+        backup_dir = "backups"
+
 parameters:
 - name: APP_NAME
   description: Name use for all bivac objects. This name should be unique across project.
@@ -135,5 +171,46 @@ parameters:
   value: useroot
 - name: NAMESPACE
   description: Openshift project name (namespace)
-labels:
-  app: bivac
+- name: MYSQL_PRE_CMD
+  description: command to prepare backup on MySQL
+  value: |-
+    mkdir -p $volume/backups && \
+    echo $(if [ -z '$MYSQL_ROOT_PASSWORD' ]; then \
+      mysqldump --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD; else \
+      mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD; \
+    fi) > $volume/backups/all.sql
+- name: MYSQL_DETECT_CMD
+  description: Command to detect MySQL database
+  value: "[[ -d $volume/mysql ]]"
+- name: MYSQL_POST_CMD
+  description: Command run after backup
+  value: ""
+- name: MYSQL_BACKUP_DIR
+  description: Directory that contains database dump, relative to volume root
+  value: "backups"
+- name: POSTGRES_PRE_CMD
+  description: command to prepare backup on Postgres
+  value: |-
+    mkdir -p $volume/backups && pg_dumpall --clean -Upostgres > $volume/backups/all.sql
+- name: POSTGRES_DETECT_CMD
+  description: Command to detect Postgres database
+  value: "[[ -f $volume/PG_VERSION ]]"
+- name: POSTGRES_POST_CMD
+  description: Command run after backup
+  value: ""
+- name: POSTGRES_BACKUP_DIR
+  description: Directory that contains database dump, relative to volume root
+  value: "backups"
+- name: LDAP_PRE_CMD
+  description: command to prepare backup on OpenLdap
+  value: |-
+    mkdir -p $volume/backups && slapcat > $volume/backups/all.ldif
+- name: LDAP_DETECT_CMD
+  description: Command to detect OpenLdap database
+  value: "[[ -f $volume/DB_CONFIG ]]"
+- name: LDAP_POST_CMD
+  description: Command run after backup
+  value: ""
+- name: LDAP_BACKUP_DIR
+  description: Directory that contains database dump, relative to volume root
+  value: "backups"

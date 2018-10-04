@@ -1,4 +1,4 @@
-# Bivac Openshift Teamplate
+# Bivac Openshift Template
 Template to install bivac in openshift without helm
 
 * Install template:
