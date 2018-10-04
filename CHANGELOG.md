@@ -1,4 +1,4 @@
-# [1.0.0-alpha5](unreleased)
+# [1.0.0-alpha5](https://github.com/camptocamp/bivac/releases/tag/1.0.0-alpha5) (2018-10-04)
 
 NOTES:
 
@@ -13,6 +13,7 @@ IMPROVEMENTS:
 - `core`: Add template for OpenShift
 - `providers`: Rewrite to make it more flexible
 - `core`: Forward manager environment variables to worker
+- `core`: Change the behaviour of GetMountedVolumes() and rename it to GetContainersMountingVolume()
 
 BUG FIXES:
 
