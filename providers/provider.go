@@ -61,34 +61,41 @@ func (providers *Providers) GetProvider(o orchestrators.Orchestrator, v *volume.
 	detectionCmds = append(detectionCmds, "true")
 	fullDetectionCmd := strings.Join(detectionCmds, " || ")
 
-	container, err := getContainer(o, v)
+	containers, err := o.GetContainersMountingVolume(v)
 	if err != nil {
 		return
 	}
-	if container == nil {
+	if len(containers) < 1 {
 		log.WithFields(log.Fields{
 			"volume": v.Name,
 		}).Info("No running container found using the volume.")
 		return
 	}
 
-	fullDetectionCmd = strings.Replace(fullDetectionCmd, "$volume", container.Volumes[v.Name], -1)
+	var stdout string
+	for _, container := range containers {
+		fullDetectionCmd = strings.Replace(fullDetectionCmd, "$volume", container.Path, -1)
+		log.WithFields(log.Fields{
+			"volume": v.Name,
+			"cmd":    fullDetectionCmd,
+		}).Debugf("Running detection command in container %s...", container.ContainerID)
 
-	stdout, err := o.ContainerExec(container, []string{"bash", "-c", fullDetectionCmd})
-	if err != nil {
-		log.Errorf("failed to run provider detection: %s", err)
-	}
+		stdout, err = o.ContainerExec(container, []string{"bash", "-c", fullDetectionCmd})
+		if err != nil {
+			log.Errorf("failed to run provider detection: %s", err)
+		}
 
-	stdout = strings.TrimSpace(stdout)
+		stdout = strings.TrimSpace(stdout)
 
-	for _, p := range providers.Providers {
-		if p.Name == stdout {
-			log.WithFields(log.Fields{
-				"volume": v.Name,
-			}).Infof("This volume should be a %s datadir", p.Name)
-			prov = p
-			v.BackupDir = p.BackupDir
-			return
+		for _, p := range providers.Providers {
+			if p.Name == stdout {
+				log.WithFields(log.Fields{
+					"volume": v.Name,
+				}).Infof("This volume should be a %s datadir", p.Name)
+				prov = p
+				v.BackupDir = p.BackupDir
+				return
+			}
 		}
 	}
 	return
@@ -96,37 +103,41 @@ func (providers *Providers) GetProvider(o orchestrators.Orchestrator, v *volume.
 
 // RunCmd runs a command into a container
 func RunCmd(p Provider, o orchestrators.Orchestrator, v *volume.Volume, cmd string) (err error) {
-	container, err := getContainer(o, v)
+	containers, err := o.GetContainersMountingVolume(v)
 	if err != nil {
 		return err
 	}
 
-	cmd = strings.Replace(cmd, "$volume", container.Volumes[v.Name], -1)
-	stdout, err := o.ContainerExec(container, []string{"bash", "-c", cmd})
-	if err != nil {
-		return fmt.Errorf("failed to execute command in container: %v", err)
-	}
-	log.WithFields(log.Fields{
-		"volume": v.Name,
-		"cmd":    cmd,
-	}).Debugf("stdout: %s", stdout)
-	return
-}
+	cmdSuccess := false
+	var stdout string
+	for _, container := range containers {
+		cmd = strings.Replace(cmd, "$volume", container.Path, -1)
 
-func getContainer(o orchestrators.Orchestrator, v *volume.Volume) (mountedVolumes *volume.MountedVolumes, err error) {
-	containers, err := o.GetMountedVolumes(v)
-	if err != nil {
-		err = fmt.Errorf("failed to list containers: %v", err)
-		return
-	}
+		log.WithFields(log.Fields{
+			"volume": v.Name,
+			"cmd":    cmd,
+		}).Debugf("Running command in container %s...", container.ContainerID)
 
-	for _, c := range containers {
-		for volName := range c.Volumes {
-			if volName == v.Name {
-				mountedVolumes = c
-				return
-			}
+		stdout, err = o.ContainerExec(container, []string{"bash", "-c", cmd})
+		if err != nil {
+			log.WithFields(log.Fields{
+				"volume":    v.Name,
+				"cmd":       cmd,
+				"container": container.ContainerID,
+			}).Errorf("failed to run command in container: %s", err)
+		} else {
+			cmdSuccess = true
+			break
 		}
+	}
+
+	if cmdSuccess {
+		log.WithFields(log.Fields{
+			"volume": v.Name,
+			"cmd":    cmd,
+		}).Debugf("stdout: %s", stdout)
+	} else {
+		return fmt.Errorf("failed to run command \"%s\" in containers mounting volume %s", cmd, v.Name)
 	}
 	return
 }

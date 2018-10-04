@@ -204,13 +204,11 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 		return
 	}
 	stdout = stdoutput.String()
-	log.Debug(stdout)
-
 	return
 }
 
-// GetMountedVolumes returns mounted volumes
-func (o *DockerOrchestrator) GetMountedVolumes(v *volume.Volume) (containers []*volume.MountedVolumes, err error) {
+// GetContainersMountingVolume returns mounted volumes
+func (o *DockerOrchestrator) GetContainersMountingVolume(v *volume.Volume) (containers []*volume.MountedVolume, err error) {
 	c, err := o.Client.ContainerList(context.Background(), types.ContainerListOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to list containers: %v", err)
@@ -218,22 +216,22 @@ func (o *DockerOrchestrator) GetMountedVolumes(v *volume.Volume) (containers []*
 	}
 
 	for _, container := range c {
-		mv := &volume.MountedVolumes{
-			ContainerID: container.ID,
-			Volumes:     make(map[string]string),
-		}
 		for _, mount := range container.Mounts {
-			if mount.Type == "volume" {
-				mv.Volumes[mount.Name] = mount.Destination
+			if mount.Name == v.Name && mount.Type == "volume" {
+				mv := &volume.MountedVolume{
+					ContainerID: container.ID,
+					Volume:      v,
+					Path:        mount.Destination,
+				}
+				containers = append(containers, mv)
 			}
 		}
-		containers = append(containers, mv)
 	}
 	return
 }
 
 // ContainerExec executes a command in a container
-func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) (stdout string, err error) {
+func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolume, command []string) (stdout string, err error) {
 	exec, err := o.Client.ContainerExecCreate(context.Background(), mountedVolumes.ContainerID, types.ExecConfig{
 		AttachStdout: true,
 		AttachStderr: true,
