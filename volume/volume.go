@@ -17,6 +17,7 @@ import (
 
 // Volume provides backup methods for a single Docker volume
 type Volume struct {
+	ID             string
 	Name           string
 	Target         string
 	BackupDir      string
@@ -52,12 +53,13 @@ type Config struct {
 	} `label:"restic" ini:"restic" config:"Restic"`
 }
 
-// MountedVolumes stores mounted volumes inside a container
-type MountedVolumes struct {
+// MountedVolume stores mounted volumes inside a container
+type MountedVolume struct {
 	PodID       string
 	ContainerID string
 	HostID      string
-	Volumes     map[string]string
+	Volume      *Volume
+	Path        string
 }
 
 // NewVolume returns a new Volume for a given types.Volume struct

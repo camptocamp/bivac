@@ -83,13 +83,11 @@ func (o *KubernetesOrchestrator) GetVolumes() (volumes []*volume.Volume, err err
 				Namespace:  namespace,
 			}
 
-			containers, _ := o.GetMountedVolumes(nv)
-			for _, container := range containers {
-				for _, volMountPath := range container.Volumes {
-					nv.HostBind = container.HostID
-					nv.Hostname = container.HostID
-					nv.Mountpoint = volMountPath
-				}
+			containers, _ := o.GetContainersMountingVolume(nv)
+			if len(containers) > 0 {
+				nv.HostBind = containers[0].HostID
+				nv.Hostname = containers[0].HostID
+				nv.Mountpoint = containers[0].Path
 			}
 
 			v := volume.NewVolume(nv, c.Config, c.Hostname)
@@ -250,9 +248,8 @@ func (o *KubernetesOrchestrator) DeleteWorker(name string) {
 	return
 }
 
-// GetMountedVolumes returns mounted volumes
-func (o *KubernetesOrchestrator) GetMountedVolumes(v *volume.Volume) (containers []*volume.MountedVolumes, err error) {
-
+// GetContainersMountingVolume returns containers mounting a volume
+func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (containers []*volume.MountedVolume, err error) {
 	o.setNamespace(v.Namespace)
 
 	pods, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).List(metav1.ListOptions{})
@@ -270,24 +267,20 @@ func (o *KubernetesOrchestrator) GetMountedVolumes(v *volume.Volume) (containers
 		}
 
 		for _, container := range pod.Spec.Containers {
-			mv := &volume.MountedVolumes{
-				PodID:       pod.Name,
-				ContainerID: container.Name,
-				HostID:      pod.Spec.NodeName,
-				Volumes:     make(map[string]string),
-			}
 			for _, volumeMount := range container.VolumeMounts {
 				if c, ok := mapVolClaim[volumeMount.Name]; ok {
 					if c == v.Name {
-						mv.Volumes[c] = volumeMount.MountPath
+						mv := &volume.MountedVolume{
+							PodID:       pod.Name,
+							ContainerID: container.Name,
+							HostID:      pod.Spec.NodeName,
+							Volume:      v,
+							Path:        volumeMount.MountPath,
+						}
+						containers = append(containers, mv)
 					}
-					log.WithFields(log.Fields{
-						"volume":    c,
-						"container": container.Name,
-					}).Debug("Container found using volume")
 				}
 			}
-			containers = append(containers, mv)
 		}
 	}
 
@@ -295,7 +288,7 @@ func (o *KubernetesOrchestrator) GetMountedVolumes(v *volume.Volume) (containers
 }
 
 // ContainerExec executes a command in a container
-func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) (stdout string, err error) {
+func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolume, command []string) (stdout string, err error) {
 	var stdoutput, stderr bytes.Buffer
 
 	config, err := o.getConfig()

@@ -119,6 +119,7 @@ func (o *CattleOrchestrator) GetVolumes() (volumes []*volume.Volume, err error) 
 		nv := &volume.Volume{
 			Config:     &volume.Config{},
 			Mountpoint: mountpoint,
+			ID:         v.Id,
 			Name:       v.Name,
 			HostBind:   hostID,
 			Hostname:   hostname,
@@ -303,26 +304,19 @@ func (o *CattleOrchestrator) DeleteWorker(container *client.Container) {
 	return
 }
 
-// GetMountedVolumes returns mounted volumes
-func (o *CattleOrchestrator) GetMountedVolumes(v *volume.Volume) (containers []*volume.MountedVolumes, err error) {
-	c, err := o.Client.Container.List(&client.ListOpts{
-		Filters: map[string]interface{}{
-			"limit": -2,
-			"all":   true,
-		},
-	})
+// GetContainersMountingVolume returns containers mounting a volume
+func (o *CattleOrchestrator) GetContainersMountingVolume(v *volume.Volume) (containers []*volume.MountedVolume, err error) {
+	vol, err := o.Client.Volume.ById(v.ID)
 
 	if err != nil {
-		log.Errorf("failed to list containers: %s", err)
+		log.Errorf("failed to get volume: %s", err)
 	}
 
-	for _, container := range c.Data {
-		mv := &volume.MountedVolumes{
-			ContainerID: container.Id,
-			Volumes:     make(map[string]string),
-		}
-		for _, mount := range container.Mounts {
-			mv.Volumes[mount.VolumeName] = mount.Path
+	for _, mount := range vol.Mounts {
+		mv := &volume.MountedVolume{
+			ContainerID: mount.InstanceId,
+			Volume:      v,
+			Path:        mount.Path,
 		}
 		containers = append(containers, mv)
 	}
@@ -330,7 +324,7 @@ func (o *CattleOrchestrator) GetMountedVolumes(v *volume.Volume) (containers []*
 }
 
 // ContainerExec executes a command in a container
-func (o *CattleOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolumes, command []string) (stdout string, err error) {
+func (o *CattleOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolume, command []string) (stdout string, err error) {
 
 	container, err := o.Client.Container.ById(mountedVolumes.ContainerID)
 	if err != nil {
