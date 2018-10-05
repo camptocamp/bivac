@@ -358,16 +358,10 @@ func (o *CattleOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolume,
 		log.Errorf("failed to open websocket with rancher server: %s", err)
 	}
 
-	var data = make([]byte, 1024)
-	var n int
-	if n, err = ws.Read(data); err != nil {
-		if err == io.EOF {
-			err = nil
-		} else {
-			log.Errorf("failed to retrieve logs: %s", err)
-		}
-	}
-	rawStdout, _ := base64.StdEncoding.DecodeString(string(data[:n]))
+	var data bytes.Buffer
+	io.Copy(&data, ws)
+
+	rawStdout, _ := base64.StdEncoding.DecodeString(data.String())
 	stdout = string(rawStdout)
 
 	log.WithFields(log.Fields{
