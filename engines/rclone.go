@@ -3,7 +3,6 @@ package engines
 import (
 	"fmt"
 	"net/url"
-	"strings"
 
 	"github.com/camptocamp/bivac/orchestrators"
 	"github.com/camptocamp/bivac/volume"
@@ -30,9 +29,6 @@ func (r *RCloneEngine) Backup() (err error) {
 		return
 	}
 
-	// Format targetURL for RClone
-	extraEnv := formatURL(targetURL)
-
 	target := targetURL.String() + "/" + r.Orchestrator.GetPath(v)
 	backupDir := v.Mountpoint + "/" + v.BackupDir
 
@@ -42,7 +38,6 @@ func (r *RCloneEngine) Backup() (err error) {
 			backupDir,
 			target,
 		},
-		extraEnv,
 		[]*volume.Volume{
 			v,
 		},
@@ -56,26 +51,8 @@ func (r *RCloneEngine) Backup() (err error) {
 	return
 }
 
-func formatURL(u *url.URL) (env map[string]string) {
-	// We have no way but to assume fqdns contain "."
-	// which is arguable very ugly
-	env = make(map[string]string)
-	if strings.Contains(u.Host, ".") && strings.HasPrefix(u.Scheme, "s3") {
-		u.Opaque = strings.TrimPrefix(u.Path, "/")
-		env["AWS_ENDPOINT"] = u.Host
-	} else {
-		u.Opaque = strings.TrimPrefix(u.Host+u.Path, "/")
-	}
-
-	plusIndex := strings.Index(u.Scheme, "+")
-	if plusIndex >= 0 {
-		u.Scheme = u.Scheme[0:plusIndex]
-	}
-	return
-}
-
 // launchRClone starts an rclone container with a given command
-func (r *RCloneEngine) launchRClone(cmd []string, extraEnv map[string]string, volumes []*volume.Volume) (state int, stdout string, err error) {
+func (r *RCloneEngine) launchRClone(cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
 	config := r.Orchestrator.GetHandler().Config
 	image := config.RClone.Image
 
@@ -90,9 +67,6 @@ func (r *RCloneEngine) launchRClone(cmd []string, extraEnv map[string]string, vo
 		"RCLONE_CONFIG_SWIFT_TENANT":        config.Swift.TenantName,
 		"RCLONE_CONFIG_SWIFT_DOMAIN":        config.Swift.UserDomainName,
 		"RCLONE_CONFIG_SWIFT_TENANT_DOMAIN": config.Swift.ProjectDomainName,
-	}
-	for en, ev := range extraEnv {
-		env[en] = ev
 	}
 	for k, v := range config.ExtraEnv {
 		env[k] = v
