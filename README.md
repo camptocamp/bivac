@@ -32,6 +32,7 @@ Application Options:
   -V, --version                     Display version.
   -l, --loglevel=                   Set loglevel ('debug', 'info', 'warn', 'error', 'fatal', 'panic'). (default: info) [$BIVAC_LOG_LEVEL]
   -b, --blacklist=                  Volumes to blacklist in backups. [$BIVAC_VOLUMES_BLACKLIST]
+  -w, --whitelist=                  Only backup whitelisted volumes. [$BIVAC_VOLUMES_WHITELIST]
   -m, --manpage                     Output manpage.
       --no-verify                   Do not verify backup. [$BIVAC_NO_VERIFY]
   -j, --json                        Log as JSON (to stderr). [$BIVAC_JSON_OUTPUT]
@@ -42,13 +43,14 @@ Application Options:
       --remove-older-than=          Remove backups older than the specified interval. (default: 30D) [$BIVAC_REMOVE_OLDER_THAN]
       --label-prefix=               The volume prefix label. [$BIVAC_LABEL_PREFIX]
       --extra-env=                  Extra environment variables to share with workers. [$BIVAC_EXTRA_ENV]
+  -p, --providers-file=             Path to providers configuration file. (default: /providers-config.default.toml) [$BIVAC_PROVIDERS_FILE]
 
 Restic Options:
       --restic-image=               The restic docker image. (default: restic/restic:latest) [$RESTIC_DOCKER_IMAGE]
       --restic-password=            The restic backup password. [$RESTIC_PASSWORD]
 
 RClone Options:
-      --rclone-image=               The rclone docker image. (default: camptocamp/rclone:1.33-1) [$RCLONE_DOCKER_IMAGE]
+      --rclone-image=               The rclone docker image. (default: camptocamp/rclone:1.42-1) [$RCLONE_DOCKER_IMAGE]
 
 Duplicity Options:
       --duplicity-image=            The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
@@ -67,12 +69,16 @@ Swift Options:
       --swift-auth_url=             The Swift auth URL. [$SWIFT_AUTHURL]
       --swift-tenant-name=          The Swift tenant name. [$SWIFT_TENANTNAME]
       --swift-region-name=          The Swift region name. [$SWIFT_REGIONNAME]
+      --swift-user-domain-name=     The Swift user domain name. [$SWIFT_USER_DOMAIN_NAME]
+      --swift-project-name=         The Swift project name. [$SWIFT_PROJECT_NAME]
+      --swift-project-domain-name=  The Swift project domain name. [$SWIFT_PROJECT_DOMAIN_NAME]
 
 Docker Options:
   -e, --docker-endpoint=            The Docker endpoint. (default: unix:///var/run/docker.sock) [$DOCKER_ENDPOINT]
 
 Kubernetes Options:
       --k8s-namespace=              Namespace where you want to run Bivac. [$K8S_NAMESPACE]
+      --k8s-all-namespaces          Backup volumes of all namespaces. [$K8S_ALL_NAMESPACES]
       --k8s-kubeconfig=             Path to your kubeconfig file. [$K8S_KUBECONFIG]
       --k8s-worker-service-account= Specify service account for workers. [$K8S_WORKER_SERVICE_ACCOUNT]
 
@@ -186,4 +192,3 @@ Bivac returns:
 ## Architecture
 
 ![Bivac architecture](img/architecture.png)
-
