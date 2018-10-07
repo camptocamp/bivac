@@ -313,6 +313,15 @@ func (o *CattleOrchestrator) GetContainersMountingVolume(v *volume.Volume) (cont
 	}
 
 	for _, mount := range vol.Mounts {
+		instance, err := o.Client.Container.ById(mount.InstanceId)
+		if err != nil {
+			log.Errorf("failed to inspect container %s", mount.InstanceId)
+			continue
+		}
+		if instance.State != "running" {
+			continue
+		}
+
 		mv := &volume.MountedVolume{
 			ContainerID: mount.InstanceId,
 			Volume:      v,
