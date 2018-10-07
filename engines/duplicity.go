@@ -2,7 +2,6 @@ package engines
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -42,7 +41,6 @@ func (d *DuplicityEngine) replaceArgs(args []string) (newArgs []string) {
 		arg = strings.Replace(arg, "%H", d.Volume.Hostname, -1)
 		arg = strings.Replace(arg, "%N", d.Volume.Namespace, -1)
 		arg = strings.Replace(arg, "%P", d.Orchestrator.GetPath(d.Volume), -1)
-		arg = strings.Replace(arg, "%T", d.Volume.Target, -1)
 		arg = strings.Replace(arg, "%V", d.Volume.Name, -1)
 		newArgs = append(newArgs, arg)
 	}
@@ -59,15 +57,8 @@ func (d *DuplicityEngine) Backup() (err error) {
 		"mountpoint": vol.Mountpoint,
 	}).Info("Creating duplicity container")
 
-	targetURL, err := url.Parse(vol.Config.TargetURL)
-	if err != nil {
-		err = fmt.Errorf("failed to parse target URL: %v", err)
-		return
-	}
-
 	backupDir := vol.BackupDir
 	c := d.Orchestrator.GetHandler()
-	vol.Target = targetURL.String() + "/" + d.Orchestrator.GetPath(vol) + "/" + vol.Name
 	vol.BackupDir = vol.Mountpoint + "/" + backupDir
 	vol.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
 
@@ -312,7 +303,6 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 		"name":               v.Name,
 		"backup_dir":         v.BackupDir,
 		"full_if_older_than": v.Config.Duplicity.FullIfOlderThan,
-		"target":             v.Target,
 		"mount":              v.Mount,
 	}).Info("Starting volume backup")
 

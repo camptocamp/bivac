@@ -4,7 +4,6 @@ import "testing"
 
 // Set up fake volume
 var fakeVol = Volume{
-	Target:    "/foo",
 	BackupDir: "/back",
 	Mount:     "/mnt",
 	Config:    &Config{},
@@ -14,10 +13,6 @@ var fakeVol = Volume{
 func TestNewVolume(t *testing.T) {
 	fakeVol.Config.Duplicity.FullIfOlderThan = "3W"
 	fakeVol.Config.RemoveOlderThan = "1Y"
-
-	if fakeVol.Target != "/foo" {
-		t.Fatalf("Volume target is wrong. Expected /foo, got %v", fakeVol.Target)
-	}
 
 	if fakeVol.BackupDir != "/back" {
 		t.Fatalf("Volume backup dir is wrong. Expected /back, got %v", fakeVol.BackupDir)

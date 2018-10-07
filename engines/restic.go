@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -49,7 +48,6 @@ func (r *ResticEngine) replaceArgs(args []string) (newArgs []string) {
 		arg = strings.Replace(arg, "%H", r.Volume.Hostname, -1)
 		arg = strings.Replace(arg, "%N", r.Volume.Namespace, -1)
 		arg = strings.Replace(arg, "%P", r.Orchestrator.GetPath(r.Volume), -1)
-		arg = strings.Replace(arg, "%T", r.Volume.Target, -1)
 		arg = strings.Replace(arg, "%V", r.Volume.Name, -1)
 		newArgs = append(newArgs, arg)
 	}
@@ -62,14 +60,7 @@ func (r *ResticEngine) Backup() (err error) {
 
 	v := r.Volume
 
-	targetURL, err := url.Parse(v.Config.TargetURL)
-	if err != nil {
-		err = fmt.Errorf("failed to parse target URL: %v", err)
-		return
-	}
-
 	c := r.Orchestrator.GetHandler()
-	v.Target = targetURL.String() + "/" + r.Orchestrator.GetPath(v) + "/" + v.Name
 	v.BackupDir = v.Mountpoint + "/" + v.BackupDir
 	v.Mount = v.Name + ":" + v.Mountpoint + ":ro"
 

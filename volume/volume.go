@@ -19,7 +19,6 @@ import (
 type Volume struct {
 	ID             string
 	Name           string
-	Target         string
 	BackupDir      string
 	Mount          string
 	Mountpoint     string
