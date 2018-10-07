@@ -4,6 +4,7 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/bionic64"
   config.vm.network "private_network", ip: "192.168.42.3"
+  config.vm.hostname = "testing"
 
   config.ssh.insert_key = false
 
@@ -56,9 +57,9 @@ Vagrant.configure("2") do |config|
     # Install Rancher CLI
     wget https://releases.rancher.com/cli/v0.6.12/rancher-linux-amd64-v0.6.12.tar.gz
     tar zxf rancher-linux-amd64-v0.6.12.tar.gz
-    sudo cp ./rancher-v0.6.12/rancher /usr/local/bin/rancher
+    sudo cp ./rancher-v0.6.12/rancher /bin/rancher
+    sudo chmod +x /bin/rancher
     rm -rf ./rancher-v0.6.12
     rm rancher-linux-amd64-v0.6.12.tar.gz
-    rehash
     SHELL
 end

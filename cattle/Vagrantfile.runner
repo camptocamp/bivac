@@ -2,8 +2,10 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "bivac-docker"
-  config.vm.box_url = "file://bivac-docker.box"
+  config.vm.box = "bivac-cattle"
+  config.vm.box_url = "file://bivac-cattle.box"
+  config.vm.network "private_network", ip: "192.168.42.3"
+  config.vm.hostname = "testing"
 
   config.ssh.insert_key = false
 end
