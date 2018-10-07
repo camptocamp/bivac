@@ -94,11 +94,12 @@ Help Options:
 
 ## Examples
 
-### Backup all named volumes to S3
+### Backup all named volumes to S3 using Restic
 
 ```shell
 $ bivac \
-  -u s3:http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
+  -o docker \
+  -u s3:s3.amazonaws.com/<my_bucket>/<my_dir> \
   --aws-access-key-id=<my_key_id> \
   --aws-secret-key-id=<my_secret_key> \
   --restic-password=<my_restic_password>
@@ -109,7 +110,7 @@ $ bivac \
 
 ```shell
 $ docker run -v /var/run/docker.sock:/var/run/docker.sock:ro  --rm -ti \
-   -e BIVAC_TARGET_URL=s3:http://s3-eu-west-1.amazonaws.com/<my_bucket>/<my_dir> \
+   -e BIVAC_TARGET_URL=s3:s3.amazonaws.com/<my_bucket>/<my_dir> \
    -e AWS_ACCESS_KEY_ID=<my_key_id> \
    -e AWS_SECRET_ACCESS_KEY=<my_secret_key> \
    -e RESTIC_PASSWORD=<my_restic_password> \
@@ -132,7 +133,7 @@ If you cannot use volume labels, you can drop a `.bivac.overrides` file at the r
 engine = "rclone"
 no_verify = true
 ignore = false
-target_url = "s3:http://s3-us-east-1.amazonaws.com/foo/bar"
+target_url = "s3:foo/bar"
 
 [duplicity]
 full_if_older_than = "3D"
