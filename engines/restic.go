@@ -46,6 +46,7 @@ func (r *ResticEngine) replaceArgs(args []string) (newArgs []string) {
 	for _, arg := range args {
 		arg = strings.Replace(arg, "%D", r.Volume.BackupDir, -1)
 		arg = strings.Replace(arg, "%T", r.Volume.Target, -1)
+		arg = strings.Replace(arg, "%V", r.Volume.Name, -1)
 		newArgs = append(newArgs, arg)
 	}
 	log.Debugf("Replacing args, Output: %v", newArgs)

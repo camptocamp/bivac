@@ -39,6 +39,7 @@ func (d *DuplicityEngine) replaceArgs(args []string) (newArgs []string) {
 	for _, arg := range args {
 		arg = strings.Replace(arg, "%D", d.Volume.BackupDir, -1)
 		arg = strings.Replace(arg, "%T", d.Volume.Target, -1)
+		arg = strings.Replace(arg, "%V", d.Volume.Name, -1)
 		newArgs = append(newArgs, arg)
 	}
 	log.Debugf("Replacing args, Output: %v", newArgs)
@@ -113,7 +114,7 @@ func (d *DuplicityEngine) removeOld() (err error) {
 			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",
 			"--force",
-			"--name", v.Name,
+			"--name", "%V",
 			"%T",
 		},
 		[]*volume.Volume{},
@@ -127,7 +128,6 @@ func (d *DuplicityEngine) removeOld() (err error) {
 
 // cleanup removes old index data from duplicity
 func (d *DuplicityEngine) cleanup() (err error) {
-	v := d.Volume
 	_, _, err = d.launchDuplicity(
 		[]string{
 			"cleanup",
@@ -136,7 +136,7 @@ func (d *DuplicityEngine) cleanup() (err error) {
 			"--no-encryption",
 			"--force",
 			"--extra-clean",
-			"--name", v.Name,
+			"--name", "%V",
 			"%T",
 		},
 		[]*volume.Volume{},
@@ -157,7 +157,7 @@ func (d *DuplicityEngine) verify() (err error) {
 			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",
 			"--allow-source-mismatch",
-			"--name", v.Name,
+			"--name", "%V",
 			"%T",
 			"%D",
 		},
@@ -202,7 +202,7 @@ func (d *DuplicityEngine) status() (err error) {
 				"--s3-use-new-style",
 				"--ssh-options", "-oStrictHostKeyChecking=no",
 				"--no-encryption",
-				"--name", v.Name,
+				"--name", "%V",
 				"%T",
 			},
 			[]*volume.Volume{
@@ -322,7 +322,7 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",
 			"--allow-source-mismatch",
-			"--name", v.Name,
+			"--name", "%V",
 			"%D",
 			"%T",
 		},
