@@ -44,7 +44,9 @@ func (*ResticEngine) GetName() string {
 func (r *ResticEngine) replaceArgs(args []string) (newArgs []string) {
 	log.Debugf("Replacing args, Input: %v", args)
 	for _, arg := range args {
+		arg = strings.Replace(arg, "%B", r.Volume.Config.TargetURL, -1)
 		arg = strings.Replace(arg, "%D", r.Volume.BackupDir, -1)
+		arg = strings.Replace(arg, "%P", r.Orchestrator.GetPath(r.Volume), -1)
 		arg = strings.Replace(arg, "%T", r.Volume.Target, -1)
 		arg = strings.Replace(arg, "%V", r.Volume.Name, -1)
 		newArgs = append(newArgs, arg)
@@ -112,7 +114,7 @@ func (r *ResticEngine) init() (err error) {
 	state, _, err := r.launchRestic(
 		[]string{
 			"-r",
-			"%T",
+			"%B/%P",
 			"snapshots",
 		},
 		[]*volume.Volume{},
@@ -132,7 +134,7 @@ func (r *ResticEngine) init() (err error) {
 	state, _, err = r.launchRestic(
 		[]string{
 			"-r",
-			"%T",
+			"%B/%P",
 			"init",
 		},
 		[]*volume.Volume{
@@ -159,7 +161,7 @@ func (r *ResticEngine) resticBackup() (err error) {
 			"--hostname",
 			c.Hostname,
 			"-r",
-			"%T",
+			"%B/%P",
 			"backup",
 			"%D",
 		},
@@ -192,7 +194,7 @@ func (r *ResticEngine) verify() (err error) {
 	state, _, err := r.launchRestic(
 		[]string{
 			"-r",
-			"%T",
+			"%B/%P",
 			"check",
 		},
 		[]*volume.Volume{},
@@ -284,7 +286,7 @@ func (r *ResticEngine) forget() (err error) {
 	state, output, err := r.launchRestic(
 		[]string{
 			"-r",
-			"%T",
+			"%B/%P",
 			"forget",
 			"--prune",
 			"--keep-last",
@@ -309,7 +311,7 @@ func (r *ResticEngine) snapshots() (snapshots []Snapshot, err error) {
 	_, output, err := r.launchRestic(
 		[]string{
 			"-r",
-			"%T",
+			"%B/%P",
 			"snapshots",
 			"--json",
 		},

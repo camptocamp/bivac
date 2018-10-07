@@ -25,7 +25,9 @@ func (*RCloneEngine) GetName() string {
 func (r *RCloneEngine) replaceArgs(args []string) (newArgs []string) {
 	log.Debugf("Replacing args, Input: %v", args)
 	for _, arg := range args {
+		arg = strings.Replace(arg, "%B", r.Volume.Config.TargetURL, -1)
 		arg = strings.Replace(arg, "%D", r.Volume.BackupDir, -1)
+		arg = strings.Replace(arg, "%P", r.Orchestrator.GetPath(r.Volume), -1)
 		arg = strings.Replace(arg, "%T", r.Volume.Target, -1)
 		arg = strings.Replace(arg, "%V", r.Volume.Name, -1)
 		newArgs = append(newArgs, arg)
@@ -51,7 +53,7 @@ func (r *RCloneEngine) Backup() (err error) {
 		[]string{
 			"sync",
 			"%D",
-			"%T",
+			"%B/%P",
 		},
 		[]*volume.Volume{
 			v,

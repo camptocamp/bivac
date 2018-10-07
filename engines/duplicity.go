@@ -37,7 +37,9 @@ func (*DuplicityEngine) GetName() string {
 func (d *DuplicityEngine) replaceArgs(args []string) (newArgs []string) {
 	log.Debugf("Replacing args, Input: %v", args)
 	for _, arg := range args {
+		arg = strings.Replace(arg, "%B", d.Volume.Config.TargetURL, -1)
 		arg = strings.Replace(arg, "%D", d.Volume.BackupDir, -1)
+		arg = strings.Replace(arg, "%P", d.Orchestrator.GetPath(d.Volume), -1)
 		arg = strings.Replace(arg, "%T", d.Volume.Target, -1)
 		arg = strings.Replace(arg, "%V", d.Volume.Name, -1)
 		newArgs = append(newArgs, arg)
@@ -115,7 +117,7 @@ func (d *DuplicityEngine) removeOld() (err error) {
 			"--no-encryption",
 			"--force",
 			"--name", "%V",
-			"%T",
+			"%B/%P",
 		},
 		[]*volume.Volume{},
 	)
@@ -137,7 +139,7 @@ func (d *DuplicityEngine) cleanup() (err error) {
 			"--force",
 			"--extra-clean",
 			"--name", "%V",
-			"%T",
+			"%B/%P",
 		},
 		[]*volume.Volume{},
 	)
@@ -158,7 +160,7 @@ func (d *DuplicityEngine) verify() (err error) {
 			"--no-encryption",
 			"--allow-source-mismatch",
 			"--name", "%V",
-			"%T",
+			"%B/%P",
 			"%D",
 		},
 		[]*volume.Volume{
@@ -203,7 +205,7 @@ func (d *DuplicityEngine) status() (err error) {
 				"--ssh-options", "-oStrictHostKeyChecking=no",
 				"--no-encryption",
 				"--name", "%V",
-				"%T",
+				"%B/%P",
 			},
 			[]*volume.Volume{
 				v,
@@ -324,7 +326,7 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 			"--allow-source-mismatch",
 			"--name", "%V",
 			"%D",
-			"%T",
+			"%B/%P",
 		},
 		[]*volume.Volume{
 			v,
