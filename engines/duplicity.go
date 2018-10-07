@@ -37,6 +37,7 @@ func (*DuplicityEngine) GetName() string {
 func (d *DuplicityEngine) replaceArgs(args []string) (newArgs []string) {
 	log.Debugf("Replacing args, Input: %v", args)
 	for _, arg := range args {
+		arg = strings.Replace(arg, "%D", d.Volume.BackupDir, -1)
 		arg = strings.Replace(arg, "%T", d.Volume.Target, -1)
 		newArgs = append(newArgs, arg)
 	}
@@ -158,7 +159,7 @@ func (d *DuplicityEngine) verify() (err error) {
 			"--allow-source-mismatch",
 			"--name", v.Name,
 			"%T",
-			v.BackupDir,
+			"%D",
 		},
 		[]*volume.Volume{
 			v,
@@ -322,7 +323,7 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 			"--no-encryption",
 			"--allow-source-mismatch",
 			"--name", v.Name,
-			v.BackupDir,
+			"%D",
 			"%T",
 		},
 		[]*volume.Volume{

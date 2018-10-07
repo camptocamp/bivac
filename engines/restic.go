@@ -44,6 +44,7 @@ func (*ResticEngine) GetName() string {
 func (r *ResticEngine) replaceArgs(args []string) (newArgs []string) {
 	log.Debugf("Replacing args, Input: %v", args)
 	for _, arg := range args {
+		arg = strings.Replace(arg, "%D", r.Volume.BackupDir, -1)
 		arg = strings.Replace(arg, "%T", r.Volume.Target, -1)
 		newArgs = append(newArgs, arg)
 	}
@@ -159,7 +160,7 @@ func (r *ResticEngine) resticBackup() (err error) {
 			"-r",
 			"%T",
 			"backup",
-			v.BackupDir,
+			"%D",
 		},
 		[]*volume.Volume{
 			v,
