@@ -3,7 +3,9 @@ package engines
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/bivac/orchestrators"
 	"github.com/camptocamp/bivac/volume"
 )
@@ -19,6 +21,17 @@ func (*RCloneEngine) GetName() string {
 	return "RClone"
 }
 
+// replaceArgs replace arguments with their values
+func (r *RCloneEngine) replaceArgs(args []string) (newArgs []string) {
+	log.Debugf("Replacing args, Input: %v", args)
+	for _, arg := range args {
+		arg = strings.Replace(arg, "%T", r.Volume.Target, -1)
+		newArgs = append(newArgs, arg)
+	}
+	log.Debugf("Replacing args, Output: %v", newArgs)
+	return
+}
+
 // Backup performs the backup of the passed volume
 func (r *RCloneEngine) Backup() (err error) {
 	v := r.Volume
@@ -29,14 +42,14 @@ func (r *RCloneEngine) Backup() (err error) {
 		return
 	}
 
-	target := targetURL.String() + "/" + r.Orchestrator.GetPath(v)
-	backupDir := v.Mountpoint + "/" + v.BackupDir
+	v.Target = targetURL.String() + "/" + r.Orchestrator.GetPath(v)
+	v.BackupDir = v.Mountpoint + "/" + v.BackupDir
 
 	state, _, err := r.launchRClone(
 		[]string{
 			"sync",
-			backupDir,
-			target,
+			v.BackupDir,
+			"%T",
 		},
 		[]*volume.Volume{
 			v,
@@ -72,5 +85,5 @@ func (r *RCloneEngine) launchRClone(cmd []string, volumes []*volume.Volume) (sta
 		env[k] = v
 	}
 
-	return r.Orchestrator.LaunchContainer(image, env, cmd, volumes)
+	return r.Orchestrator.LaunchContainer(image, env, r.replaceArgs(cmd), volumes)
 }

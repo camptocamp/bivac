@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -37,6 +38,17 @@ type Snapshot struct {
 // GetName returns the engine name
 func (*ResticEngine) GetName() string {
 	return "Restic"
+}
+
+// replaceArgs replace arguments with their values
+func (r *ResticEngine) replaceArgs(args []string) (newArgs []string) {
+	log.Debugf("Replacing args, Input: %v", args)
+	for _, arg := range args {
+		arg = strings.Replace(arg, "%T", r.Volume.Target, -1)
+		newArgs = append(newArgs, arg)
+	}
+	log.Debugf("Replacing args, Output: %v", newArgs)
+	return
 }
 
 // Backup performs the backup of the passed volume
@@ -98,7 +110,7 @@ func (r *ResticEngine) init() (err error) {
 	state, _, err := r.launchRestic(
 		[]string{
 			"-r",
-			v.Target,
+			"%T",
 			"snapshots",
 		},
 		[]*volume.Volume{},
@@ -118,7 +130,7 @@ func (r *ResticEngine) init() (err error) {
 	state, _, err = r.launchRestic(
 		[]string{
 			"-r",
-			v.Target,
+			"%T",
 			"init",
 		},
 		[]*volume.Volume{
@@ -145,7 +157,7 @@ func (r *ResticEngine) resticBackup() (err error) {
 			"--hostname",
 			c.Hostname,
 			"-r",
-			v.Target,
+			"%T",
 			"backup",
 			v.BackupDir,
 		},
@@ -178,7 +190,7 @@ func (r *ResticEngine) verify() (err error) {
 	state, _, err := r.launchRestic(
 		[]string{
 			"-r",
-			v.Target,
+			"%T",
 			"check",
 		},
 		[]*volume.Volume{},
@@ -270,7 +282,7 @@ func (r *ResticEngine) forget() (err error) {
 	state, output, err := r.launchRestic(
 		[]string{
 			"-r",
-			v.Target,
+			"%T",
 			"forget",
 			"--prune",
 			"--keep-last",
@@ -292,12 +304,10 @@ func (r *ResticEngine) forget() (err error) {
 
 // snapshots lists snapshots
 func (r *ResticEngine) snapshots() (snapshots []Snapshot, err error) {
-	v := r.Volume
-
 	_, output, err := r.launchRestic(
 		[]string{
 			"-r",
-			v.Target,
+			"%T",
 			"snapshots",
 			"--json",
 		},
@@ -357,5 +367,5 @@ func (r *ResticEngine) launchRestic(cmd []string, volumes []*volume.Volume) (sta
 		env[k] = v
 	}
 
-	return r.Orchestrator.LaunchContainer(image, env, cmd, volumes)
+	return r.Orchestrator.LaunchContainer(image, env, r.replaceArgs(cmd), volumes)
 }
