@@ -39,6 +39,8 @@ func (d *DuplicityEngine) replaceArgs(args []string) (newArgs []string) {
 	for _, arg := range args {
 		arg = strings.Replace(arg, "%B", d.Volume.Config.TargetURL, -1)
 		arg = strings.Replace(arg, "%D", d.Volume.BackupDir, -1)
+		arg = strings.Replace(arg, "%H", d.Volume.Hostname, -1)
+		arg = strings.Replace(arg, "%N", d.Volume.Namespace, -1)
 		arg = strings.Replace(arg, "%P", d.Orchestrator.GetPath(d.Volume), -1)
 		arg = strings.Replace(arg, "%T", d.Volume.Target, -1)
 		arg = strings.Replace(arg, "%V", d.Volume.Name, -1)
