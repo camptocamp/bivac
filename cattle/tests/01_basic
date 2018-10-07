@@ -8,9 +8,25 @@ export AWS_ACCESS_KEY_ID=OBQZY3DV6VOEZ9PG6NIM
 export AWS_SECRET_ACCESS_KEY=7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty
 export RANCHER_URL=http://192.168.42.3:8080/v2-beta
 
-sleep 240 # Let Rancher start
+echo "[*] Starting Rancher..."
+while true; do
+  rancher stacks -s > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    sleep 10
+    continue
+  fi
 
-cat <<EOF > /tmp/test01-docker-compose.yml
+  sh -c "rancher stacks -s | grep -v unhealthy" > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    sleep 10
+    continue
+  fi
+
+  break
+done
+
+echo "[*] Starting services..."
+cat <<EOF > /tmp/services-docker-compose.yml
 ---
 version: '2'
 services:
@@ -38,12 +54,12 @@ services:
       MYSQL_ROOT_PASSWORD: root
 EOF
 
-rancher stack create --start -f /tmp/test01-docker-compose.yml services
+services_stack=$(rancher stack create --start -f /tmp/services-docker-compose.yml services)
+while [[ $(rancher inspect $services_stack| jq -r ".healthState") != "healthy" ]]; do
+  sleep 10
+done
 
-sleep 60
-
-
-# Start Bivac
+echo "[*] Starting Bivac..."
 cat <<EOF > /tmp/bivac-docker-compose.yml
 ---
 version: '2'
@@ -65,8 +81,6 @@ EOF
 
 bivac_stack=$(rancher stack create --start -s -f /tmp/bivac-docker-compose.yml bivac)
 
-sleep 30
-
 while [[ $(rancher inspect $bivac_stack | jq -r ".healthState") != "started-once" ]]; do
   sleep 10
 done
@@ -77,12 +91,14 @@ rancher logs bivac
 dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://192.168.42.3:9000/bivac-testing/testing/canary dump latest /data/canary)
 dump=${dump%$'\r'}
 if [[ "$dump" != "$canary" ]]; then
+  echo -e "\e[31m[-] Basic : Cattle + Restic (canary short)\e[39m"
   test_valid=false
 fi
 
 dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://192.168.42.3:9000/bivac-testing/testing/canary dump latest /data/foo/bar/canary)
 dump=${dump%$'\r'}
 if [[ "$dump" != "$canary" ]]; then
+  echo -e "\e[31m[-] Basic : Cattle + Restic (canary long)\e[39m"
   test_valid=false
 fi
 
@@ -90,6 +106,7 @@ fi
 dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://192.168.42.3:9000/bivac-testing/testing/mysql dump latest /var/lib/mysql/backups/all.sql)
 dump=${dump%$'\r'}
 if [[ $dump != *"Dump completed"* ]]; then
+  echo -e "\e[31m[-] Basic : Cattle + Restic (mysql)\e[39m"
   test_valid=false
 fi
 
@@ -97,6 +114,7 @@ fi
 dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://192.168.42.3:9000/bivac-testing/testing/postgres dump latest /var/lib/postgresql/data/backups/all.sql)
 dump=${dump%$'\r'}
 if [[ $dump != *"dump complete"* ]]; then
+  echo -e "\e[31m[-] Basic : Cattle + Restic (postgresql)\e[39m"
   test_valid=false
 fi
 
@@ -104,11 +122,10 @@ fi
 
 if [ "$test_valid" = true ]; then
   echo -e "\e[32m[+] Basic : Cattle + Restic\e[39m"
-else
-  echo -e "\e[31m[-] Basic : Cattle + Restic\e[39m"
 fi
 
 # Clean up environment
-#rancher volume rm canary
-#rancher volume rm mysql
-#rancher volume rm postgres
+rancher rm $services_stack
+rancher rm $bivac_stack
+rm /tmp/bivac-docker-compose.yml
+rm /tmp/services-docker-compose.yml
