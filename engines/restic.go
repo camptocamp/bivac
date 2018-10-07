@@ -67,7 +67,7 @@ func (r *ResticEngine) Backup() (err error) {
 	}
 
 	c := r.Orchestrator.GetHandler()
-	v.Target = targetURL.String() + "/" + r.Orchestrator.GetPath(v)
+	v.Target = targetURL.String() + "/" + r.Orchestrator.GetPath(v) + "/" + v.Name
 	v.BackupDir = v.Mountpoint + "/" + v.BackupDir
 	v.Mount = v.Name + ":" + v.Mountpoint + ":ro"
 
@@ -114,7 +114,7 @@ func (r *ResticEngine) init() (err error) {
 	state, _, err := r.launchRestic(
 		[]string{
 			"-r",
-			"%B/%P",
+			"%B/%P/%V",
 			"snapshots",
 		},
 		[]*volume.Volume{},
@@ -134,7 +134,7 @@ func (r *ResticEngine) init() (err error) {
 	state, _, err = r.launchRestic(
 		[]string{
 			"-r",
-			"%B/%P",
+			"%B/%P/%V",
 			"init",
 		},
 		[]*volume.Volume{
@@ -161,7 +161,7 @@ func (r *ResticEngine) resticBackup() (err error) {
 			"--hostname",
 			c.Hostname,
 			"-r",
-			"%B/%P",
+			"%B/%P/%V",
 			"backup",
 			"%D",
 		},
@@ -194,7 +194,7 @@ func (r *ResticEngine) verify() (err error) {
 	state, _, err := r.launchRestic(
 		[]string{
 			"-r",
-			"%B/%P",
+			"%B/%P/%V",
 			"check",
 		},
 		[]*volume.Volume{},
@@ -286,7 +286,7 @@ func (r *ResticEngine) forget() (err error) {
 	state, output, err := r.launchRestic(
 		[]string{
 			"-r",
-			"%B/%P",
+			"%B/%P/%V",
 			"forget",
 			"--prune",
 			"--keep-last",
@@ -311,7 +311,7 @@ func (r *ResticEngine) snapshots() (snapshots []Snapshot, err error) {
 	_, output, err := r.launchRestic(
 		[]string{
 			"-r",
-			"%B/%P",
+			"%B/%P/%V",
 			"snapshots",
 			"--json",
 		},

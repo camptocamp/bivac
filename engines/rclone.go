@@ -46,14 +46,14 @@ func (r *RCloneEngine) Backup() (err error) {
 		return
 	}
 
-	v.Target = targetURL.String() + "/" + r.Orchestrator.GetPath(v)
+	v.Target = targetURL.String() + "/" + r.Orchestrator.GetPath(v) + "/" + v.Name
 	v.BackupDir = v.Mountpoint + "/" + v.BackupDir
 
 	state, _, err := r.launchRClone(
 		[]string{
 			"sync",
 			"%D",
-			"%B/%P",
+			"%B/%P/%V",
 		},
 		[]*volume.Volume{
 			v,

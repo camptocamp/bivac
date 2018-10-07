@@ -65,7 +65,7 @@ func (d *DuplicityEngine) Backup() (err error) {
 
 	backupDir := vol.BackupDir
 	c := d.Orchestrator.GetHandler()
-	vol.Target = targetURL.String() + "/" + d.Orchestrator.GetPath(vol)
+	vol.Target = targetURL.String() + "/" + d.Orchestrator.GetPath(vol) + "/" + vol.Name
 	vol.BackupDir = vol.Mountpoint + "/" + backupDir
 	vol.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
 
@@ -117,7 +117,7 @@ func (d *DuplicityEngine) removeOld() (err error) {
 			"--no-encryption",
 			"--force",
 			"--name", "%V",
-			"%B/%P",
+			"%B/%P/%V",
 		},
 		[]*volume.Volume{},
 	)
@@ -139,7 +139,7 @@ func (d *DuplicityEngine) cleanup() (err error) {
 			"--force",
 			"--extra-clean",
 			"--name", "%V",
-			"%B/%P",
+			"%B/%P/%V",
 		},
 		[]*volume.Volume{},
 	)
@@ -160,7 +160,7 @@ func (d *DuplicityEngine) verify() (err error) {
 			"--no-encryption",
 			"--allow-source-mismatch",
 			"--name", "%V",
-			"%B/%P",
+			"%B/%P/%V",
 			"%D",
 		},
 		[]*volume.Volume{
@@ -205,7 +205,7 @@ func (d *DuplicityEngine) status() (err error) {
 				"--ssh-options", "-oStrictHostKeyChecking=no",
 				"--no-encryption",
 				"--name", "%V",
-				"%B/%P",
+				"%B/%P/%V",
 			},
 			[]*volume.Volume{
 				v,
@@ -326,7 +326,7 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 			"--allow-source-mismatch",
 			"--name", "%V",
 			"%D",
-			"%B/%P",
+			"%B/%P/%V",
 		},
 		[]*volume.Volume{
 			v,
