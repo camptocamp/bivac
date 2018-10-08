@@ -160,7 +160,19 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 		log.Errorf("failed to get hostname: %s", err)
 		return
 	}
-	managerPod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Get(managerHostname, metav1.GetOptions{})
+
+	// get the namespace
+	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{},
+	)
+	namespace, _, err := kubeconfig.Namespace()
+	if err != nil {
+		log.Errorf("Failed to get namespace: %v", err)
+		return
+	}
+
+	managerPod, err := o.Client.CoreV1().Pods(namespace).Get(managerHostname, metav1.GetOptions{})
 	if err != nil {
 		log.Errorf("failed to get current pod: %s", err)
 		return
