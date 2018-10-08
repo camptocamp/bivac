@@ -1,4 +1,4 @@
-# [1.0.0-alpha6](unreleased)
+# [1.0.0-alpha6](https://github.com/camptocamp/bivac/releases/tag/1.0.0-alpha6) (2018-10-08)
 
 BREAKING CHANGES:
 
