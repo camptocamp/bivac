@@ -1,6 +1,6 @@
 # [1.0.0-alpha6](unreleased)
 
-CREAKING CHANGES:
+BREAKING CHANGES:
 
 - `engine/rclone`: Don't format URL in rclone engine. Please use the standard rclone URL.
 
@@ -12,6 +12,7 @@ BUG FIXES:
 
 - `orchestrator/cattle`: Improve log reading
 - `orchestrator/cattle`: Prevent failure when volume is mounted on stopped container
+- `orchestrator/kubernetes`: Fix current pod detection when using --all-namespaces
 
 # [1.0.0-alpha5](https://github.com/camptocamp/bivac/releases/tag/1.0.0-alpha5) (2018-10-04)
 
