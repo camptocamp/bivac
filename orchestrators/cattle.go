@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -170,11 +171,13 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	metadataClient, err := metadata.NewClientAndWait("http://rancher-metadata/latest/")
 	if err != nil {
 		log.Errorf("Error initiating metadata client: %v", err)
+		err = fmt.Errorf("can't build client")
 		return
 	}
 	managerCont, err := metadataClient.GetSelfContainer()
 	if err != nil {
 		log.Errorf("failed to get current container: %s", err)
+		err = fmt.Errorf("can't inspect current container")
 		return
 	}
 	containers, err := o.Client.Container.List(&client.ListOpts{
@@ -185,6 +188,7 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	})
 	if err != nil {
 		log.Errorf("failed to get container list: %s", err)
+		err = fmt.Errorf("can't get container list")
 		return
 	}
 	var managerContainer *client.Container
@@ -216,6 +220,7 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	})
 	if err != nil {
 		log.Errorf("failed to create worker container: %s", err)
+		err = fmt.Errorf("can't create worker container")
 		return
 	}
 
@@ -227,6 +232,8 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 		container, err := o.Client.Container.ById(container.Id)
 		if err != nil {
 			log.Errorf("failed to inspect worker: %s", err)
+			err = fmt.Errorf("can't inspect worker")
+			return 1, "", err
 		}
 
 		// This workaround is awful but it's the only way to know if the container failed.
@@ -250,6 +257,8 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	err = o.rawAPICall("POST", container.Links["self"]+"/?action=logs", &hostAccess)
 	if err != nil {
 		log.Errorf("failed to read response from rancher: %s", err)
+		err = fmt.Errorf("can't access worker logs")
+		return
 	}
 
 	origin := o.Handler.Config.Cattle.URL
@@ -257,6 +266,7 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	u, err := url.Parse(hostAccess.Url)
 	if err != nil {
 		log.Errorf("failed to parse rancher server url: %s", err)
+		err = fmt.Errorf("can't access worker logs")
 	}
 	q := u.Query()
 	q.Set("token", hostAccess.Token)
@@ -265,6 +275,8 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 	ws, err := websocket.Dial(u.String(), "", origin)
 	if err != nil {
 		log.Errorf("failed to open websocket with rancher server: %s", err)
+		err = fmt.Errorf("can't access worker logs")
+		return
 	}
 
 	defer ws.Close()
