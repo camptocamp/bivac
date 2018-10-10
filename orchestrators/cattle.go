@@ -253,6 +253,13 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 		}
 	}
 
+	container, err = o.Client.Container.ById(container.Id)
+	if err != nil {
+		log.Errorf("failed to inspect worker before retrieving logs: %s", err)
+		err = fmt.Errorf("can't inspect worker")
+		return 1, "", err
+	}
+
 	var hostAccess *client.HostAccess
 	err = o.rawAPICall("POST", container.Links["self"]+"/?action=logs", &hostAccess)
 	if err != nil {
