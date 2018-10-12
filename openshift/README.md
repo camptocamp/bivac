@@ -13,15 +13,15 @@ oc process bivac \
   -p AWS_ACCESS_KEY_ID=<AWS ACCESS KEY> \
   -p AWS_SECRET_ACCESS_KEY=<AWS SECRET KEY> \
   -p RESTIC_PASSWORD=<RESTIC PASSWORD> \
-  -p K8S_WORKER_SERVICE_ACCOUNT=default \
   -p NAMESPACE=<OPENSHIFT NAMESPACE> | oc create -f -
 ```
 * Delete cronjob:
 ```bash
 oc delete cronjob bivac
-oc delete rolebinding bivac
-oc delete role bivac
+oc delete clusterrolebinding bivac
+oc delete clusterrole bivac
 oc delete serviceaccount bivac
+oc delete configmap bivac
 ```
 * Delete template:
 ```bash
