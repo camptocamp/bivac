@@ -2,7 +2,6 @@ package engines
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -33,6 +32,22 @@ func (*DuplicityEngine) GetName() string {
 	return "Duplicity"
 }
 
+// replaceArgs replace arguments with their values
+func (d *DuplicityEngine) replaceArgs(args []string) (newArgs []string) {
+	log.Debugf("Replacing args, Input: %v", args)
+	for _, arg := range args {
+		arg = strings.Replace(arg, "%B", d.Volume.Config.TargetURL, -1)
+		arg = strings.Replace(arg, "%D", d.Volume.BackupDir, -1)
+		arg = strings.Replace(arg, "%H", d.Volume.Hostname, -1)
+		arg = strings.Replace(arg, "%N", d.Volume.Namespace, -1)
+		arg = strings.Replace(arg, "%P", d.Orchestrator.GetPath(d.Volume), -1)
+		arg = strings.Replace(arg, "%V", d.Volume.Name, -1)
+		newArgs = append(newArgs, arg)
+	}
+	log.Debugf("Replacing args, Output: %v", newArgs)
+	return
+}
+
 // Backup performs the backup of the passed volume
 func (d *DuplicityEngine) Backup() (err error) {
 	vol := d.Volume
@@ -42,15 +57,8 @@ func (d *DuplicityEngine) Backup() (err error) {
 		"mountpoint": vol.Mountpoint,
 	}).Info("Creating duplicity container")
 
-	targetURL, err := url.Parse(vol.Config.TargetURL)
-	if err != nil {
-		err = fmt.Errorf("failed to parse target URL: %v", err)
-		return
-	}
-
 	backupDir := vol.BackupDir
 	c := d.Orchestrator.GetHandler()
-	vol.Target = targetURL.String() + "/" + d.Orchestrator.GetPath(vol)
 	vol.BackupDir = vol.Mountpoint + "/" + backupDir
 	vol.Mount = vol.Name + ":" + vol.Mountpoint + ":ro"
 
@@ -101,8 +109,8 @@ func (d *DuplicityEngine) removeOld() (err error) {
 			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",
 			"--force",
-			"--name", v.Name,
-			v.Target,
+			"--name", "%V",
+			"%B/%P/%V",
 		},
 		[]*volume.Volume{},
 	)
@@ -115,7 +123,6 @@ func (d *DuplicityEngine) removeOld() (err error) {
 
 // cleanup removes old index data from duplicity
 func (d *DuplicityEngine) cleanup() (err error) {
-	v := d.Volume
 	_, _, err = d.launchDuplicity(
 		[]string{
 			"cleanup",
@@ -124,8 +131,8 @@ func (d *DuplicityEngine) cleanup() (err error) {
 			"--no-encryption",
 			"--force",
 			"--extra-clean",
-			"--name", v.Name,
-			v.Target,
+			"--name", "%V",
+			"%B/%P/%V",
 		},
 		[]*volume.Volume{},
 	)
@@ -145,9 +152,9 @@ func (d *DuplicityEngine) verify() (err error) {
 			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",
 			"--allow-source-mismatch",
-			"--name", v.Name,
-			v.Target,
-			v.BackupDir,
+			"--name", "%V",
+			"%B/%P/%V",
+			"%D",
 		},
 		[]*volume.Volume{
 			v,
@@ -190,8 +197,8 @@ func (d *DuplicityEngine) status() (err error) {
 				"--s3-use-new-style",
 				"--ssh-options", "-oStrictHostKeyChecking=no",
 				"--no-encryption",
-				"--name", v.Name,
-				v.Target,
+				"--name", "%V",
+				"%B/%P/%V",
 			},
 			[]*volume.Volume{
 				v,
@@ -286,7 +293,7 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, volumes []*volume.Volume
 		env[k] = v
 	}
 
-	return d.Orchestrator.LaunchContainer(image, env, cmd, volumes)
+	return d.Orchestrator.LaunchContainer(image, env, d.replaceArgs(cmd), volumes)
 }
 
 // duplicityBackup performs the backup of a volume with duplicity
@@ -296,7 +303,6 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 		"name":               v.Name,
 		"backup_dir":         v.BackupDir,
 		"full_if_older_than": v.Config.Duplicity.FullIfOlderThan,
-		"target":             v.Target,
 		"mount":              v.Mount,
 	}).Info("Starting volume backup")
 
@@ -310,9 +316,9 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 			"--ssh-options", "-oStrictHostKeyChecking=no",
 			"--no-encryption",
 			"--allow-source-mismatch",
-			"--name", v.Name,
-			v.BackupDir,
-			v.Target,
+			"--name", "%V",
+			"%D",
+			"%B/%P/%V",
 		},
 		[]*volume.Volume{
 			v,

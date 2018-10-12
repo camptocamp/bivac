@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -39,19 +39,28 @@ func (*ResticEngine) GetName() string {
 	return "Restic"
 }
 
+// replaceArgs replace arguments with their values
+func (r *ResticEngine) replaceArgs(args []string) (newArgs []string) {
+	log.Debugf("Replacing args, Input: %v", args)
+	for _, arg := range args {
+		arg = strings.Replace(arg, "%B", r.Volume.Config.TargetURL, -1)
+		arg = strings.Replace(arg, "%D", r.Volume.BackupDir, -1)
+		arg = strings.Replace(arg, "%H", r.Volume.Hostname, -1)
+		arg = strings.Replace(arg, "%N", r.Volume.Namespace, -1)
+		arg = strings.Replace(arg, "%P", r.Orchestrator.GetPath(r.Volume), -1)
+		arg = strings.Replace(arg, "%V", r.Volume.Name, -1)
+		newArgs = append(newArgs, arg)
+	}
+	log.Debugf("Replacing args, Output: %v", newArgs)
+	return
+}
+
 // Backup performs the backup of the passed volume
 func (r *ResticEngine) Backup() (err error) {
 
 	v := r.Volume
 
-	targetURL, err := url.Parse(v.Config.TargetURL)
-	if err != nil {
-		err = fmt.Errorf("failed to parse target URL: %v", err)
-		return
-	}
-
 	c := r.Orchestrator.GetHandler()
-	v.Target = targetURL.String() + "/" + r.Orchestrator.GetPath(v)
 	v.BackupDir = v.Mountpoint + "/" + v.BackupDir
 	v.Mount = v.Name + ":" + v.Mountpoint + ":ro"
 
@@ -98,7 +107,7 @@ func (r *ResticEngine) init() (err error) {
 	state, _, err := r.launchRestic(
 		[]string{
 			"-r",
-			v.Target,
+			"%B/%P/%V",
 			"snapshots",
 		},
 		[]*volume.Volume{},
@@ -118,7 +127,7 @@ func (r *ResticEngine) init() (err error) {
 	state, _, err = r.launchRestic(
 		[]string{
 			"-r",
-			v.Target,
+			"%B/%P/%V",
 			"init",
 		},
 		[]*volume.Volume{
@@ -145,9 +154,9 @@ func (r *ResticEngine) resticBackup() (err error) {
 			"--hostname",
 			c.Hostname,
 			"-r",
-			v.Target,
+			"%B/%P/%V",
 			"backup",
-			v.BackupDir,
+			"%D",
 		},
 		[]*volume.Volume{
 			v,
@@ -178,7 +187,7 @@ func (r *ResticEngine) verify() (err error) {
 	state, _, err := r.launchRestic(
 		[]string{
 			"-r",
-			v.Target,
+			"%B/%P/%V",
 			"check",
 		},
 		[]*volume.Volume{},
@@ -270,7 +279,7 @@ func (r *ResticEngine) forget() (err error) {
 	state, output, err := r.launchRestic(
 		[]string{
 			"-r",
-			v.Target,
+			"%B/%P/%V",
 			"forget",
 			"--prune",
 			"--keep-last",
@@ -292,12 +301,10 @@ func (r *ResticEngine) forget() (err error) {
 
 // snapshots lists snapshots
 func (r *ResticEngine) snapshots() (snapshots []Snapshot, err error) {
-	v := r.Volume
-
 	_, output, err := r.launchRestic(
 		[]string{
 			"-r",
-			v.Target,
+			"%B/%P/%V",
 			"snapshots",
 			"--json",
 		},
@@ -357,5 +364,5 @@ func (r *ResticEngine) launchRestic(cmd []string, volumes []*volume.Volume) (sta
 		env[k] = v
 	}
 
-	return r.Orchestrator.LaunchContainer(image, env, cmd, volumes)
+	return r.Orchestrator.LaunchContainer(image, env, r.replaceArgs(cmd), volumes)
 }

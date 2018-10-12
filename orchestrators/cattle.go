@@ -59,7 +59,7 @@ func (*CattleOrchestrator) GetName() string {
 
 // GetPath returns the path of the backup
 func (*CattleOrchestrator) GetPath(v *volume.Volume) string {
-	return v.Hostname + "/" + v.Name
+	return v.Hostname
 }
 
 // GetHandler returns the Orchestrator's handler
