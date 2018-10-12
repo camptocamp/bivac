@@ -8,7 +8,7 @@ metadata:
     description: "Bivac lets you backup all your containers volumes deployed on Docker Engine or Kubernetes using Restic, Duplicity or RClone."
     tags: "backup,duplicity,restic,rclone,volume"
 objects:
-- apiVersion: batch/v2alpha1
+- apiVersion: batch/v1beta1
   kind: CronJob
   metadata:
     name: ${APP_NAME}
@@ -54,14 +54,18 @@ objects:
                     value: ${K8S_WORKER_SERVICE_ACCOUNT}
                 volumeMounts:
                   - name: providers-config
-                    mountPath: /
+                    mountPath: /providers-config.default.toml
+                    subPath: providers-config.default.toml
             volumes:
               - name: providers-config
                 configMap:
                   name: ${APP_NAME}
+                  items:
+                    - key: providers-config
+                      path: providers-config.default.toml
             restartPolicy: OnFailure
-- kind: Role
-  apiVersion: v1
+- kind: ClusterRole
+  apiVersion: rbac.authorization.k8s.io/v1
   metadata:
     name: ${APP_NAME}
   rules:
@@ -94,16 +98,18 @@ objects:
   kind: ServiceAccount
   metadata:
     name: ${APP_NAME}
-- kind: RoleBinding
-  apiVersion: v1
+- kind: ClusterRoleBinding
+  apiVersion: rbac.authorization.k8s.io/v1
   metadata:
     name: ${APP_NAME}
   roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
     name: ${APP_NAME}
-    namespace: ${NAMESPACE}
   subjects:
   - kind: ServiceAccount
     name: ${APP_NAME}
+    namespace: ${NAMESPACE}
 - kind: ConfigMap
   apiVersion: v1
   metadata:
@@ -112,24 +118,22 @@ objects:
     providers-config: |-
       [providers]
         [providers.mysql]
-        pre_cmd = """
-        ${MYSQL_PRE_CMD}"""
-        detect_cmd = """
-        ${MYSQL_DETECT_CMD}"""
-        post_cmd = """
-        ${MYSQL_POST_CMD}"""
+        pre_cmd = """${MYSQL_PRE_CMD}"""
+        detect_cmd = """${MYSQL_DETECT_CMD}"""
+        post_cmd = """${MYSQL_POST_CMD}"""
         backup_dir = "${MYSQL_BACKUP_DIR}"
 
         [providers.postgresql]
-        pre_cmd = "mkdir -p $volume/backups && pg_dumpall --clean -Upostgres > $volume/backups/all.sql"
-        post_cmd = ""
-        detect_cmd = "[[ -f $volume/PG_VERSION ]]"
-        backup_dir = "backups"
+        pre_cmd = """${POSTGRES_PRE_CMD}"""
+        post_cmd = """${POSTGRES_POST_CMD}"""
+        detect_cmd = """${POSTGRES_DETECT_CMD}"""
+        backup_dir = "${POSTGRES_BACKUP_DIR}"
 
         [providers.openldap]
-        pre_cmd = "mkdir -p $volume/backups && slapcat > $volume/backups/all.ldif"
-        detect_cmd = "[[ -f $volume/DB_CONFIG ]]"
-        backup_dir = "backups"
+        pre_cmd = """${LDAP_PRE_CMD}"""
+        post_cmd = """${LDAP_POST_CMD}"""
+        detect_cmd = """${LDAP_DETECT_CMD}"""
+        backup_dir = "${LDAP_BACKUP_DIR}"
 
 parameters:
 - name: APP_NAME
@@ -168,7 +172,7 @@ parameters:
   description: The restic backup password.
 - name: K8S_WORKER_SERVICE_ACCOUNT
   description: Kubernetes service account to use for workers.
-  value: useroot
+  value: bivac
 - name: NAMESPACE
   description: Openshift project name (namespace)
 - name: MYSQL_PRE_CMD
