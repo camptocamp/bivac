@@ -1,3 +1,14 @@
+# [1.0.0-alpha7](https://github.com/camptocamp/bivac/releases/tag/1.0.0-alpha7) (2018-10-12)
+
+IMPROVEMENTS:
+
+- `orchestrator/cattle`: improve error handling
+- `core`: improve template for Openshift to allow usage of custom providers
+
+BUG FIXES:
+
+- `orchestrator/cattle`: reload container's config before reading logs
+
 # [1.0.0-alpha6](https://github.com/camptocamp/bivac/releases/tag/1.0.0-alpha6) (2018-10-08)
 
 BREAKING CHANGES:
