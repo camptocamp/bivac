@@ -22,23 +22,29 @@ type Config struct {
 	Orchestrator     string            `short:"o" long:"orchestrator" description:"Container orchestrator to use." env:"BIVAC_ORCHESTRATOR"`
 	TargetURL        string            `short:"u" long:"target-url" description:"The target URL to push to." env:"BIVAC_TARGET_URL"`
 	CheckEvery       string            `long:"check-every" description:"Time between backup checks." env:"BIVAC_CHECK_EVERY" default:"24h"`
-	RemoveOlderThan  string            `long:"remove-older-than" description:"Remove backups older than the specified interval." env:"BIVAC_REMOVE_OLDER_THAN" default:"30D"`
 	LabelPrefix      string            `long:"label-prefix" description:"The volume prefix label." env:"BIVAC_LABEL_PREFIX"`
 	ExtraEnv         map[string]string `long:"extra-env" description:"Extra environment variables to share with workers." env:"BIVAC_EXTRA_ENV"`
 	ProvidersFile    string            `short:"p" long:"providers-file" description:"Path to providers configuration file." env:"BIVAC_PROVIDERS_FILE" default:"/providers-config.default.toml"`
 
 	Restic struct {
-		Image    string `long:"restic-image" description:"The restic docker image." env:"RESTIC_DOCKER_IMAGE" default:"restic/restic:latest"`
-		Password string `long:"restic-password" description:"The restic backup password." env:"RESTIC_PASSWORD"`
+		CommonArgs []string `long:"restic-args" description:"Arguments to pass to restic engine." env:"RESTIC_COMMON_ARGS" default:"-r %B/%P/%V"`
+		BackupArgs []string `long:"restic-backup-args" description:"Arguments to pass to restic engine when backup." env:"RESTIC_BACKUP_ARGS" default:"%D --hostname %H"`
+		ForgetArgs []string `long:"restic-forget-args" description:"Arguments to pass to restic engine when launching forget." env:"RESTIC_FORGET_ARGS" default:"--keep-daily 15 --prune"`
+		Image      string   `long:"restic-image" description:"The restic docker image." env:"RESTIC_DOCKER_IMAGE" default:"restic/restic:latest"`
+		Password   string   `long:"restic-password" description:"The restic backup password." env:"RESTIC_PASSWORD"`
 	} `group:"Restic Options"`
 
 	RClone struct {
-		Image string `long:"rclone-image" description:"The rclone docker image." env:"RCLONE_DOCKER_IMAGE" default:"camptocamp/rclone:1.42-1"`
+		CommonArgs []string `long:"rclone-args" description:"Arguments to pass to rclone engine." env:"RCLONE_COMMON_ARGS"`
+		BackupArgs []string `long:"rclone-backup-args" description:"Arguments to pass to rclone engine when backup." env:"RCLONE_BACKUP_ARGS" default:"%D %B/%P/%V"`
+		Image      string   `long:"rclone-image" description:"The rclone docker image." env:"RCLONE_DOCKER_IMAGE" default:"camptocamp/rclone:1.42-1"`
 	} `group:"RClone Options"`
 
 	Duplicity struct {
-		Image           string `long:"duplicity-image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
-		FullIfOlderThan string `long:"full-if-older-than" description:"The number of days after which a full backup must be performed." env:"BIVAC_FULL_IF_OLDER_THAN" default:"15D"`
+		CommonArgs          []string `long:"duplicity-args" description:"Arguments to pass to duplicity engine." env:"DUPLICITY_COMMON_ARGS" default:"--s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption"`
+		BackupArgs          []string `long:"duplicity-backup-args" description:"Arguments to pass to duplicity engine when backup." env:"DUPLICITY_BACKUP_ARGS" default:"--full-if-older-than 15D --allow-source-mismatch --name %V %D %B/%P/%V"`
+		RemoveOlderThanArgs []string `long:"duplicity-remove-older-than-args" description:"Arguments to pass to duplicity engine when removing old backups." env:"DUPLICITY_REMOVE_OLDER_THAN_ARGS" default:"30D --force --name %V %B/%P/%V"`
+		Image               string   `long:"duplicity-image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
 	} `group:"Duplicity Options"`
 
 	Metrics struct {
