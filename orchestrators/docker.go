@@ -9,8 +9,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"golang.org/x/net/context"
-
+	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/bivac/handler"
 	"github.com/camptocamp/bivac/util"
 	"github.com/camptocamp/bivac/volume"
@@ -18,10 +17,9 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
-	"github.com/docker/docker/pkg/stdcopy"
-
-	log "github.com/Sirupsen/logrus"
 	docker "github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
+	"golang.org/x/net/context"
 )
 
 // DockerOrchestrator implements a container orchestrator for Docker
@@ -108,12 +106,6 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 		envVars = append(envVars, envName+"="+envValue)
 	}
 
-	log.WithFields(log.Fields{
-		"image":       image,
-		"command":     strings.Join(cmd, " "),
-		"environment": strings.Join(envVars, ", "),
-	}).Debug("Creating container")
-
 	var mounts []mount.Mount
 
 	for _, v := range volumes {
@@ -139,6 +131,13 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 	for _, env := range managerContainer.Config.Env {
 		envVars = append(envVars, env)
 	}
+
+	log.WithFields(log.Fields{
+		"image":       image,
+		"command":     strings.Join(cmd, " "),
+		"environment": strings.Join(envVars, ", "),
+		"mounts":      mounts,
+	}).Debug("Creating container")
 
 	container, err := o.Client.ContainerCreate(
 		context.Background(),
