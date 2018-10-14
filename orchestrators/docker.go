@@ -131,6 +131,15 @@ func (o *DockerOrchestrator) LaunchContainer(image string, env map[string]string
 	for _, env := range managerContainer.Config.Env {
 		envVars = append(envVars, env)
 	}
+	for _, v := range managerContainer.Mounts {
+		m := mount.Mount{
+			Type:     v.Type,
+			Source:   v.Source,
+			Target:   v.Destination,
+			ReadOnly: !v.RW,
+		}
+		mounts = append(mounts, m)
+	}
 
 	log.WithFields(log.Fields{
 		"image":       image,
