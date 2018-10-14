@@ -1,5 +1,9 @@
 # [1.0.0-alpha8](unreleased)
 
+BREAKING CHANGES:
+
+- `core`: Remove `extra-env` arguments (all manager environments are now forwarded to worker)
+
 IMPROVEMENTS:
 
 - `orechestrator/docker`: forward manager volumes to worker
