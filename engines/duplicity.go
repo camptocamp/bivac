@@ -282,6 +282,7 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, volumes []*volume.Volume
 
 // duplicityBackup performs the backup of a volume with duplicity
 func (d *DuplicityEngine) duplicityBackup() (err error) {
+	config := d.Orchestrator.GetHandler().Config
 	v := d.Volume
 	log.WithFields(log.Fields{
 		"name":               v.Name,
@@ -294,16 +295,8 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 	// Init engine
 
 	state, _, err := d.launchDuplicity(
-		[]string{
-			"--full-if-older-than", v.Config.Duplicity.FullIfOlderThan,
-			"--allow-source-mismatch",
-			"--name", "%V",
-			"%D",
-			"%B/%P/%V",
-		},
-		[]*volume.Volume{
-			v,
-		},
+		strings.Split(config.Duplicity.BackupArgs, " "),
+		[]*volume.Volume{v},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch duplicity: %v", err)

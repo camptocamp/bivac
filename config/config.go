@@ -39,6 +39,7 @@ type Config struct {
 
 	Duplicity struct {
 		CommonArgs      string `long:"duplicity-args" description:"Arguments to pass to duplicity engine." env:"DUPLICITY_COMMON_ARGS" default:"--s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption"`
+		BackupArgs      string `long:"duplicity-backup-args" description:"Arguments to pass to duplicity engine when backup." env:"DUPLICITY_BACKUP_ARGS" default:"--full-if-older-than 15D --allow-source-mismatch --name %V %D %B/%P/%V"`
 		Image           string `long:"duplicity-image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
 		FullIfOlderThan string `long:"full-if-older-than" description:"The number of days after which a full backup must be performed." env:"BIVAC_FULL_IF_OLDER_THAN" default:"15D"`
 	} `group:"Duplicity Options"`
