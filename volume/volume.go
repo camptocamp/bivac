@@ -40,16 +40,6 @@ type Config struct {
 	Ignore          bool   `label:"ignore" ini:"ignore" default:"false"`
 	TargetURL       string `label:"target_url" ini:"target_url" config:"TargetURL"`
 	RemoveOlderThan string `label:"remove_older_than" ini:"remove_older_than" config:"RemoveOlderThan"`
-
-	Duplicity struct {
-		FullIfOlderThan string `label:"full_if_older_than" ini:"full_if_older_than" config:"FullIfOlderThan"`
-	} `label:"duplicity" ini:"duplicity" config:"Duplicity"`
-
-	RClone struct {
-	} `label:"rclone" ini:"rclone" config:"RClone"`
-
-	Restic struct {
-	} `label:"restic" ini:"restic" config:"Restic"`
 }
 
 // MountedVolume stores mounted volumes inside a container

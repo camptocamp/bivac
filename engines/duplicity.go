@@ -285,10 +285,9 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 	config := d.Orchestrator.GetHandler().Config
 	v := d.Volume
 	log.WithFields(log.Fields{
-		"name":               v.Name,
-		"backup_dir":         v.BackupDir,
-		"full_if_older_than": v.Config.Duplicity.FullIfOlderThan,
-		"mount":              v.Mount,
+		"name":       v.Name,
+		"backup_dir": v.BackupDir,
+		"mount":      v.Mount,
 	}).Info("Starting volume backup")
 
 	// TODO
