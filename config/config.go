@@ -28,6 +28,7 @@ type Config struct {
 
 	Restic struct {
 		CommonArgs string `long:"restic-args" description:"Arguments to pass to restic engine." env:"RESTIC_COMMON_ARGS" default:"-r %B/%P/%V"`
+		BackupArgs string `long:"restic-backup-args" description:"Arguments to pass to restic engine when backup." env:"RESTIC_BACKUP_ARGS" default:"%D --hostname %H"`
 		Image      string `long:"restic-image" description:"The restic docker image." env:"RESTIC_DOCKER_IMAGE" default:"restic/restic:latest"`
 		Password   string `long:"restic-password" description:"The restic backup password." env:"RESTIC_PASSWORD"`
 	} `group:"Restic Options"`
