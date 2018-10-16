@@ -36,6 +36,7 @@ type Config struct {
 	} `group:"RClone Options"`
 
 	Duplicity struct {
+		CommonArgs      string `long:"duplicity-args" description:"Arguments to pass to duplicity engine." env:"DUPLICITY_COMMON_ARGS" default:"--s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption"`
 		Image           string `long:"duplicity-image" description:"The duplicity docker image." env:"DUPLICITY_DOCKER_IMAGE" default:"camptocamp/duplicity:latest"`
 		FullIfOlderThan string `long:"full-if-older-than" description:"The number of days after which a full backup must be performed." env:"BIVAC_FULL_IF_OLDER_THAN" default:"15D"`
 	} `group:"Duplicity Options"`

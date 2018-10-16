@@ -52,8 +52,7 @@ RClone Options:
       --rclone-image=               The rclone docker image. (default: camptocamp/rclone:1.42-1) [$RCLONE_DOCKER_IMAGE]
 
 Duplicity Options:
-      --duplicity-image=            The duplicity docker image. (default: camptocamp/duplicity:latest) [$DUPLICITY_DOCKER_IMAGE]
-      --full-if-older-than=         The number of days after which a full backup must be performed. (default: 15D) [$BIVAC_FULL_IF_OLDER_THAN]
+      --duplicity-args=             Arguments to pass to duplicity engine. (default: --s3-use-new-style --ssh-options -oStrictHostKeyChecking=no --no-encryption) [$DUPLICITY_COMMON_ARGS]
 
 Metrics Options:
   -g, --gateway-url=                The prometheus push gateway URL to use. [$PUSHGATEWAY_URL]

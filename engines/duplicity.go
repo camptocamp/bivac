@@ -105,9 +105,6 @@ func (d *DuplicityEngine) removeOld() (err error) {
 	_, _, err = d.launchDuplicity(
 		[]string{
 			"remove-older-than", v.Config.RemoveOlderThan,
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
 			"--force",
 			"--name", "%V",
 			"%B/%P/%V",
@@ -126,9 +123,6 @@ func (d *DuplicityEngine) cleanup() (err error) {
 	_, _, err = d.launchDuplicity(
 		[]string{
 			"cleanup",
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
 			"--force",
 			"--extra-clean",
 			"--name", "%V",
@@ -148,9 +142,6 @@ func (d *DuplicityEngine) verify() (err error) {
 	state, _, err := d.launchDuplicity(
 		[]string{
 			"verify",
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
 			"--allow-source-mismatch",
 			"--name", "%V",
 			"%B/%P/%V",
@@ -194,9 +185,6 @@ func (d *DuplicityEngine) status() (err error) {
 		_, stdout, err = d.launchDuplicity(
 			[]string{
 				"collection-status",
-				"--s3-use-new-style",
-				"--ssh-options", "-oStrictHostKeyChecking=no",
-				"--no-encryption",
 				"--name", "%V",
 				"%B/%P/%V",
 			},
@@ -289,7 +277,7 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, volumes []*volume.Volume
 		"SWIFT_AUTHVERSION":     "2",
 	}
 
-	return d.Orchestrator.LaunchContainer(image, env, d.replaceArgs(cmd), volumes)
+	return d.Orchestrator.LaunchContainer(image, env, d.replaceArgs(append(cmd, strings.Split(config.Duplicity.CommonArgs, " ")...)), volumes)
 }
 
 // duplicityBackup performs the backup of a volume with duplicity
@@ -308,9 +296,6 @@ func (d *DuplicityEngine) duplicityBackup() (err error) {
 	state, _, err := d.launchDuplicity(
 		[]string{
 			"--full-if-older-than", v.Config.Duplicity.FullIfOlderThan,
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
 			"--allow-source-mismatch",
 			"--name", "%V",
 			"%D",
