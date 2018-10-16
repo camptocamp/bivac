@@ -187,6 +187,7 @@ func (r *ResticEngine) verify() (err error) {
 
 // forget removes a snapshot
 func (r *ResticEngine) forget() (err error) {
+	config := r.Orchestrator.GetHandler().Config
 
 	v := r.Volume
 
@@ -232,27 +233,8 @@ func (r *ResticEngine) forget() (err error) {
 		},
 	)
 
-	duration, err := util.GetDurationFromInterval(v.Config.RemoveOlderThan)
-	if err != nil {
-		return err
-	}
-
-	validSnapshots := 0
-	now := time.Now()
-	for _, snapshot := range snapshots {
-		expiration := snapshot.Time.Add(duration)
-		if now.Before(expiration) {
-			validSnapshots++
-		}
-	}
-
 	state, output, err := r.launchRestic(
-		[]string{
-			"forget",
-			"--prune",
-			"--keep-last",
-			fmt.Sprintf("%d", validSnapshots),
-		},
+		append([]string{"forget"}, strings.Split(config.Restic.ForgetArgs, " ")...),
 		[]*volume.Volume{},
 	)
 	if err != nil {

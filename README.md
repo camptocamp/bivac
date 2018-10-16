@@ -46,6 +46,7 @@ Application Options:
 Restic Options:
       --restic-args=                      Arguments to pass to restic engine. (default: -r %B/%P/%V) [$RESTIC_COMMON_ARGS]
       --restic-backup-args=               Arguments to pass to restic engine when backup. (default: %D --hostname %H) [$RESTIC_BACKUP_ARGS]
+      --restic-forget-args=               Arguments to pass to restic engine when launching forget. (default: --keep-daily 15 --prune) [$RESTIC_FORGET_ARGS]
       --restic-image=                     The restic docker image. (default: restic/restic:latest) [$RESTIC_DOCKER_IMAGE]
       --restic-password=                  The restic backup password. [$RESTIC_PASSWORD]
 
