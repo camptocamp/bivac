@@ -101,17 +101,12 @@ func (d *DuplicityEngine) Backup() (err error) {
 
 // removeOld cleans up old backup data
 func (d *DuplicityEngine) removeOld() (err error) {
-	v := d.Volume
+	config := d.Orchestrator.GetHandler().Config
 	_, _, err = d.launchDuplicity(
-		[]string{
-			"remove-older-than", v.Config.RemoveOlderThan,
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
-			"--force",
-			"--name", "%V",
-			"%B/%P/%V",
-		},
+		append(
+			[]string{"remove-older-than"},
+			strings.Split(config.Duplicity.RemoveOlderThanArgs, " ")...,
+		),
 		[]*volume.Volume{},
 	)
 	if err != nil {
@@ -126,9 +121,6 @@ func (d *DuplicityEngine) cleanup() (err error) {
 	_, _, err = d.launchDuplicity(
 		[]string{
 			"cleanup",
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
 			"--force",
 			"--extra-clean",
 			"--name", "%V",
@@ -148,9 +140,6 @@ func (d *DuplicityEngine) verify() (err error) {
 	state, _, err := d.launchDuplicity(
 		[]string{
 			"verify",
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
 			"--allow-source-mismatch",
 			"--name", "%V",
 			"%B/%P/%V",
@@ -194,9 +183,6 @@ func (d *DuplicityEngine) status() (err error) {
 		_, stdout, err = d.launchDuplicity(
 			[]string{
 				"collection-status",
-				"--s3-use-new-style",
-				"--ssh-options", "-oStrictHostKeyChecking=no",
-				"--no-encryption",
 				"--name", "%V",
 				"%B/%P/%V",
 			},
@@ -289,36 +275,25 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, volumes []*volume.Volume
 		"SWIFT_AUTHVERSION":     "2",
 	}
 
-	return d.Orchestrator.LaunchContainer(image, env, d.replaceArgs(cmd), volumes)
+	return d.Orchestrator.LaunchContainer(image, env, d.replaceArgs(append(cmd, strings.Split(config.Duplicity.CommonArgs, " ")...)), volumes)
 }
 
 // duplicityBackup performs the backup of a volume with duplicity
 func (d *DuplicityEngine) duplicityBackup() (err error) {
+	config := d.Orchestrator.GetHandler().Config
 	v := d.Volume
 	log.WithFields(log.Fields{
-		"name":               v.Name,
-		"backup_dir":         v.BackupDir,
-		"full_if_older_than": v.Config.Duplicity.FullIfOlderThan,
-		"mount":              v.Mount,
+		"name":       v.Name,
+		"backup_dir": v.BackupDir,
+		"mount":      v.Mount,
 	}).Info("Starting volume backup")
 
 	// TODO
 	// Init engine
 
 	state, _, err := d.launchDuplicity(
-		[]string{
-			"--full-if-older-than", v.Config.Duplicity.FullIfOlderThan,
-			"--s3-use-new-style",
-			"--ssh-options", "-oStrictHostKeyChecking=no",
-			"--no-encryption",
-			"--allow-source-mismatch",
-			"--name", "%V",
-			"%D",
-			"%B/%P/%V",
-		},
-		[]*volume.Volume{
-			v,
-		},
+		strings.Split(config.Duplicity.BackupArgs, " "),
+		[]*volume.Volume{v},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch duplicity: %v", err)

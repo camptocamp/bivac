@@ -38,19 +38,14 @@ func (r *RCloneEngine) replaceArgs(args []string) (newArgs []string) {
 
 // Backup performs the backup of the passed volume
 func (r *RCloneEngine) Backup() (err error) {
+	config := r.Orchestrator.GetHandler().Config
 	v := r.Volume
 
 	v.BackupDir = v.Mountpoint + "/" + v.BackupDir
 
 	state, _, err := r.launchRClone(
-		[]string{
-			"sync",
-			"%D",
-			"%B/%P/%V",
-		},
-		[]*volume.Volume{
-			v,
-		},
+		append([]string{"sync"}, strings.Split(config.RClone.BackupArgs, " ")...),
+		[]*volume.Volume{v},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch RClone: %v", err)
@@ -79,5 +74,5 @@ func (r *RCloneEngine) launchRClone(cmd []string, volumes []*volume.Volume) (sta
 		"RCLONE_CONFIG_SWIFT_TENANT_DOMAIN": config.Swift.ProjectDomainName,
 	}
 
-	return r.Orchestrator.LaunchContainer(image, env, r.replaceArgs(cmd), volumes)
+	return r.Orchestrator.LaunchContainer(image, env, r.replaceArgs(append(cmd, strings.Split(config.RClone.CommonArgs, " ")...)), volumes)
 }
