@@ -35,11 +35,10 @@ type Volume struct {
 
 // Config is the volume's configuration parameters
 type Config struct {
-	Engine          string `label:"engine" ini:"engine" config:"Engine"`
-	NoVerify        bool   `label:"no_verify" ini:"no_verify" config:"NoVerify"`
-	Ignore          bool   `label:"ignore" ini:"ignore" default:"false"`
-	TargetURL       string `label:"target_url" ini:"target_url" config:"TargetURL"`
-	RemoveOlderThan string `label:"remove_older_than" ini:"remove_older_than" config:"RemoveOlderThan"`
+	Engine    string `label:"engine" ini:"engine" config:"Engine"`
+	NoVerify  bool   `label:"no_verify" ini:"no_verify" config:"NoVerify"`
+	Ignore    bool   `label:"ignore" ini:"ignore" default:"false"`
+	TargetURL string `label:"target_url" ini:"target_url" config:"TargetURL"`
 }
 
 // MountedVolume stores mounted volumes inside a container

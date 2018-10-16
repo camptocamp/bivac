@@ -22,7 +22,6 @@ type Config struct {
 	Orchestrator     string   `short:"o" long:"orchestrator" description:"Container orchestrator to use." env:"BIVAC_ORCHESTRATOR"`
 	TargetURL        string   `short:"u" long:"target-url" description:"The target URL to push to." env:"BIVAC_TARGET_URL"`
 	CheckEvery       string   `long:"check-every" description:"Time between backup checks." env:"BIVAC_CHECK_EVERY" default:"24h"`
-	RemoveOlderThan  string   `long:"remove-older-than" description:"Remove backups older than the specified interval." env:"BIVAC_REMOVE_OLDER_THAN" default:"30D"`
 	LabelPrefix      string   `long:"label-prefix" description:"The volume prefix label." env:"BIVAC_LABEL_PREFIX"`
 	ProvidersFile    string   `short:"p" long:"providers-file" description:"Path to providers configuration file." env:"BIVAC_PROVIDERS_FILE" default:"/providers-config.default.toml"`
 
