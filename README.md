@@ -50,6 +50,7 @@ Restic Options:
 
 RClone Options:
       --rclone-args=                      Arguments to pass to rclone engine. [$RCLONE_COMMON_ARGS]
+      --rclone-backup-args=               Arguments to pass to rclone engine when backup. (default: %D %B/%P/%V) [$RCLONE_BACKUP_ARGS]
       --rclone-image=                     The rclone docker image. (default: camptocamp/rclone:1.42-1) [$RCLONE_DOCKER_IMAGE]
 
 Duplicity Options:

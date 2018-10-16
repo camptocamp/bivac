@@ -34,6 +34,7 @@ type Config struct {
 
 	RClone struct {
 		CommonArgs string `long:"rclone-args" description:"Arguments to pass to rclone engine." env:"RCLONE_COMMON_ARGS"`
+		BackupArgs string `long:"rclone-backup-args" description:"Arguments to pass to rclone engine when backup." env:"RCLONE_BACKUP_ARGS" default:"%D %B/%P/%V"`
 		Image      string `long:"rclone-image" description:"The rclone docker image." env:"RCLONE_DOCKER_IMAGE" default:"camptocamp/rclone:1.42-1"`
 	} `group:"RClone Options"`
 

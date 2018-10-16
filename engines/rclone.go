@@ -38,19 +38,14 @@ func (r *RCloneEngine) replaceArgs(args []string) (newArgs []string) {
 
 // Backup performs the backup of the passed volume
 func (r *RCloneEngine) Backup() (err error) {
+	config := r.Orchestrator.GetHandler().Config
 	v := r.Volume
 
 	v.BackupDir = v.Mountpoint + "/" + v.BackupDir
 
 	state, _, err := r.launchRClone(
-		[]string{
-			"sync",
-			"%D",
-			"%B/%P/%V",
-		},
-		[]*volume.Volume{
-			v,
-		},
+		append([]string{"sync"}, strings.Split(config.RClone.BackupArgs, " ")...),
+		[]*volume.Volume{v},
 	)
 	if err != nil {
 		err = fmt.Errorf("failed to launch RClone: %v", err)
