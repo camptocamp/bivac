@@ -45,6 +45,7 @@ Application Options:
   -p, --providers-file=             Path to providers configuration file. (default: /providers-config.default.toml) [$BIVAC_PROVIDERS_FILE]
 
 Restic Options:
+      --restic-args=                Arguments to pass to restic engine. (default: -r %B/%P/%V) [$RESTIC_COMMON_ARGS]
       --restic-image=               The restic docker image. (default: restic/restic:latest) [$RESTIC_DOCKER_IMAGE]
       --restic-password=            The restic backup password. [$RESTIC_PASSWORD]
 

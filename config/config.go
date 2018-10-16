@@ -27,8 +27,9 @@ type Config struct {
 	ProvidersFile    string   `short:"p" long:"providers-file" description:"Path to providers configuration file." env:"BIVAC_PROVIDERS_FILE" default:"/providers-config.default.toml"`
 
 	Restic struct {
-		Image    string `long:"restic-image" description:"The restic docker image." env:"RESTIC_DOCKER_IMAGE" default:"restic/restic:latest"`
-		Password string `long:"restic-password" description:"The restic backup password." env:"RESTIC_PASSWORD"`
+		CommonArgs string `long:"restic-args" description:"Arguments to pass to restic engine." env:"RESTIC_COMMON_ARGS" default:"-r %B/%P/%V"`
+		Image      string `long:"restic-image" description:"The restic docker image." env:"RESTIC_DOCKER_IMAGE" default:"restic/restic:latest"`
+		Password   string `long:"restic-password" description:"The restic backup password." env:"RESTIC_PASSWORD"`
 	} `group:"Restic Options"`
 
 	RClone struct {
