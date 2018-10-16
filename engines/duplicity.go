@@ -101,14 +101,12 @@ func (d *DuplicityEngine) Backup() (err error) {
 
 // removeOld cleans up old backup data
 func (d *DuplicityEngine) removeOld() (err error) {
-	v := d.Volume
+	config := d.Orchestrator.GetHandler().Config
 	_, _, err = d.launchDuplicity(
-		[]string{
-			"remove-older-than", v.Config.RemoveOlderThan,
-			"--force",
-			"--name", "%V",
-			"%B/%P/%V",
-		},
+		append(
+			[]string{"remove-older-than"},
+			strings.Split(config.Duplicity.RemoveOlderThanArgs, " ")...,
+		),
 		[]*volume.Volume{},
 	)
 	if err != nil {
