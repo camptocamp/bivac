@@ -65,20 +65,6 @@ Duplicity Options:
 Metrics Options:
   -g, --gateway-url=                      The prometheus push gateway URL to use. [$PUSHGATEWAY_URL]
 
-AWS Options:
-      --aws-access-key-id=                The AWS access key ID. [$AWS_ACCESS_KEY_ID]
-      --aws-secret-key-id=                The AWS secret access key. [$AWS_SECRET_ACCESS_KEY]
-
-Swift Options:
-      --swift-username=                   The Swift user name. [$SWIFT_USERNAME]
-      --swift-password=                   The Swift password. [$SWIFT_PASSWORD]
-      --swift-auth_url=                   The Swift auth URL. [$SWIFT_AUTHURL]
-      --swift-tenant-name=                The Swift tenant name. [$SWIFT_TENANTNAME]
-      --swift-region-name=                The Swift region name. [$SWIFT_REGIONNAME]
-      --swift-user-domain-name=           The Swift user domain name. [$SWIFT_USER_DOMAIN_NAME]
-      --swift-project-name=               The Swift project name. [$SWIFT_PROJECT_NAME]
-      --swift-project-domain-name=        The Swift project domain name. [$SWIFT_PROJECT_DOMAIN_NAME]
-
 Docker Options:
   -e, --docker-endpoint=                  The Docker endpoint. (default: unix:///var/run/docker.sock) [$DOCKER_ENDPOINT]
 

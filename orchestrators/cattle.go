@@ -18,12 +18,11 @@ import (
 	"unicode/utf8"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/camptocamp/bivac/handler"
+	"github.com/camptocamp/bivac/volume"
 	"github.com/rancher/go-rancher-metadata/metadata"
 	"github.com/rancher/go-rancher/v2"
 	"golang.org/x/net/websocket"
-
-	"github.com/camptocamp/bivac/handler"
-	"github.com/camptocamp/bivac/volume"
 )
 
 // CattleOrchestrator implements a container orchestrator for Cattle
@@ -150,12 +149,7 @@ func createWorkerName() string {
 }
 
 // LaunchContainer starts a containe using the Cattle orchestrator
-func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
-	environment := make(map[string]interface{}, len(env))
-	for envKey, envVal := range env {
-		environment[envKey] = envVal
-	}
-
+func (o *CattleOrchestrator) LaunchContainer(image string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
 	var hostbind string
 	if len(volumes) > 0 {
 		hostbind = volumes[0].HostBind
@@ -202,16 +196,13 @@ func (o *CattleOrchestrator) LaunchContainer(image string, env map[string]string
 		log.Errorf("failed to get manager container: %v", err)
 		return
 	}
-	for envKey, envVal := range managerContainer.Environment {
-		environment[envKey] = envVal
-	}
 
 	container, err := o.Client.Container.Create(&client.Container{
 		Name:            createWorkerName(),
 		RequestedHostId: hostbind,
 		ImageUuid:       "docker:" + image,
 		Command:         cmd,
-		Environment:     environment,
+		Environment:     managerContainer.Environment,
 		RestartPolicy: &client.RestartPolicy{
 			MaximumRetryCount: 1,
 			Name:              "on-failure",

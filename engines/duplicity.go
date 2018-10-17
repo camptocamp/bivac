@@ -264,18 +264,7 @@ func (d *DuplicityEngine) launchDuplicity(cmd []string, volumes []*volume.Volume
 	config := d.Orchestrator.GetHandler().Config
 	image := config.Duplicity.Image
 
-	env := map[string]string{
-		"AWS_ACCESS_KEY_ID":     config.AWS.AccessKeyID,
-		"AWS_SECRET_ACCESS_KEY": config.AWS.SecretAccessKey,
-		"SWIFT_USERNAME":        config.Swift.Username,
-		"SWIFT_PASSWORD":        config.Swift.Password,
-		"SWIFT_AUTHURL":         config.Swift.AuthURL,
-		"SWIFT_TENANTNAME":      config.Swift.TenantName,
-		"SWIFT_REGIONNAME":      config.Swift.RegionName,
-		"SWIFT_AUTHVERSION":     "2",
-	}
-
-	return d.Orchestrator.LaunchContainer(image, env, d.replaceArgs(append(cmd, strings.Split(config.Duplicity.CommonArgs, " ")...)), volumes)
+	return d.Orchestrator.LaunchContainer(image, d.replaceArgs(append(cmd, strings.Split(config.Duplicity.CommonArgs, " ")...)), volumes)
 }
 
 // duplicityBackup performs the backup of a volume with duplicity
