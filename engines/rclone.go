@@ -61,18 +61,5 @@ func (r *RCloneEngine) launchRClone(cmd []string, volumes []*volume.Volume) (sta
 	config := r.Orchestrator.GetHandler().Config
 	image := config.RClone.Image
 
-	env := map[string]string{
-		"AWS_ACCESS_KEY_ID":                 config.AWS.AccessKeyID,
-		"AWS_SECRET_ACCESS_KEY":             config.AWS.SecretAccessKey,
-		"RCLONE_CONFIG_SWIFT_TYPE":          "swift",
-		"RCLONE_CONFIG_SWIFT_AUTH":          config.Swift.AuthURL,
-		"RCLONE_CONFIG_SWIFT_USER":          config.Swift.Username,
-		"RCLONE_CONFIG_SWIFT_KEY":           config.Swift.Password,
-		"RCLONE_CONFIG_SWIFT_REGION":        config.Swift.RegionName,
-		"RCLONE_CONFIG_SWIFT_TENANT":        config.Swift.TenantName,
-		"RCLONE_CONFIG_SWIFT_DOMAIN":        config.Swift.UserDomainName,
-		"RCLONE_CONFIG_SWIFT_TENANT_DOMAIN": config.Swift.ProjectDomainName,
-	}
-
-	return r.Orchestrator.LaunchContainer(image, env, r.replaceArgs(append(cmd, strings.Split(config.RClone.CommonArgs, " ")...)), volumes)
+	return r.Orchestrator.LaunchContainer(image, r.replaceArgs(append(cmd, strings.Split(config.RClone.CommonArgs, " ")...)), volumes)
 }

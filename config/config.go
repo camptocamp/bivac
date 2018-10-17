@@ -50,22 +50,6 @@ type Config struct {
 		PushgatewayURL string `short:"g" long:"gateway-url" description:"The prometheus push gateway URL to use." env:"PUSHGATEWAY_URL"`
 	} `group:"Metrics Options"`
 
-	AWS struct {
-		AccessKeyID     string `long:"aws-access-key-id" description:"The AWS access key ID." env:"AWS_ACCESS_KEY_ID"`
-		SecretAccessKey string `long:"aws-secret-key-id" description:"The AWS secret access key." env:"AWS_SECRET_ACCESS_KEY"`
-	} `group:"AWS Options"`
-
-	Swift struct {
-		Username          string `long:"swift-username" description:"The Swift user name." env:"SWIFT_USERNAME"`
-		Password          string `long:"swift-password" description:"The Swift password." env:"SWIFT_PASSWORD"`
-		AuthURL           string `long:"swift-auth_url" description:"The Swift auth URL." env:"SWIFT_AUTHURL"`
-		TenantName        string `long:"swift-tenant-name" description:"The Swift tenant name." env:"SWIFT_TENANTNAME"`
-		RegionName        string `long:"swift-region-name" description:"The Swift region name." env:"SWIFT_REGIONNAME"`
-		UserDomainName    string `long:"swift-user-domain-name" description:"The Swift user domain name." env:"SWIFT_USER_DOMAIN_NAME"`
-		ProjectName       string `long:"swift-project-name" description:"The Swift project name." env:"SWIFT_PROJECT_NAME"`
-		ProjectDomainName string `long:"swift-project-domain-name" description:"The Swift project domain name." env:"SWIFT_PROJECT_DOMAIN_NAME"`
-	} `group:"Swift Options"`
-
 	Docker struct {
 		Endpoint string `short:"e" long:"docker-endpoint" description:"The Docker endpoint." env:"DOCKER_ENDPOINT" default:"unix:///var/run/docker.sock"`
 	} `group:"Docker Options"`

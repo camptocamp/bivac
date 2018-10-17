@@ -8,10 +8,9 @@ import (
 	"time"
 	"unicode/utf8"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/bivac/handler"
 	"github.com/camptocamp/bivac/volume"
-
-	log "github.com/Sirupsen/logrus"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -107,17 +106,7 @@ func (o *KubernetesOrchestrator) GetVolumes() (volumes []*volume.Volume, err err
 }
 
 // LaunchContainer starts a container using the Kubernetes orchestrator
-func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
-
-	var envVars []apiv1.EnvVar
-	for envName, envValue := range env {
-		ev := apiv1.EnvVar{
-			Name:  envName,
-			Value: envValue,
-		}
-		envVars = append(envVars, ev)
-	}
-
+func (o *KubernetesOrchestrator) LaunchContainer(image string, cmd []string, volumes []*volume.Volume) (state int, stdout string, err error) {
 	kvs := []apiv1.Volume{}
 	kvms := []apiv1.VolumeMount{}
 	var node string
@@ -177,9 +166,6 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 		log.Errorf("failed to get current pod: %s", err)
 		return
 	}
-	for _, env := range managerPod.Spec.Containers[0].Env {
-		envVars = append(envVars, env)
-	}
 
 	pod, err := o.Client.CoreV1().Pods(o.Handler.Config.Kubernetes.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -195,7 +181,7 @@ func (o *KubernetesOrchestrator) LaunchContainer(image string, env map[string]st
 					Name:            "bivac-worker",
 					Image:           image,
 					Args:            cmd,
-					Env:             envVars,
+					Env:             managerPod.Spec.Containers[0].Env,
 					VolumeMounts:    kvms,
 					ImagePullPolicy: apiv1.PullAlways,
 				},
