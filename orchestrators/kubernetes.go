@@ -90,7 +90,7 @@ func (o *KubernetesOrchestrator) GetVolumes() (volumes []*volume.Volume, err err
 				nv.Mountpoint = containers[0].Path
 			}
 
-			v := volume.NewVolume(nv, c.Config, c.Hostname)
+			v := volume.NewVolume(nv, c.Config, namespace)
 			if b, r, s := o.blacklistedVolume(v); b {
 				log.WithFields(log.Fields{
 					"volume": pvc.Name,
