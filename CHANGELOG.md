@@ -14,6 +14,7 @@ BUG FIXES:
 
 - ̀`orchestrator/kubernetes`: Use namespace instead of hostname as instance label for metrics
 - `engine/restic`: Use `--host` instead of deprecated `--hostname` by default
+- `engine/restic`: Fix hostname in Kubernetes so that forget works properly
 - `providers`: Ignore provider detection failure when container has no shell
 
 # [1.0.0-alpha7](https://github.com/camptocamp/bivac/releases/tag/1.0.0-alpha7) (2018-10-12)
