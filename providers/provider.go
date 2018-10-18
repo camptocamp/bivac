@@ -6,7 +6,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	log "github.com/Sirupsen/logrus"
-
 	"github.com/camptocamp/bivac/orchestrators"
 	"github.com/camptocamp/bivac/volume"
 )
@@ -82,7 +81,9 @@ func (providers *Providers) GetProvider(o orchestrators.Orchestrator, v *volume.
 
 		stdout, err = o.ContainerExec(container, []string{"bash", "-c", fullDetectionCmd})
 		if err != nil {
-			log.Errorf("failed to run provider detection: %s", err)
+			log.Debugf("failed to run provider detection: %s", err)
+			err = nil
+			continue
 		}
 
 		stdout = strings.TrimSpace(stdout)
