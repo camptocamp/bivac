@@ -3,6 +3,7 @@
 BREAKING CHANGES:
 
 - `core`: Remove `extra-env` arguments (all manager environments are now forwarded to worker)
+- `core`: Remove old AWS and Swift arguments. Please use environment variable forwaring introducted in alpha5
 
 IMPROVEMENTS:
 
