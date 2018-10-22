@@ -207,6 +207,9 @@ func (o *CattleOrchestrator) LaunchContainer(image string, cmd []string, volumes
 			MaximumRetryCount: 1,
 			Name:              "on-failure",
 		},
+		Labels: map[string]interface{}{
+			"io.rancher.container.pull_image": "always",
+		},
 		DataVolumes: cvs,
 	})
 	if err != nil {
