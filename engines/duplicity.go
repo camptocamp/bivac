@@ -118,13 +118,14 @@ func (d *DuplicityEngine) removeOld() (err error) {
 
 // cleanup removes old index data from duplicity
 func (d *DuplicityEngine) cleanup() (err error) {
+	config := d.Orchestrator.GetHandler().Config
 	_, _, err = d.launchDuplicity(
 		[]string{
 			"cleanup",
 			"--force",
 			"--extra-clean",
 			"--name", "%V",
-			"%B/%P/%V",
+			config.Duplicity.BackupArgs,
 		},
 		[]*volume.Volume{},
 	)
@@ -137,12 +138,13 @@ func (d *DuplicityEngine) cleanup() (err error) {
 // verify checks that the backup is usable
 func (d *DuplicityEngine) verify() (err error) {
 	v := d.Volume
+	config := d.Orchestrator.GetHandler().Config
 	state, _, err := d.launchDuplicity(
 		[]string{
 			"verify",
 			"--allow-source-mismatch",
 			"--name", "%V",
-			"%B/%P/%V",
+			config.Duplicity.BackupArgs,
 			"%D",
 		},
 		[]*volume.Volume{
@@ -179,12 +181,13 @@ func (d *DuplicityEngine) status() (err error) {
 	collectionComplete := false
 	attempts := 3
 	v := d.Volume
+	config := d.Orchestrator.GetHandler().Config
 	for i := 0; i < attempts; i++ {
 		_, stdout, err = d.launchDuplicity(
 			[]string{
 				"collection-status",
 				"--name", "%V",
-				"%B/%P/%V",
+				config.Duplicity.BackupArgs,
 			},
 			[]*volume.Volume{
 				v,
