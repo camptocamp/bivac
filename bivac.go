@@ -12,7 +12,7 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	docker "github.com/docker/docker/client"
 
-	"github.com/camptocamp/bivac/handler"
+	"github.com/camptocamp/bivac/pkg/handler"
 )
 
 var version = "undefined"

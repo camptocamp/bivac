@@ -1,17 +1,14 @@
-DEPS = $(wildcard */*.go)
+DEPS = $(wildcard */*/*/*.go)
 VERSION = $(shell git describe --always --dirty)
 
-all: test bivac bivac.1
+all: bivac
 
-bivac: bivac.go $(DEPS)
+bivac: main.go $(DEPS)
 	CGO_ENABLED=0 GOOS=linux \
 	  go build -a \
-		  -ldflags="-X main.version=$(VERSION)" \
+		  -ldflags="-s -X main.version=$(VERSION)" \
 	    -installsuffix cgo -o $@ $<
 	strip $@
-
-#bivac.1: bivac
-#./bivac -m > $@
 
 lint:
 	@ go get -v github.com/golang/lint/golint
@@ -28,18 +25,7 @@ imports: bivac.go
 	dep ensure
 	goimports -d $<
 
-test: imports lint vet
-	go test -v ./...
-
-coverage:
-	rm -rf *.out
-	go test -coverprofile=coverage.out
-	for i in config handler; do \
-	 	go test -coverprofile=$$i.coverage.out github.com/camptocamp/bivac/$$i; \
-		tail -n +2 $$i.coverage.out >> coverage.out; \
-		done
-
 clean:
-	rm -f bivac bivac.1
+	rm -f bivac
 
-.PHONY: all imports lint vet test coverage clean
+.PHONY: all imports lint vet clean
