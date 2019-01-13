@@ -1,27 +1,22 @@
 package manager
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/camptocamp/bivac/cmd"
 	"github.com/camptocamp/bivac/internal/manager"
-	"github.com/camptocamp/bivac/pkg/orchestrators"
+	"github.com/camptocamp/bivac/internal/server"
 )
 
 var (
 	// Server stores informations relative the Bivac server
-	Server struct {
-		Address string
-		PSK     string
-	}
+	Server server.Server
 
 	// Orchestrator is the name of the orchestrator on which Bivac should connect to
 	Orchestrator string
 
-	Orchestrators struct {
-		// Docker stores informations relative to the Docker orchestrator
-		Docker orchestrators.DockerConfig
-	}
+	Orchestrators manager.Orchestrators
 )
 var envs = make(map[string]string)
 
@@ -29,7 +24,19 @@ var envs = make(map[string]string)
 var managerCmd = &cobra.Command{
 	Use:   "manager",
 	Short: "Start Bivac backup manager",
-	Run:   manager.Start,
+	Run: func(cmd *cobra.Command, args []string) {
+		o, err := manager.GetOrchestrator(Orchestrator, Orchestrators)
+		if err != nil {
+			log.Errorf("failed to retrieve orchestrator: %s", err)
+			return
+		}
+
+		err = manager.Start(o, Server)
+		if err != nil {
+			log.Errorf("failed to start manager: %s", err)
+			return
+		}
+	},
 }
 
 func init() {
@@ -41,7 +48,7 @@ func init() {
 	managerCmd.Flags().StringVarP(&Orchestrator, "orchestrator", "o", "", "Orchestrator on which Bivac should connect to.")
 	envs["BIVAC_ORCHESTRATOR"] = "orchestrator"
 
-	managerCmd.Flags().StringVarP(&Docker.Endpoint, "docker.endpoint", "", "unix:///var/run/docker.sock", "Docker endpoint.")
+	managerCmd.Flags().StringVarP(&Orchestrators.Docker.Endpoint, "docker.endpoint", "", "unix:///var/run/docker.sock", "Docker endpoint.")
 	envs["BIVAC_DOCKER_ENDPOINT"] = "docker.endpoint"
 
 	cmd.SetValuesFromEnv(envs, managerCmd.Flags())
