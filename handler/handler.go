@@ -72,7 +72,7 @@ func (c *Bivac) IsCheckScheduled(vol *volume.Volume) bool {
 	if err != nil {
 		log.WithFields(log.Fields{
 			"volume": vol.Name,
-		}).Error("failed to parse the parameter 'check-every': %v", err)
+		}).Errorf("failed to parse the parameter 'check-every': %v", err)
 		return false
 	}
 
