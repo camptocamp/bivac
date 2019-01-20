@@ -13,4 +13,13 @@ type Volume struct {
 	HostBind   string
 	Hostname   string
 	Namespace  string
+
+	LastBackupDate   string
+	LastBackupStatus string
+}
+
+// Filters hfcksdghfvd
+type Filters struct {
+	Whitelist []string
+	Blacklist []string
 }

@@ -2,6 +2,8 @@ package orchestrators
 
 import (
 	"fmt"
+	"sort"
+	"unicode/utf8"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
@@ -37,7 +39,7 @@ func (o *DockerOrchestrator) GetName() string {
 }
 
 // GetVolumes returns the Docker volumes, inspected and filtered
-func (o *DockerOrchestrator) GetVolumes(whitelist, blacklist []string) (volumes []*volume.Volume, err error) {
+func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes []*volume.Volume, err error) {
 	vols, err := o.client.VolumeList(context.Background(), filters.NewArgs())
 	if err != nil {
 		err = fmt.Errorf("failed to list Docker volumes: %v", err)
@@ -58,7 +60,7 @@ func (o *DockerOrchestrator) GetVolumes(whitelist, blacklist []string) (volumes 
 			Labels:     voll.Labels,
 		}
 
-		if b, r, s := o.blacklistedVolume(v); b {
+		if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
 			continue
 		}
 		volumes = append(volumes, v)
@@ -79,13 +81,13 @@ func DetectDocker(config *DockerConfig) bool {
 	return true
 }
 
-func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume, whitelist []string) (bool, string, string) {
+func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "lost+found" {
 		return true, "unnamed", ""
 	}
 
 	// Use whitelist if defined
-	if l := whitelist; len(l) > 0 && l[0] != "" {
+	if l := volumeFilters.Whitelist; len(l) > 0 && l[0] != "" {
 		sort.Strings(l)
 		i := sort.SearchStrings(l, vol.Name)
 		if i < len(l) && l[i] == vol.Name {
@@ -94,8 +96,8 @@ func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume, whitelist []s
 		return true, "blacklisted", "whitelist config"
 	}
 
-	i := sort.SearchStrings(blacklist, vol.Name)
-	if i < len(blacklist) && blacklist[i] == vol.Name {
+	i := sort.SearchStrings(volumeFilters.Blacklist, vol.Name)
+	if i < len(volumeFilters.Blacklist) && volumeFilters.Blacklist[i] == vol.Name {
 		return true, "blacklisted", "blacklist config"
 	}
 	return false, "", ""

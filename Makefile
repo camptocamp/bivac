@@ -4,7 +4,7 @@ VERSION = $(shell git describe --always --dirty)
 all: bivac
 
 bivac: main.go $(DEPS)
-	CGO_ENABLED=0 GOOS=linux \
+	CGO_ENABLED=1 GOOS=linux \
 	  go build -a \
 		  -ldflags="-s -X main.version=$(VERSION)" \
 	    -installsuffix cgo -o $@ $<
@@ -28,4 +28,7 @@ imports: bivac.go
 clean:
 	rm -f bivac
 
-.PHONY: all imports lint vet clean
+test:
+	richgo test -cover -coverprofile=coverage -v ./...
+
+.PHONY: all imports lint vet clean test

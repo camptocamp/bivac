@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	verbose bool
+	verbose   bool
+	whitelist string
 )
 
 var persistentEnvs = make(map[string]string)
@@ -33,6 +34,8 @@ func init() {
 	viper.AutomaticEnv()
 	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output")
 	localEnvs["BIVAC_VERBOSE"] = "verbose"
+	RootCmd.PersistentFlags().StringVarP(&whitelist, "whitelist", "w", "", "Only backup whitelisted volumes.")
+	localEnvs["BIVAC_VOLUMES_WHITELIST"] = "whitelist"
 
 	SetValuesFromEnv(localEnvs, RootCmd.PersistentFlags())
 	SetValuesFromEnv(persistentEnvs, RootCmd.PersistentFlags())

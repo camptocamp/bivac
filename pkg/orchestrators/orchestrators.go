@@ -7,5 +7,5 @@ import (
 // Orchestrator implements a container Orchestrator interface
 type Orchestrator interface {
 	GetName() string
-	GetVolumes() ([]*volume.Volume, error)
+	GetVolumes(volumeFilters volume.Filters) (volumes []*volume.Volume, err error)
 }
