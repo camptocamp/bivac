@@ -31,10 +31,12 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters)
 		Orchestrator: o,
 		Server:       &s,
 	}
+
+	// Manage volummes
 	go func(m *Manager, volumeFilters volume.Filters) {
 		for {
 			log.Debugf("Sleeping for 1m")
-			time.Sleep(10 * time.Minute)
+			time.Sleep(10 * time.Second)
 
 			err = retrieveVolumes(m, volumeFilters)
 			if err != nil {
@@ -43,12 +45,34 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters)
 		}
 	}(m, volumeFilters)
 
-	m.StartServer()
-	//go manageBackups(o)
+	// Manage backups
+	go func(m *Manager) {
+		for {
+			log.Debugf("Sleeping for 1m")
+			time.Sleep(10 * time.Second)
 
-	//if err != nil {
-	//	log.Errorf("failed to start server: %s", err)
-	//}
+			sem := make(chan bool, 2)
+			for _, v := range m.Volumes {
+				sem <- true
+				go func(v *volume.Volume) {
+					log.Debugf("Backup volume %s", v.Name)
+					defer func() { <-sem }()
+					err = backupVolume(m, v)
+					if err != nil {
+						log.Errorf("failed to backup volume: %s", err)
+					}
+				}(v)
+			}
+
+			for i := 0; i < cap(sem); i++ {
+				sem <- true
+			}
+		}
+	}(m)
+
+	// Manage API server
+	m.StartServer()
+
 	return
 }
 

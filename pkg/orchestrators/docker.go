@@ -2,10 +2,12 @@ package orchestrators
 
 import (
 	"fmt"
+	"io/ioutil"
 	"sort"
 	"unicode/utf8"
 
 	"github.com/docker/docker/api/types"
+	//"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	docker "github.com/docker/docker/client"
 	"golang.org/x/net/context"
@@ -55,6 +57,7 @@ func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 		}
 
 		v := &volume.Volume{
+			ID:         voll.Name,
 			Mountpoint: voll.Mountpoint,
 			Name:       voll.Name,
 			Labels:     voll.Labels,
@@ -66,6 +69,43 @@ func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 		volumes = append(volumes, v)
 	}
 	return
+}
+
+// DeployAgent creates a `bivac agent` container
+func (o *DockerOrchestrator) DeployAgent(cmd []string, envs []string, volume *volume.Volume) (success bool, output string, err error) {
+	return
+	/*
+		err = o.PullImage()
+		if err != nil {
+			err = fmt.Errorf("failed to pull image: %s", err)
+			return
+		}
+
+		container, err := o.client.ContainerCreate(
+			context.Background(),
+			&container.Config{
+				Cmd:          cmd,
+				Env:          envs,
+				Image:        "camptocamp/bivac:v2",
+				OpenStdin:    true,
+				StdinOnce:    true,
+				AttachStdin:  true,
+				AttachStdout: true,
+				AttachStderr: true,
+				Tty:          false,
+			},
+			&container.HostConfig{
+				Mounts: mounts,
+			}, nil, "",
+		)
+		if err != nil {
+			err = fmt.Errorf("failed to create container: %s", err)
+			return
+		}
+		//defer o.RemoveContainer(container.ID)
+
+		return
+	*/
 }
 
 // DetectDocker tries to detect a Docker orchestrator by connecting to the endpoint
@@ -101,4 +141,21 @@ func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters
 		return true, "blacklisted", "blacklist config"
 	}
 	return false, "", ""
+}
+
+func (o *DockerOrchestrator) PullImage() (err error) {
+	if _, _, err = o.client.ImageInspectWithRaw(context.Background(), "camptocamp/bivac:v2"); err != nil {
+		resp, err := o.client.ImagePull(context.Background(), "camptocamp/bivac:v2", types.ImagePullOptions{})
+		if err != nil {
+			return err
+		}
+		defer resp.Close()
+
+		_, err = ioutil.ReadAll(resp)
+		if err != nil {
+			err = fmt.Errorf("failed to read ImagePull response: %s", err)
+			return err
+		}
+	}
+	return
 }

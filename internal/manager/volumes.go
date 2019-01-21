@@ -1,7 +1,6 @@
 package manager
 
 import (
-	//"fmt"
 	"sort"
 	"unicode/utf8"
 
@@ -19,20 +18,48 @@ func retrieveVolumes(m *Manager, volumeFilters volume.Filters) (err error) {
 	}
 
 	var newVolumes []*volume.Volume
-	for _, volume := range volumes {
-		b, r, s := blacklistedVolume(volume, volumeFilters)
+	for _, v := range volumes {
+		b, r, s := blacklistedVolume(v, volumeFilters)
 		if b {
 			log.WithFields(log.Fields{
-				"volume": volume.Name,
+				"volume": v.Name,
 				"reason": r,
 				"source": s,
 			}).Debugf("Ignoring volume")
 			continue
 		}
-		newVolumes = append(newVolumes, volume)
+		newVolumes = append(newVolumes, v)
 	}
 
-	m.Volumes = newVolumes
+	// Append new volumes
+	volumeManaged := false
+	for _, nv := range newVolumes {
+		volumeManaged = false
+		for _, mv := range m.Volumes {
+			if mv.ID == nv.ID {
+				volumeManaged = true
+				break
+			}
+		}
+		if !volumeManaged {
+			m.Volumes = append(m.Volumes, nv)
+		}
+	}
+
+	// Remove deleted volumes
+	for mk, mv := range m.Volumes {
+		volumeExists := false
+		for _, nv := range newVolumes {
+			if mv.ID == nv.ID {
+				volumeExists = true
+				break
+			}
+		}
+		if !volumeExists {
+			m.Volumes = append(m.Volumes[:mk], m.Volumes[mk+1:]...)
+		}
+	}
+
 	return
 }
 

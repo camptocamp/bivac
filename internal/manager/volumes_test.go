@@ -12,100 +12,31 @@ import (
 )
 
 // retrieveVolumes
-func TestRetrieveVolumes(t *testing.T) {
-	// Prepare tests
+func TestRetrieveVolumesBasic(t *testing.T) {
+	// Prepare test
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockOrchestrator := mocks.NewMockOrchestrator(mockCtrl)
 
-	testCases := []struct {
-		name            string
-		givenVolumes    []*volume.Volume
-		givenError      error
-		givenManager    *Manager
-		givenFilters    volume.Filters
-		expectedError   error
-		expectedVolumes []*volume.Volume
-	}{
-		{
-			name:       "all valid volumes",
-			givenError: nil,
-			givenVolumes: []*volume.Volume{
-				&volume.Volume{
-					Name: "foo",
-				},
-				&volume.Volume{
-					Name: "bar",
-				},
-			},
-			givenFilters:  volume.Filters{},
-			expectedError: nil,
-			expectedVolumes: []*volume.Volume{
-				&volume.Volume{
-					Name: "foo",
-				},
-				&volume.Volume{
-					Name: "bar",
-				},
-			},
+	givenVolumes := []*volume.Volume{
+		&volume.Volume{
+			ID:   "foo",
+			Name: "foo",
 		},
-		{
-			name:       "one valid, one blacklisted",
-			givenError: nil,
-			givenVolumes: []*volume.Volume{
-				&volume.Volume{
-					Name: "foo",
-				},
-				&volume.Volume{
-					Name: "bar",
-				},
-			},
-			givenFilters: volume.Filters{
-				Blacklist: []string{"bar"},
-			},
-			expectedError: nil,
-			expectedVolumes: []*volume.Volume{
-				&volume.Volume{
-					Name: "foo",
-				},
-			},
+		&volume.Volume{
+			ID:   "bar",
+			Name: "bar",
 		},
-		{
-			name:       "one valid, one blacklisted, one whitelisted",
-			givenError: nil,
-			givenVolumes: []*volume.Volume{
-				&volume.Volume{
-					Name: "foo",
-				},
-				&volume.Volume{
-					Name: "bar",
-				},
-				&volume.Volume{
-					Name: "fake",
-				},
-			},
-			givenFilters: volume.Filters{
-				Blacklist: []string{"bar"},
-				Whitelist: []string{"fake"},
-			},
-			expectedError: nil,
-			expectedVolumes: []*volume.Volume{
-				&volume.Volume{
-					Name: "fake",
-				},
-			},
+	}
+	givenFilters := volume.Filters{}
+	expectedVolumes := []*volume.Volume{
+		&volume.Volume{
+			ID:   "foo",
+			Name: "foo",
 		},
-		{
-			name:       "one valid but orchestrator error",
-			givenError: fmt.Errorf("error"),
-			givenVolumes: []*volume.Volume{
-				&volume.Volume{
-					Name: "foo",
-				},
-			},
-			givenFilters:    volume.Filters{},
-			expectedError:   fmt.Errorf("error"),
-			expectedVolumes: []*volume.Volume{},
+		&volume.Volume{
+			ID:   "bar",
+			Name: "bar",
 		},
 	}
 
@@ -113,75 +44,292 @@ func TestRetrieveVolumes(t *testing.T) {
 		Orchestrator: mockOrchestrator,
 	}
 
-	// Run test cases
-	for _, tc := range testCases {
-		mockOrchestrator.EXPECT().GetVolumes(volume.Filters{}).Return(tc.givenVolumes, tc.givenError).Times(1)
+	// Run test
+	mockOrchestrator.EXPECT().GetVolumes(volume.Filters{}).Return(givenVolumes, nil).Times(1)
 
-		err := retrieveVolumes(m, tc.givenFilters)
+	m.Volumes = []*volume.Volume{}
+	err := retrieveVolumes(m, givenFilters)
 
-		assert.Equal(t, tc.expectedError, err, tc.name)
-		assert.Equal(t, tc.expectedVolumes, m.Volumes, tc.name)
+	assert.Nil(t, err)
+	assert.Equal(t, m.Volumes, expectedVolumes)
+}
+
+func TestRetrieveVolumesBlacklist(t *testing.T) {
+	// Prepare test
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockOrchestrator := mocks.NewMockOrchestrator(mockCtrl)
+
+	givenVolumes := []*volume.Volume{
+		&volume.Volume{
+			ID:   "foo",
+			Name: "foo",
+		},
+		&volume.Volume{
+			ID:   "bar",
+			Name: "bar",
+		},
 	}
+	givenFilters := volume.Filters{
+		Blacklist: []string{"foo"},
+	}
+	expectedVolumes := []*volume.Volume{
+		&volume.Volume{
+			ID:   "bar",
+			Name: "bar",
+		},
+	}
+
+	m := &Manager{
+		Orchestrator: mockOrchestrator,
+	}
+
+	// Run test
+	mockOrchestrator.EXPECT().GetVolumes(volume.Filters{}).Return(givenVolumes, nil).Times(1)
+
+	m.Volumes = []*volume.Volume{}
+	err := retrieveVolumes(m, givenFilters)
+
+	assert.Nil(t, err)
+	assert.Equal(t, m.Volumes, expectedVolumes)
+}
+
+/*
+func TestRetrieveVolumesWhitelist(t *testing.T) {
+	// Prepare test
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockOrchestrator := mocks.NewMockOrchestrator(mockCtrl)
+
+	givenVolumes := []*volume.Volume{
+		&volume.Volume{
+			ID:   "foo",
+			Name: "foo",
+		},
+		&volume.Volume{
+			ID:   "bar",
+			Name: "bar",
+		},
+	}
+	givenFilters := volume.Filters{
+		Whitelist: []string{"foo"},
+	}
+	expectedVolumes := []*volume.Volume{
+		&volume.Volume{
+			ID:   "foo",
+			Name: "foo",
+		},
+	}
+
+	m := &Manager{
+		Orchestrator: mockOrchestrator,
+	}
+
+	// Run test
+	mockOrchestrator.EXPECT().GetVolumes(volume.Filters{}).Return(givenVolumes, nil).Times(1)
+
+	m.Volumes = []*volume.Volume{}
+	err := retrieveVolumes(m, givenFilters)
+
+	assert.Nil(t, err)
+	assert.Equal(t, m.Volumes, expectedVolumes)
+}
+*/
+func TestRetrieveVolumesOrchestratorError(t *testing.T) {
+	// Prepare test
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockOrchestrator := mocks.NewMockOrchestrator(mockCtrl)
+
+	givenVolumes := []*volume.Volume{
+		&volume.Volume{
+			ID:   "foo",
+			Name: "foo",
+		},
+	}
+
+	m := &Manager{
+		Orchestrator: mockOrchestrator,
+	}
+
+	// Run test
+	mockOrchestrator.EXPECT().GetVolumes(volume.Filters{}).Return(givenVolumes, fmt.Errorf("error")).Times(1)
+
+	m.Volumes = []*volume.Volume{}
+	err := retrieveVolumes(m, volume.Filters{})
+
+	assert.Equal(t, err.Error(), "error")
+	assert.Equal(t, m.Volumes, []*volume.Volume{})
+}
+
+func TestRetrieveVolumesAppend(t *testing.T) {
+	// Prepare test
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockOrchestrator := mocks.NewMockOrchestrator(mockCtrl)
+
+	givenVolumes := []*volume.Volume{
+		&volume.Volume{
+			ID:   "foo",
+			Name: "foo",
+		},
+		&volume.Volume{
+			ID:   "bar",
+			Name: "bar",
+		},
+	}
+	givenFilters := volume.Filters{}
+	expectedVolumes := []*volume.Volume{
+		&volume.Volume{
+			ID:   "foo",
+			Name: "foo",
+		},
+		&volume.Volume{
+			ID:   "bar",
+			Name: "bar",
+		},
+	}
+
+	m := &Manager{
+		Orchestrator: mockOrchestrator,
+	}
+
+	// Run test
+	mockOrchestrator.EXPECT().GetVolumes(volume.Filters{}).Return(givenVolumes, nil).Times(1)
+
+	m.Volumes = []*volume.Volume{
+		&volume.Volume{
+			ID:   "foo",
+			Name: "foo",
+		},
+	}
+	err := retrieveVolumes(m, givenFilters)
+
+	assert.Nil(t, err)
+	assert.Equal(t, m.Volumes, expectedVolumes)
+}
+
+func TestRetrieveVolumesRemove(t *testing.T) {
+	// Prepare test
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockOrchestrator := mocks.NewMockOrchestrator(mockCtrl)
+
+	givenVolumes := []*volume.Volume{
+		&volume.Volume{
+			ID:   "bar",
+			Name: "bar",
+		},
+	}
+	givenFilters := volume.Filters{}
+	expectedVolumes := []*volume.Volume{
+		&volume.Volume{
+			ID:   "bar",
+			Name: "bar",
+		},
+	}
+
+	m := &Manager{
+		Orchestrator: mockOrchestrator,
+	}
+
+	// Run test
+	mockOrchestrator.EXPECT().GetVolumes(volume.Filters{}).Return(givenVolumes, nil).Times(1)
+
+	m.Volumes = []*volume.Volume{
+		&volume.Volume{
+			ID:   "foo",
+			Name: "foo",
+		},
+		&volume.Volume{
+			ID:   "bar",
+			Name: "bar",
+		},
+	}
+	err := retrieveVolumes(m, givenFilters)
+
+	assert.Nil(t, err)
+	assert.Equal(t, m.Volumes, expectedVolumes)
 }
 
 // backlistedVolume
-func TestBlacklistedVolume(t *testing.T) {
-	testCases := []struct {
-		name                   string
-		configVolumesBlacklist []string
-		givenVolume            *volume.Volume
-		givenFilters           volume.Filters
-		expected               []interface{}
-	}{
-		{
-			name:                   "valid volume",
-			configVolumesBlacklist: []string{},
-			givenVolume: &volume.Volume{
-				Name: "foo",
-			},
-			givenFilters: volume.Filters{},
-			expected: []interface{}{
-				false,
-				"",
-				"",
-			},
-		},
-		{
-			name:                   "unnamed volume",
-			configVolumesBlacklist: []string{},
-			givenVolume: &volume.Volume{
-				Name: "acf1e8ec1e87191518f29ff5ef4d983384fd3dc2228265c09bb64b9747e5af67",
-			},
-			givenFilters: volume.Filters{},
-			expected: []interface{}{
-				true,
-				"unnamed",
-				"",
-			},
-		},
-		{
-			name:                   "blacklisted volume from global config",
-			configVolumesBlacklist: []string{"foo", "bar"},
-			givenVolume: &volume.Volume{
-				Name: "foo",
-			},
-			givenFilters: volume.Filters{
-				Blacklist: []string{"foo"},
-			},
-			expected: []interface{}{
-				true,
-				"blacklisted",
-				"blacklist config",
-			},
-		},
+func TestBlacklistedVolumeValid(t *testing.T) {
+	givenVolume := &volume.Volume{
+		ID:   "foo",
+		Name: "foo",
+	}
+	givenFilters := volume.Filters{}
+
+	// Run test
+	result0, result1, result2 := blacklistedVolume(givenVolume, givenFilters)
+
+	assert.Equal(t, result0, false)
+	assert.Equal(t, result1, "")
+	assert.Equal(t, result2, "")
+}
+
+func TestBlacklistedVolumeUnnamedVolume(t *testing.T) {
+	givenVolume := &volume.Volume{
+		ID:   "acf1e8ec1e87191518f29ff5ef4d983384fd3dc2228265c09bb64b9747e5af67",
+		Name: "acf1e8ec1e87191518f29ff5ef4d983384fd3dc2228265c09bb64b9747e5af67",
+	}
+	givenFilters := volume.Filters{}
+
+	// Run test
+	result0, result1, result2 := blacklistedVolume(givenVolume, givenFilters)
+
+	assert.Equal(t, result0, true)
+	assert.Equal(t, result1, "unnamed")
+	assert.Equal(t, result2, "")
+}
+
+func TestBlacklistedVolumeBlacklisted(t *testing.T) {
+	givenVolume := &volume.Volume{
+		ID:   "foo",
+		Name: "foo",
+	}
+	givenFilters := volume.Filters{
+		Blacklist: []string{"foo"},
 	}
 
-	// Run test cases
-	for _, tc := range testCases {
-		result0, result1, result2 := blacklistedVolume(tc.givenVolume, tc.givenFilters)
+	// Run test
+	result0, result1, result2 := blacklistedVolume(givenVolume, givenFilters)
 
-		assert.Equal(t, tc.expected[0], result0, tc.name)
-		assert.Equal(t, tc.expected[1], result1, tc.name)
-		assert.Equal(t, tc.expected[2], result2, tc.name)
+	assert.Equal(t, result0, true)
+	assert.Equal(t, result1, "blacklisted")
+	assert.Equal(t, result2, "blacklist config")
+}
+
+func TestBlacklistedVolumeWhitelisted(t *testing.T) {
+	givenVolume := &volume.Volume{
+		ID:   "foo",
+		Name: "foo",
 	}
+	givenFilters := volume.Filters{
+		Whitelist: []string{"foo"},
+	}
+
+	// Run test
+	result0, result1, result2 := blacklistedVolume(givenVolume, givenFilters)
+
+	assert.Equal(t, result0, false)
+	assert.Equal(t, result1, "")
+	assert.Equal(t, result2, "")
+}
+
+func TestBlacklistedVolumeBlacklistedBecauseWhitelist(t *testing.T) {
+	givenVolume := &volume.Volume{
+		ID:   "foo",
+		Name: "foo",
+	}
+	givenFilters := volume.Filters{
+		Whitelist: []string{"bar"},
+	}
+
+	// Run test
+	result0, result1, result2 := blacklistedVolume(givenVolume, givenFilters)
+
+	assert.Equal(t, result0, true)
+	assert.Equal(t, result1, "blacklisted")
+	assert.Equal(t, result2, "whitelist config")
 }

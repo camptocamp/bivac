@@ -14,6 +14,12 @@
   version = "v1.0.6"
 
 [[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
   name = "github.com/docker/distribution"
   packages = [
     "digest",
@@ -68,6 +74,12 @@
   version = "v1.4.7"
 
 [[projects]]
+  name = "github.com/golang/mock"
+  packages = ["gomock"]
+  revision = "51421b967af1f557f93a59e0057aaf15ca02e29c"
+  version = "v1.2.0"
+
+[[projects]]
   name = "github.com/gorilla/context"
   packages = ["."]
   revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
@@ -115,10 +127,10 @@
   version = "v1.8.0"
 
 [[projects]]
-  name = "github.com/mattn/go-sqlite3"
+  name = "github.com/mattn/go-runewidth"
   packages = ["."]
-  revision = "c7c4067b79cc51e6dfdcef5c702e74b1e0fa7c75"
-  version = "v1.10.0"
+  revision = "3ee7d812e62a0804a7d0a324e0249ca2db3476d3"
+  version = "v0.0.4"
 
 [[projects]]
   name = "github.com/mitchellh/mapstructure"
@@ -137,6 +149,12 @@
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
+
+[[projects]]
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -178,6 +196,18 @@
   version = "v1.3.1"
 
 [[projects]]
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
+  version = "v1.3.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/tatsushid/go-prettytable"
+  packages = ["."]
+  revision = "ed2d14c2993972f5ff95f34f17e6ce81b962779a"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
@@ -217,6 +247,12 @@
   version = "v0.3.0"
 
 [[projects]]
+  branch = "v1"
+  name = "gopkg.in/jarcoal/httpmock.v1"
+  packages = ["."]
+  revision = "275e9df93516fc27a998eca24c8f1cca277ce5bf"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
@@ -225,6 +261,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "795bbcc8d897ae4c4d54ba3c7fa4bd25c71dee6fe325d5cd664a66a1148d0f44"
+  inputs-digest = "864a1639180943e0d04a4696e3ca36db1d44c7fad3ee2e4f8fd03c399db4b0a9"
   solver-name = "gps-cdcl"
   solver-version = 1

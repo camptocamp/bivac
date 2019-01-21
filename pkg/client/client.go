@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/camptocamp/bivac/pkg/volume"
 )
 
 type Client struct {
@@ -31,8 +33,14 @@ func NewClient(remoteAddress string, psk string) (c *Client, err error) {
 	return
 }
 
-//func (c *Client) GetVolumes() (volumes []volume.Volume, err error) {
-//}
+func (c *Client) GetVolumes() (volumes []volume.Volume, err error) {
+	err = c.newRequest(&volumes, "GET", "/volumes")
+	if err != nil {
+		err = fmt.Errorf("failed to connect to the remote Bivac instance: %s", err)
+		return
+	}
+	return
+}
 
 func (c *Client) newRequest(data interface{}, method, endpoint string) (err error) {
 	client := &http.Client{}
@@ -63,7 +71,7 @@ func (c *Client) newRequest(data interface{}, method, endpoint string) (err erro
 			return err
 		}
 	} else {
-		err = fmt.Errorf("Received wrong status code from the Bivac instance: [%d] %s", res.StatusCode, string(body))
+		err = fmt.Errorf("received wrong status code from the Bivac instance: [%d] %s", res.StatusCode, string(body))
 		return
 	}
 	return

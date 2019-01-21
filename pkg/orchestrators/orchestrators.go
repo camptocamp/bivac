@@ -8,4 +8,5 @@ import (
 type Orchestrator interface {
 	GetName() string
 	GetVolumes(volumeFilters volume.Filters) (volumes []*volume.Volume, err error)
+	DeployAgent(cmd []string, envs []string, volume *volume.Volume) (success bool, output string, err error)
 }
