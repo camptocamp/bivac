@@ -9,7 +9,7 @@ type Volume struct {
 	Mountpoint string
 	Driver     string
 	Labels     map[string]string
-	ReadOnly   string
+	ReadOnly   bool
 	HostBind   string
 	Hostname   string
 	Namespace  string

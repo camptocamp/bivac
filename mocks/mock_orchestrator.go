@@ -59,8 +59,8 @@ func (mr *MockOrchestratorMockRecorder) GetVolumes(volumeFilters interface{}) *g
 }
 
 // DeployAgent mocks base method
-func (m *MockOrchestrator) DeployAgent(cmd, envs []string, volume *volume.Volume) (bool, string, error) {
-	ret := m.ctrl.Call(m, "DeployAgent", cmd, envs, volume)
+func (m *MockOrchestrator) DeployAgent(image string, cmd, envs []string, volume *volume.Volume) (bool, string, error) {
+	ret := m.ctrl.Call(m, "DeployAgent", image, cmd, envs, volume)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -68,6 +68,6 @@ func (m *MockOrchestrator) DeployAgent(cmd, envs []string, volume *volume.Volume
 }
 
 // DeployAgent indicates an expected call of DeployAgent
-func (mr *MockOrchestratorMockRecorder) DeployAgent(cmd, envs, volume interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeployAgent", reflect.TypeOf((*MockOrchestrator)(nil).DeployAgent), cmd, envs, volume)
+func (mr *MockOrchestratorMockRecorder) DeployAgent(image, cmd, envs, volume interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeployAgent", reflect.TypeOf((*MockOrchestrator)(nil).DeployAgent), image, cmd, envs, volume)
 }

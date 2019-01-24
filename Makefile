@@ -4,7 +4,7 @@ VERSION = $(shell git describe --always --dirty)
 all: bivac
 
 bivac: main.go $(DEPS)
-	CGO_ENABLED=1 GOOS=linux \
+	CGO_ENABLED=0 GOOS=linux \
 	  go build -a \
 		  -ldflags="-s -X main.version=$(VERSION)" \
 	    -installsuffix cgo -o $@ $<

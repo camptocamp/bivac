@@ -5,13 +5,14 @@ import (
 	"os"
 	"time"
 
-	//log "github.com/Sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/camptocamp/bivac/pkg/volume"
 )
 
 func backupVolume(m *Manager, v *volume.Volume) (err error) {
-	success, _, err := m.Orchestrator.DeployAgent(
+	success, output, err := m.Orchestrator.DeployAgent(
+		"cryptobioz/bivac:2.0.0",
 		[]string{"agent"},
 		os.Environ(),
 		v,
@@ -20,6 +21,8 @@ func backupVolume(m *Manager, v *volume.Volume) (err error) {
 		err = fmt.Errorf("failed to deploy agent: %s", err)
 		return
 	}
+
+	log.Debugf("## %s", output)
 
 	if success {
 		v.LastBackupStatus = "Success"

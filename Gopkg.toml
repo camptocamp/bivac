@@ -29,6 +29,11 @@
   name = "github.com/Sirupsen/logrus"
   version = "1.0.6"
 
+[[constraint]]
+  name = "github.com/docker/docker"
+  branch = "master"
+  source = "https://github.com/moby/moby.git"
+
 [prune]
   go-tests = true
   unused-packages = true
