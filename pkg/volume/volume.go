@@ -16,6 +16,7 @@ type Volume struct {
 
 	LastBackupDate   string
 	LastBackupStatus string
+	Logs             map[string]string
 }
 
 // Filters hfcksdghfvd

@@ -4,7 +4,6 @@ import (
 	"sort"
 	"unicode/utf8"
 
-	log "github.com/Sirupsen/logrus"
 	//"github.com/camptocamp/bivac/pkg/orchestrators"
 	"github.com/camptocamp/bivac/pkg/volume"
 )
@@ -19,16 +18,10 @@ func retrieveVolumes(m *Manager, volumeFilters volume.Filters) (err error) {
 
 	var newVolumes []*volume.Volume
 	for _, v := range volumes {
-		b, r, s := blacklistedVolume(v, volumeFilters)
-		if b {
-			log.WithFields(log.Fields{
-				"volume": v.Name,
-				"reason": r,
-				"source": s,
-			}).Debugf("Ignoring volume")
-			continue
+		b, _, _ := blacklistedVolume(v, volumeFilters)
+		if !b {
+			newVolumes = append(newVolumes, v)
 		}
-		newVolumes = append(newVolumes, v)
 	}
 
 	// Append new volumes

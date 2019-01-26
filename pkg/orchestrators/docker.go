@@ -1,6 +1,7 @@
 package orchestrators
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
 	docker "github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"golang.org/x/net/context"
 
 	"github.com/camptocamp/bivac/pkg/volume"
@@ -60,8 +62,8 @@ func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 
 		v := &volume.Volume{
 			ID:         voll.Name,
-			Mountpoint: voll.Mountpoint,
 			Name:       voll.Name,
+			Mountpoint: voll.Mountpoint,
 			Labels:     voll.Labels,
 		}
 
@@ -156,12 +158,13 @@ func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 	}
 
 	defer body.Close()
-	content, err := ioutil.ReadAll(body)
+	stdout := new(bytes.Buffer)
+	_, err = stdcopy.StdCopy(stdout, ioutil.Discard, body)
 	if err != nil {
 		err = fmt.Errorf("failed to read logs from response: %s", err)
 		return
 	}
-	output = string(content)
+	output = stdout.String()
 	success = true
 	return
 }

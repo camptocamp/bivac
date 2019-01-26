@@ -196,7 +196,7 @@ func TestDockerDeployAgentSuccess(t *testing.T) {
 		ShowStderr: true,
 		Details:    true,
 		Follow:     true,
-	}).Return(ioutil.NopCloser(strings.NewReader("foo")), nil).Times(1)
+	}).Return(ioutil.NopCloser(strings.NewReader("##  foo")), nil).Times(1)
 
 	// Run test
 	o := &DockerOrchestrator{
@@ -206,7 +206,7 @@ func TestDockerDeployAgentSuccess(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.True(t, success)
-	assert.Equal(t, stdout, "foo")
+	assert.Equal(t, "foo", stdout)
 }
 
 // PullImage

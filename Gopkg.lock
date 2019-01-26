@@ -49,7 +49,8 @@
     "api/types/versions",
     "api/types/volume",
     "client",
-    "errdefs"
+    "errdefs",
+    "pkg/stdcopy"
   ]
   revision = "8d7889e51013e80c05a69688e66d09168812b83b"
   source = "https://github.com/moby/moby.git"
@@ -290,6 +291,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "50fb18afecb9786748bf7bf7a714139634616b88e1b9ade00df82c2b279588a4"
+  inputs-digest = "0ee3b5e987361bd153d6603665be1a7a23a702e2209a91d703d95c79bc4c8459"
   solver-name = "gps-cdcl"
   solver-version = 1

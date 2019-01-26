@@ -34,25 +34,28 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters)
 
 	// Manage volummes
 	go func(m *Manager, volumeFilters volume.Filters) {
+		log.Debugf("Starting volume manager...")
 		for {
 			err = retrieveVolumes(m, volumeFilters)
 			if err != nil {
 				log.Errorf("failed to retrieve volumes: %s", err)
 			}
-			log.Debugf("Sleeping for 1m")
 			time.Sleep(10 * time.Second)
 		}
 	}(m, volumeFilters)
 
 	// Manage backups
 	go func(m *Manager) {
+		instancesSem := make(map[string]chan bool)
+		log.Debugf("Starting backup manager...")
 		for {
-			sem := make(chan bool, 2)
+			//sem := make(chan bool, 2)
 			for _, v := range m.Volumes {
-				sem <- true
+				instancesSem[v.HostBind] = make(chan bool, 2)
+				instancesSem[v.HostBind] <- true
 				go func(v *volume.Volume) {
 					log.Debugf("Backup volume %s", v.Name)
-					defer func() { <-sem }()
+					defer func() { <-instancesSem[v.HostBind] }()
 					err = backupVolume(m, v)
 					if err != nil {
 						log.Errorf("failed to backup volume: %s", err)
@@ -60,8 +63,10 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters)
 				}(v)
 			}
 
-			for i := 0; i < cap(sem); i++ {
-				sem <- true
+			for k, sem := range instancesSem {
+				for i := 0; i < cap(sem); i++ {
+					instancesSem[k] <- true
+				}
 			}
 			log.Debugf("Sleeping for 1m")
 			time.Sleep(10 * time.Second)
