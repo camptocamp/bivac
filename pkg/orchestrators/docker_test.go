@@ -66,6 +66,8 @@ func TestDockerGetVolumesSuccess(t *testing.T) {
 			ID:         "bar",
 			Name:       "bar",
 			Mountpoint: "/bar",
+			HostBind:   "localhost",
+			Hostname:   "localhost",
 		},
 	}
 
@@ -113,11 +115,15 @@ func TestDockerGetVolumesBlacklisted(t *testing.T) {
 			ID:         "foo",
 			Name:       "foo",
 			Mountpoint: "/foo",
+			HostBind:   "localhost",
+			Hostname:   "localhost",
 		},
 		&volume.Volume{
 			ID:         "bar",
 			Name:       "bar",
 			Mountpoint: "/bar",
+			HostBind:   "localhost",
+			Hostname:   "localhost",
 		},
 	}
 

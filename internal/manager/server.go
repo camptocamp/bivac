@@ -7,6 +7,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	//"github.com/camptocamp/bivac/pkg/orchestrators"
 )
 
@@ -20,6 +21,8 @@ func (m *Manager) StartServer() (err error) {
 
 	router.Handle("/volumes", m.handleAPIRequest(http.HandlerFunc(m.getVolumes)))
 	router.Handle("/ping", m.handleAPIRequest(http.HandlerFunc(m.ping)))
+	router.Handle("/metrics", promhttp.Handler()).Methods("GET")
+	router.Handle("/backup/{volumeName}", m.handleAPIRequest(http.HandlerFunc(m.backupVolume)))
 
 	log.Infof("Listening on %s", m.Server.Address)
 	log.Fatal(http.ListenAndServe(m.Server.Address, router))
@@ -47,6 +50,19 @@ func (m *Manager) getVolumes(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(b)
+	return
+}
+
+func (m *Manager) backupVolume(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	err := m.BackupVolume(params["volumeName"])
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Internal server error"))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"type": "success"}`))
 	return
 }
 

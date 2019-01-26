@@ -42,6 +42,15 @@ func (c *Client) GetVolumes() (volumes []volume.Volume, err error) {
 	return
 }
 
+func (c *Client) BackupVolume(volumeName string) (err error) {
+	err = c.newRequest(nil, "POST", fmt.Sprintf("/backup/%s", volumeName))
+	if err != nil {
+		err = fmt.Errorf("failed to connect to the remote Bivac instance: %s", err)
+		return
+	}
+	return
+}
+
 func (c *Client) newRequest(data interface{}, method, endpoint string) (err error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(method, c.remoteAddress+endpoint, nil)

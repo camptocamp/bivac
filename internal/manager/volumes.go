@@ -25,7 +25,7 @@ func retrieveVolumes(m *Manager, volumeFilters volume.Filters) (err error) {
 	}
 
 	// Append new volumes
-	volumeManaged := false
+	var volumeManaged bool
 	for _, nv := range newVolumes {
 		volumeManaged = false
 		for _, mv := range m.Volumes {
@@ -35,6 +35,7 @@ func retrieveVolumes(m *Manager, volumeFilters volume.Filters) (err error) {
 			}
 		}
 		if !volumeManaged {
+			nv.SetupMetrics()
 			m.Volumes = append(m.Volumes, nv)
 		}
 	}
@@ -55,6 +56,18 @@ func retrieveVolumes(m *Manager, volumeFilters volume.Filters) (err error) {
 
 	return
 }
+
+/*
+func initVolumes(m *Manager, volumeFilters volume.Filters) (err error) {
+	err = retrieveVolumes(m, volumeFilters)
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve volumes: %s", err)
+		return
+	}
+
+	return
+}
+*/
 
 func blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "lost+found" {

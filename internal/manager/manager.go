@@ -33,6 +33,13 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters)
 	}
 
 	// Manage volummes
+	/*
+		err = initVolumes(m, volumeFilters)
+		if err != nil {
+			err = fmt.Errorf("failed to init volumes values: %s", err)
+			return
+		}
+	*/
 	go func(m *Manager, volumeFilters volume.Filters) {
 		log.Debugf("Starting volume manager...")
 		for {
@@ -46,12 +53,18 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters)
 
 	// Manage backups
 	go func(m *Manager) {
+		// Scheduling works but still not perfect, unacceptable as it stands
+		// TODO: Remove this awful time.Sleep()
 		instancesSem := make(map[string]chan bool)
 		log.Debugf("Starting backup manager...")
 		for {
-			//sem := make(chan bool, 2)
 			for _, v := range m.Volumes {
 				instancesSem[v.HostBind] = make(chan bool, 2)
+			}
+			for _, v := range m.Volumes {
+				if !isBackupNeeded(v) {
+					continue
+				}
 				instancesSem[v.HostBind] <- true
 				go func(v *volume.Volume) {
 					log.Debugf("Backup volume %s", v.Name)
@@ -68,7 +81,6 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters)
 					instancesSem[k] <- true
 				}
 			}
-			log.Debugf("Sleeping for 1m")
 			time.Sleep(10 * time.Second)
 		}
 	}(m)
@@ -77,6 +89,23 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters)
 	m.StartServer()
 
 	return
+}
+
+func isBackupNeeded(v *volume.Volume) bool {
+	if v.LastBackupDate == "" {
+		return true
+	}
+
+	lbd, err := time.Parse("2006-01-02 15:04:05", v.LastBackupDate)
+	if err != nil {
+		log.Errorf("failed to parse backup date of volume `%s': %s", v.Name, err)
+		return false
+	}
+
+	if lbd.Add(time.Hour * 24).Before(time.Now()) {
+		return true
+	}
+	return false
 }
 
 func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestrator, err error) {
@@ -100,6 +129,20 @@ func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestr
 	}
 	if err != nil {
 		log.Infof("Using orchestrator: %s", o.GetName())
+	}
+	return
+}
+
+func (m *Manager) BackupVolume(volumeName string) (err error) {
+	for _, v := range m.Volumes {
+		if v.Name == volumeName {
+			log.Debugf("Forced backup of volume %s", v.Name)
+			err = backupVolume(m, v)
+			if err != nil {
+				err = fmt.Errorf("failed to backup volume: %s", err)
+				return
+			}
+		}
 	}
 	return
 }

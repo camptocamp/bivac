@@ -32,8 +32,10 @@ func backupVolume(m *Manager, v *volume.Volume) (err error) {
 
 	if agentOutput.Type == "error" {
 		v.LastBackupStatus = "Failed"
+		v.Metrics.LastBackupStatus.Set(1.0)
 	} else {
 		v.LastBackupStatus = "Success"
+		v.Metrics.LastBackupStatus.Set(0.0)
 		v.Logs = make(map[string]string)
 		for stepKey, stepValue := range agentOutput.Content.(map[string]interface{}) {
 			v.Logs[stepKey] = stepValue.(map[string]interface{})["stdout"].(string)
@@ -41,6 +43,7 @@ func backupVolume(m *Manager, v *volume.Volume) (err error) {
 
 	}
 	v.LastBackupDate = time.Now().Format("2006-01-02 15:04:05")
+	v.Metrics.LastBackupDate.SetToCurrentTime()
 
 	return
 }

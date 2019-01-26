@@ -64,6 +64,8 @@ func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 			ID:         voll.Name,
 			Name:       voll.Name,
 			Mountpoint: voll.Mountpoint,
+			HostBind:   "localhost",
+			Hostname:   "localhost",
 			Labels:     voll.Labels,
 		}
 

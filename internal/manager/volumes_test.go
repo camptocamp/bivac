@@ -20,23 +20,27 @@ func TestRetrieveVolumesBasic(t *testing.T) {
 
 	givenVolumes := []*volume.Volume{
 		&volume.Volume{
-			ID:   "foo",
-			Name: "foo",
+			ID:       "foo",
+			Name:     "foo",
+			HostBind: "localhost",
 		},
 		&volume.Volume{
-			ID:   "bar",
-			Name: "bar",
+			ID:       "bar",
+			Name:     "bar",
+			HostBind: "localhost",
 		},
 	}
 	givenFilters := volume.Filters{}
 	expectedVolumes := []*volume.Volume{
 		&volume.Volume{
-			ID:   "foo",
-			Name: "foo",
+			ID:       "foo",
+			Name:     "foo",
+			HostBind: "localhost",
 		},
 		&volume.Volume{
-			ID:   "bar",
-			Name: "bar",
+			ID:       "bar",
+			Name:     "bar",
+			HostBind: "localhost",
 		},
 	}
 
@@ -49,6 +53,12 @@ func TestRetrieveVolumesBasic(t *testing.T) {
 
 	m.Volumes = []*volume.Volume{}
 	err := retrieveVolumes(m, givenFilters)
+
+	// Do not manage Metrics field
+	// Should be properly fixed
+	for k, _ := range m.Volumes {
+		m.Volumes[k].Metrics = nil
+	}
 
 	assert.Nil(t, err)
 	assert.Equal(t, m.Volumes, expectedVolumes)
@@ -89,6 +99,12 @@ func TestRetrieveVolumesBlacklist(t *testing.T) {
 
 	m.Volumes = []*volume.Volume{}
 	err := retrieveVolumes(m, givenFilters)
+
+	// Do not manage Metrics field
+	// Should be properly fixed
+	for k, _ := range m.Volumes {
+		m.Volumes[k].Metrics = nil
+	}
 
 	assert.Nil(t, err)
 	assert.Equal(t, m.Volumes, expectedVolumes)
@@ -170,24 +186,26 @@ func TestRetrieveVolumesAppend(t *testing.T) {
 
 	givenVolumes := []*volume.Volume{
 		&volume.Volume{
-			ID:   "foo",
-			Name: "foo",
+			ID:       "foo",
+			Name:     "foo",
+			HostBind: "localhost",
 		},
-		&volume.Volume{
-			ID:   "bar",
-			Name: "bar",
-		},
+		//&volume.Volume{
+		//	ID:   "bar",
+		//	Name: "bar",
+		//},
 	}
 	givenFilters := volume.Filters{}
 	expectedVolumes := []*volume.Volume{
 		&volume.Volume{
-			ID:   "foo",
-			Name: "foo",
+			ID:       "foo",
+			Name:     "foo",
+			HostBind: "localhost",
 		},
-		&volume.Volume{
-			ID:   "bar",
-			Name: "bar",
-		},
+		//&volume.Volume{
+		//	ID:   "bar",
+		//	Name: "bar",
+		//},
 	}
 
 	m := &Manager{
@@ -199,8 +217,9 @@ func TestRetrieveVolumesAppend(t *testing.T) {
 
 	m.Volumes = []*volume.Volume{
 		&volume.Volume{
-			ID:   "foo",
-			Name: "foo",
+			ID:       "foo",
+			Name:     "foo",
+			HostBind: "localhost",
 		},
 	}
 	err := retrieveVolumes(m, givenFilters)
