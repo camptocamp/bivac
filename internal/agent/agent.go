@@ -7,7 +7,7 @@ import (
 	"github.com/camptocamp/bivac/internal/utils"
 )
 
-func Backup(targetURL, backupPath, hostname string) {
+func Backup(targetURL, backupPath, hostname string, force bool) {
 	e := &engines.ResticEngine{
 		DefaultArgs: []string{
 			"--no-cache",
@@ -18,7 +18,7 @@ func Backup(targetURL, backupPath, hostname string) {
 		Output: make(map[string]utils.OutputFormat),
 	}
 
-	output := e.Backup(backupPath, hostname)
+	output := e.Backup(backupPath, hostname, force)
 	fmt.Println(output)
 	return
 }

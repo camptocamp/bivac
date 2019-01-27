@@ -26,12 +26,19 @@ func (*ResticEngine) GetName() string {
 }
 
 // Backup performs the backup of the passed volume
-func (r *ResticEngine) Backup(backupPath, hostname string) string {
+func (r *ResticEngine) Backup(backupPath, hostname string, force bool) string {
 	var err error
 
 	err = r.initializeRepository()
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
+	}
+
+	if force {
+		err = r.unlockRepository()
+		if err != nil {
+			return utils.ReturnFormattedOutput(r.Output)
+		}
 	}
 
 	err = r.backupVolume(hostname, backupPath)
@@ -102,6 +109,20 @@ func (r *ResticEngine) forget() (err error) {
 		rc = handleExitCode(err)
 	}
 	r.Output["forget"] = utils.OutputFormat{
+		Stdout:   string(output),
+		ExitCode: rc,
+	}
+	err = nil
+	return
+}
+
+func (r *ResticEngine) unlockRepository() (err error) {
+	rc := 0
+	output, err := exec.Command("restic", append(r.DefaultArgs, []string{"unlock", "--remove-all"}...)...).CombinedOutput()
+	if err != nil {
+		rc = handleExitCode(err)
+	}
+	r.Output["unlock"] = utils.OutputFormat{
 		Stdout:   string(output),
 		ExitCode: rc,
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/camptocamp/bivac/pkg/volume"
 )
@@ -42,8 +43,8 @@ func (c *Client) GetVolumes() (volumes []volume.Volume, err error) {
 	return
 }
 
-func (c *Client) BackupVolume(volumeName string) (err error) {
-	err = c.newRequest(nil, "POST", fmt.Sprintf("/backup/%s", volumeName))
+func (c *Client) BackupVolume(volumeName string, force bool) (err error) {
+	err = c.newRequest(nil, "POST", fmt.Sprintf("/backup/%s?force=%s", volumeName, strconv.FormatBool(force)))
 	if err != nil {
 		err = fmt.Errorf("failed to connect to the remote Bivac instance: %s", err)
 		return

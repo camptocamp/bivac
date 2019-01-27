@@ -12,7 +12,7 @@ import (
 	"github.com/camptocamp/bivac/pkg/volume"
 )
 
-func backupVolume(m *Manager, v *volume.Volume) (err error) {
+func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	p, err := m.Providers.GetProvider(m.Orchestrator, v)
 	if err != nil {
 		err = fmt.Errorf("failed to get provider: %s", err)
@@ -25,18 +25,24 @@ func backupVolume(m *Manager, v *volume.Volume) (err error) {
 			log.Warningf("failed to run pre-command: %s", err)
 		}
 	}
+	cmd := []string{
+		"agent",
+		"backup",
+		"-p",
+		v.Mountpoint + "/" + v.BackupDir,
+		"-r",
+		m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
+		"--host",
+		v.Hostname,
+	}
+
+	if force {
+		cmd = append(cmd, "--force")
+	}
+
 	_, output, err := m.Orchestrator.DeployAgent(
 		"cryptobioz/bivac:2.0.0",
-		[]string{
-			"agent",
-			"backup",
-			"-p",
-			v.Mountpoint + "/" + v.BackupDir,
-			"-r",
-			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
-			"--host",
-			v.Hostname,
-		},
+		cmd,
 		os.Environ(),
 		v,
 	)

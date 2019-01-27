@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
@@ -55,7 +56,11 @@ func (m *Manager) getVolumes(w http.ResponseWriter, r *http.Request) {
 
 func (m *Manager) backupVolume(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	err := m.BackupVolume(params["volumeName"])
+	force, err := strconv.ParseBool(params["force"])
+	if err != nil {
+		force = false
+	}
+	err = m.BackupVolume(params["volumeName"], force)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("500 - Internal server error"))

@@ -14,6 +14,7 @@ import (
 var (
 	remoteAddress string
 	psk           string
+	force         bool
 )
 
 var envs = make(map[string]string)
@@ -28,7 +29,7 @@ var backupCmd = &cobra.Command{
 			log.Errorf("failed to create new client: %s", err)
 			return
 		}
-		err = c.BackupVolume(args[0])
+		err = c.BackupVolume(args[0], force)
 		if err != nil {
 			log.Errorf("failed to backup volume: %s", err)
 			return
@@ -73,6 +74,8 @@ func init() {
 
 	backupCmd.Flags().StringVarP(&psk, "server.psk", "", "", "Pre-shared key.")
 	envs["BIVAC_SERVER_PSK"] = "server.psk"
+
+	backupCmd.Flags().BoolVarP(&force, "force", "", false, "Force backup by removing locks.")
 
 	cmd.SetValuesFromEnv(envs, backupCmd.Flags())
 	cmd.RootCmd.AddCommand(backupCmd)

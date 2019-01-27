@@ -67,7 +67,7 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters,
 				go func(v *volume.Volume) {
 					log.Debugf("Backup volume %s", v.Name)
 					defer func() { <-instancesSem[v.HostBind] }()
-					err = backupVolume(m, v)
+					err = backupVolume(m, v, false)
 					if err != nil {
 						log.Errorf("failed to backup volume: %s", err)
 					}
@@ -135,11 +135,11 @@ func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestr
 	return
 }
 
-func (m *Manager) BackupVolume(volumeName string) (err error) {
+func (m *Manager) BackupVolume(volumeName string, force bool) (err error) {
 	for _, v := range m.Volumes {
 		if v.Name == volumeName {
 			log.Debugf("Forced backup of volume %s", v.Name)
-			err = backupVolume(m, v)
+			err = backupVolume(m, v, true)
 			if err != nil {
 				err = fmt.Errorf("failed to backup volume: %s", err)
 				return
