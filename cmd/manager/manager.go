@@ -68,6 +68,13 @@ func init() {
 	managerCmd.Flags().StringVarP(&Orchestrators.Docker.Endpoint, "docker.endpoint", "", "unix:///var/run/docker.sock", "Docker endpoint.")
 	envs["BIVAC_DOCKER_ENDPOINT"] = "docker.endpoint"
 
+	managerCmd.Flags().StringVarP(&Orchestrators.Cattle.URL, "cattle.url", "", "", "The Cattle URL.")
+	envs["CATTLE_URL"] = "cattle.url"
+	managerCmd.Flags().StringVarP(&Orchestrators.Cattle.AccessKey, "cattle.accesskey", "", "", "The Cattle access key.")
+	envs["CATTLE_ACCESS_KEY"] = "cattle.accesskey"
+	managerCmd.Flags().StringVarP(&Orchestrators.Cattle.SecretKey, "cattle.secretkey", "", "", "The Cattle secret key.")
+	envs["CATTLE_SECRET_KEY"] = "cattle.secretkey"
+
 	managerCmd.Flags().StringVarP(&resticForgetArgs, "restic.forget.args", "", "--keep-daily 15 --prune", "Restic forget arguments.")
 	envs["RESTIC_FORGET_ARGS"] = "restic.forget.args"
 

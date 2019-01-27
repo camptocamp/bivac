@@ -11,6 +11,7 @@ import (
 
 type Orchestrators struct {
 	Docker orchestrators.DockerConfig
+	Cattle orchestrators.CattleConfig
 }
 
 type Manager struct {
@@ -111,14 +112,18 @@ func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestr
 		switch name {
 		case "docker":
 			o, err = orchestrators.NewDockerOrchestrator(&orchs.Docker)
+		case "cattle":
+			o, err = orchestrators.NewCattleOrchestrator(&orchs.Cattle)
 		default:
-			err = fmt.Errorf("'%s' is not a valid orchestrator", err)
+			err = fmt.Errorf("'%s' is not a valid orchestrator", name)
 			return
 		}
 	} else {
 		log.Debugf("Trying to detect orchestrator based on environment...")
 		if orchestrators.DetectDocker(&orchs.Docker) {
 			o, err = orchestrators.NewDockerOrchestrator(&orchs.Docker)
+		} else if orchestrators.DetectCattle() {
+			o, err = orchestrators.NewCattleOrchestrator(&orchs.Cattle)
 		} else {
 			err = fmt.Errorf("no orchestrator detected")
 			return

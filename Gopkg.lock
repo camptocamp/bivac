@@ -120,6 +120,12 @@
   version = "v1.6.2"
 
 [[projects]]
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
+  version = "v1.4.0"
+
+[[projects]]
   name = "github.com/hashicorp/hcl"
   packages = [
     ".",
@@ -244,6 +250,18 @@
   revision = "bf6a532e95b1f7a62adf0ab5050a5bb2237ad2f4"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/rancher/go-rancher"
+  packages = ["v2"]
+  revision = "cbc1b0a3f68db14c8d074ffc7fe2ca3b26a82c91"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/rancher/go-rancher-metadata"
+  packages = ["metadata"]
+  revision = "d2103caca5873119ff423d29cba09b4d03cd69b8"
+
+[[projects]]
   name = "github.com/spf13/afero"
   packages = [
     ".",
@@ -306,7 +324,8 @@
   packages = [
     "context",
     "internal/socks",
-    "proxy"
+    "proxy",
+    "websocket"
   ]
   revision = "ed066c81e75eba56dd9bd2139ade88125b855585"
 
@@ -347,6 +366,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "07e9c8b3ee33fa5f710c005315f2444079a80c5a32be18d9219b47073b05f4e9"
+  inputs-digest = "596b8db72528fa84178e25b94a3c79b1200ac496fa9c58ee8e54c9c8235f20a4"
   solver-name = "gps-cdcl"
   solver-version = 1
