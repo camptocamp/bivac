@@ -7,8 +7,8 @@ FROM restic/restic:latest as restic
 
 FROM busybox
 COPY --from=builder /etc/ssl /etc/ssl
-COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /
+COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /bin/
 COPY --from=builder /go/src/github.com/camptocamp/bivac/providers-config.default.toml /
 COPY --from=restic /usr/bin/restic /bin/restic
-ENTRYPOINT ["/bivac"]
+ENTRYPOINT ["/bin/bivac"]
 CMD [""]
