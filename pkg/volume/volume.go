@@ -39,6 +39,15 @@ type Metrics struct {
 	LastBackupStatus prometheus.Gauge
 }
 
+// MountedVolume stores mounted volumes inside a container
+type MountedVolume struct {
+	PodID       string
+	ContainerID string
+	HostID      string
+	Volume      *Volume
+	Path        string
+}
+
 func (v *Volume) SetupMetrics() {
 	v.Metrics = &Metrics{}
 

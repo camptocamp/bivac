@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/BurntSushi/toml"
+  packages = ["."]
+  revision = "3012a1dbe2e4bd1391d42b32f0577cb7bbc7f005"
+  version = "v0.3.1"
+
+[[projects]]
   name = "github.com/Microsoft/go-winio"
   packages = ["."]
   revision = "97e4973ce50b2ff5f09635a57e2b88a037aae829"
@@ -135,12 +141,6 @@
   packages = ["."]
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
   version = "v1.0"
-
-[[projects]]
-  name = "github.com/jessevdk/go-flags"
-  packages = ["."]
-  revision = "c6ca198ec95c841fdb89fc0de7496fed11ab854e"
-  version = "v1.4.0"
 
 [[projects]]
   name = "github.com/konsorten/go-windows-terminal-sequences"
@@ -347,6 +347,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "020b349af9a0236f2868fd580ee3c99e8942a09f6607e35c47b1e4ff7eba4af2"
+  inputs-digest = "07e9c8b3ee33fa5f710c005315f2444079a80c5a32be18d9219b47073b05f4e9"
   solver-name = "gps-cdcl"
   solver-version = 1

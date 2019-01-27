@@ -17,29 +17,26 @@ type Manager struct {
 	Orchestrator orchestrators.Orchestrator
 	Volumes      []*volume.Volume
 	Server       *Server
+	Providers    *Providers
+	TargetURL    string
 }
 
 // Start starts a Bivac manager which handle backups management
-func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters) (err error) {
-	//db, err := database.InitDB(dbPath)
-	//if err != nil {
-	//	err = fmt.Errorf("database.InitDB(): %s", err)
-	//	return
-	//}
-	//defer db.Close()
+func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL string) (err error) {
+	p, err := LoadProviders(providersFile)
+	if err != nil {
+		err = fmt.Errorf("failed to read providers file: %s", err)
+		return
+	}
+
 	m := &Manager{
 		Orchestrator: o,
 		Server:       &s,
+		Providers:    &p,
+		TargetURL:    targetURL,
 	}
 
 	// Manage volummes
-	/*
-		err = initVolumes(m, volumeFilters)
-		if err != nil {
-			err = fmt.Errorf("failed to init volumes values: %s", err)
-			return
-		}
-	*/
 	go func(m *Manager, volumeFilters volume.Filters) {
 		log.Debugf("Starting volume manager...")
 		for {

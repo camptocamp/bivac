@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"sort"
 	"unicode/utf8"
 
@@ -44,8 +43,20 @@ func (o *DockerOrchestrator) GetName() string {
 	return "docker"
 }
 
+// GetPath returns the backup path
+func (*DockerOrchestrator) GetPath(v *volume.Volume) string {
+	return v.Hostname
+}
+
 // GetVolumes returns the Docker volumes, inspected and filtered
 func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes []*volume.Volume, err error) {
+
+	info, err := o.client.Info(context.Background())
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve Docker engine info: %s", err)
+		return
+	}
+
 	vols, err := o.client.VolumeList(context.Background(), filters.NewArgs())
 	if err != nil {
 		err = fmt.Errorf("failed to list Docker volumes: %v", err)
@@ -64,8 +75,8 @@ func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 			ID:         voll.Name,
 			Name:       voll.Name,
 			Mountpoint: voll.Mountpoint,
-			HostBind:   "localhost",
-			Hostname:   "localhost",
+			HostBind:   info.Name,
+			Hostname:   info.Name,
 			Labels:     voll.Labels,
 		}
 
@@ -85,15 +96,6 @@ func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 		err = fmt.Errorf("failed to pull image: %s", err)
 		return
 	}
-
-	managerHostname, err := os.Hostname()
-	if err != nil {
-		err = fmt.Errorf("failed to get hostname: %s", err)
-		return
-	}
-	envs = append(envs, fmt.Sprintf("RESTIC_HOSTNAME=%s", managerHostname))
-	envs = append(envs, fmt.Sprintf("RESTIC_REPOSITORY=%s/%s/%s", os.Getenv("BIVAC_TARGET_URL"), managerHostname, v.Name))
-	envs = append(envs, fmt.Sprintf("RESTIC_BACKUP_PATH=%s", v.Mountpoint))
 
 	mounts := []mount.Mount{
 		mount.Mount{
@@ -230,4 +232,59 @@ func (o *DockerOrchestrator) PullImage(image string) (err error) {
 		}
 	}
 	return nil
+}
+
+// GetContainersMountingVolume returns mounted volumes
+func (o *DockerOrchestrator) GetContainersMountingVolume(v *volume.Volume) (mountedVolumes []*volume.MountedVolume, err error) {
+	c, err := o.client.ContainerList(context.Background(), types.ContainerListOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to list containers: %s", err)
+		return
+	}
+
+	for _, container := range c {
+		for _, mount := range container.Mounts {
+			if mount.Name == v.Name && mount.Type == "volume" {
+				mv := &volume.MountedVolume{
+					ContainerID: container.ID,
+					Volume:      v,
+					Path:        mount.Destination,
+				}
+				mountedVolumes = append(mountedVolumes, mv)
+			}
+		}
+	}
+	return
+}
+
+// ContainerExec executes a command in a container
+func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolume, command []string) (stdout string, err error) {
+	exec, err := o.client.ContainerExecCreate(context.Background(), mountedVolumes.ContainerID, types.ExecConfig{
+		AttachStdout: true,
+		AttachStderr: true,
+		Cmd:          command,
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to create exec: %s", err)
+		return
+	}
+
+	conn, err := o.client.ContainerExecAttach(context.Background(), exec.ID, types.ExecStartCheck{})
+	if err != nil {
+		err = fmt.Errorf("failed to attach: %s", err)
+		return
+	}
+	defer conn.Close()
+
+	err = o.client.ContainerExecStart(context.Background(), exec.ID, types.ExecStartCheck{})
+	if err != nil {
+		err = fmt.Errorf("failed to start exec: %s", err)
+		return
+	}
+
+	stdoutput := new(bytes.Buffer)
+	stdcopy.StdCopy(stdoutput, ioutil.Discard, conn.Reader)
+
+	stdout = stdoutput.String()
+	return
 }

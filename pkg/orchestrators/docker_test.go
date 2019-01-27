@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -19,6 +20,8 @@ import (
 	"github.com/camptocamp/bivac/pkg/volume"
 	"github.com/stretchr/testify/assert"
 )
+
+var fakeHostname, _ = os.Hostname()
 
 // NewDockerOrchestrator
 func TestDockerNewDockerOrchestrator(t *testing.T) {
@@ -52,6 +55,9 @@ func TestDockerGetVolumesSuccess(t *testing.T) {
 		},
 	}
 
+	mockDocker.EXPECT().Info(context.Background()).Return(types.Info{
+		Name: fakeHostname,
+	}, nil).Times(1)
 	mockDocker.EXPECT().VolumeList(context.Background(), filters.NewArgs()).Return(dockerVolumes, nil).Times(1)
 	mockDocker.EXPECT().VolumeInspect(context.Background(), "foo").Return(types.Volume{
 		Name:       "foo",
@@ -67,8 +73,8 @@ func TestDockerGetVolumesSuccess(t *testing.T) {
 			ID:         "bar",
 			Name:       "bar",
 			Mountpoint: "/bar",
-			HostBind:   "localhost",
-			Hostname:   "localhost",
+			HostBind:   fakeHostname,
+			Hostname:   fakeHostname,
 		},
 	}
 
@@ -101,6 +107,9 @@ func TestDockerGetVolumesBlacklisted(t *testing.T) {
 		},
 	}
 
+	mockDocker.EXPECT().Info(context.Background()).Return(types.Info{
+		Name: fakeHostname,
+	}, nil).Times(1)
 	mockDocker.EXPECT().VolumeList(context.Background(), filters.NewArgs()).Return(dockerVolumes, nil).Times(1)
 	mockDocker.EXPECT().VolumeInspect(context.Background(), "foo").Return(types.Volume{
 		Name:       "foo",
@@ -116,15 +125,15 @@ func TestDockerGetVolumesBlacklisted(t *testing.T) {
 			ID:         "foo",
 			Name:       "foo",
 			Mountpoint: "/foo",
-			HostBind:   "localhost",
-			Hostname:   "localhost",
+			HostBind:   fakeHostname,
+			Hostname:   fakeHostname,
 		},
 		&volume.Volume{
 			ID:         "bar",
 			Name:       "bar",
 			Mountpoint: "/bar",
-			HostBind:   "localhost",
-			Hostname:   "localhost",
+			HostBind:   fakeHostname,
+			Hostname:   fakeHostname,
 		},
 	}
 

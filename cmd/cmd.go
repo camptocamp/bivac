@@ -13,6 +13,7 @@ import (
 var (
 	verbose   bool
 	whitelist string
+	blacklist string
 )
 
 var persistentEnvs = make(map[string]string)
@@ -36,6 +37,8 @@ func init() {
 	localEnvs["BIVAC_VERBOSE"] = "verbose"
 	RootCmd.PersistentFlags().StringVarP(&whitelist, "whitelist", "w", "", "Only backup whitelisted volumes.")
 	localEnvs["BIVAC_VOLUMES_WHITELIST"] = "whitelist"
+	RootCmd.PersistentFlags().StringVarP(&blacklist, "blacklist", "b", "", "Do not backup blacklisted volumes.")
+	localEnvs["BIVAC_VOLUMES_BLACKLIST"] = "blacklist"
 
 	SetValuesFromEnv(localEnvs, RootCmd.PersistentFlags())
 	SetValuesFromEnv(persistentEnvs, RootCmd.PersistentFlags())
@@ -55,6 +58,8 @@ func SetValuesFromEnv(envs map[string]string, flags *pflag.FlagSet) {
 		flag.Usage = fmt.Sprintf("%v [%v]", flag.Usage, env)
 		if value := os.Getenv(env); value != "" {
 			flag.Value.Set(value)
+		} else {
+			os.Setenv(env, flag.Value.String())
 		}
 	}
 	return

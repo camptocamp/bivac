@@ -2,24 +2,27 @@ package agent
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/camptocamp/bivac/internal/engines"
 	"github.com/camptocamp/bivac/internal/utils"
 )
 
-func Start() {
+func Backup(targetURL, backupPath, hostname string) {
 	e := &engines.ResticEngine{
 		DefaultArgs: []string{
 			"--no-cache",
 			"--json",
 			"-r",
-			os.Getenv("RESTIC_REPOSITORY"),
+			targetURL,
 		},
 		Output: make(map[string]utils.OutputFormat),
 	}
 
-	output := e.Backup()
+	output := e.Backup(backupPath, hostname)
 	fmt.Println(output)
+	return
+}
+
+func Restore(targetURL, backupPath, hostname string) {
 	return
 }

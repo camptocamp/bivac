@@ -20,7 +20,11 @@ var (
 
 	Orchestrators manager.Orchestrators
 
-	dbPath string
+	dbPath           string
+	resticForgetArgs string
+
+	providersFile string
+	targetURL     string
 )
 var envs = make(map[string]string)
 
@@ -31,10 +35,11 @@ var managerCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// Global variables
 		whitelistVolumes, _ := cmd.Flags().GetString("whitelist")
-		//blacklistVolumes, _ := cmd.Flags().GetString("blacklist")
+		blacklistVolumes, _ := cmd.Flags().GetString("blacklist")
 
 		volumesFilters := volume.Filters{
 			Whitelist: strings.Split(whitelistVolumes, ","),
+			Blacklist: strings.Split(blacklistVolumes, ","),
 		}
 
 		o, err := manager.GetOrchestrator(Orchestrator, Orchestrators)
@@ -43,7 +48,7 @@ var managerCmd = &cobra.Command{
 			return
 		}
 
-		err = manager.Start(o, server, volumesFilters)
+		err = manager.Start(o, server, volumesFilters, providersFile, targetURL)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return
@@ -63,8 +68,14 @@ func init() {
 	managerCmd.Flags().StringVarP(&Orchestrators.Docker.Endpoint, "docker.endpoint", "", "unix:///var/run/docker.sock", "Docker endpoint.")
 	envs["BIVAC_DOCKER_ENDPOINT"] = "docker.endpoint"
 
-	managerCmd.Flags().StringVarP(&dbPath, "db.path", "", "bivac.sqlite", "Path the Bivac internal database.")
-	envs["BIVAC_DB_PATH"] = "db.path"
+	managerCmd.Flags().StringVarP(&resticForgetArgs, "restic.forget.args", "", "--keep-daily 15 --prune", "Restic forget arguments.")
+	envs["RESTIC_FORGET_ARGS"] = "restic.forget.args"
+
+	managerCmd.Flags().StringVarP(&providersFile, "providers.config", "", "/providers-config.default.toml", "Configuration file for providers.")
+	envs["BIVAC_PROVIDERS_CONFIG"] = "providers.config"
+
+	managerCmd.Flags().StringVarP(&targetURL, "target.url", "r", "", "The target URL to push the backups to.")
+	envs["BIVAC_TARGET_URL"] = "target.url"
 
 	cmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	cmd.RootCmd.AddCommand(managerCmd)

@@ -35,6 +35,7 @@ func (m *MockOrchestrator) EXPECT() *MockOrchestratorMockRecorder {
 
 // GetName mocks base method
 func (m *MockOrchestrator) GetName() string {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetName")
 	ret0, _ := ret[0].(string)
 	return ret0
@@ -42,11 +43,27 @@ func (m *MockOrchestrator) GetName() string {
 
 // GetName indicates an expected call of GetName
 func (mr *MockOrchestratorMockRecorder) GetName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetName", reflect.TypeOf((*MockOrchestrator)(nil).GetName))
+}
+
+// GetPath mocks base method
+func (m *MockOrchestrator) GetPath(v *volume.Volume) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPath", v)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetPath indicates an expected call of GetPath
+func (mr *MockOrchestratorMockRecorder) GetPath(v interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPath", reflect.TypeOf((*MockOrchestrator)(nil).GetPath), v)
 }
 
 // GetVolumes mocks base method
 func (m *MockOrchestrator) GetVolumes(volumeFilters volume.Filters) ([]*volume.Volume, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVolumes", volumeFilters)
 	ret0, _ := ret[0].([]*volume.Volume)
 	ret1, _ := ret[1].(error)
@@ -55,11 +72,13 @@ func (m *MockOrchestrator) GetVolumes(volumeFilters volume.Filters) ([]*volume.V
 
 // GetVolumes indicates an expected call of GetVolumes
 func (mr *MockOrchestratorMockRecorder) GetVolumes(volumeFilters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVolumes", reflect.TypeOf((*MockOrchestrator)(nil).GetVolumes), volumeFilters)
 }
 
 // DeployAgent mocks base method
 func (m *MockOrchestrator) DeployAgent(image string, cmd, envs []string, volume *volume.Volume) (bool, string, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeployAgent", image, cmd, envs, volume)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(string)
@@ -69,5 +88,36 @@ func (m *MockOrchestrator) DeployAgent(image string, cmd, envs []string, volume 
 
 // DeployAgent indicates an expected call of DeployAgent
 func (mr *MockOrchestratorMockRecorder) DeployAgent(image, cmd, envs, volume interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeployAgent", reflect.TypeOf((*MockOrchestrator)(nil).DeployAgent), image, cmd, envs, volume)
+}
+
+// GetContainersMountingVolume mocks base method
+func (m *MockOrchestrator) GetContainersMountingVolume(v *volume.Volume) ([]*volume.MountedVolume, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetContainersMountingVolume", v)
+	ret0, _ := ret[0].([]*volume.MountedVolume)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetContainersMountingVolume indicates an expected call of GetContainersMountingVolume
+func (mr *MockOrchestratorMockRecorder) GetContainersMountingVolume(v interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetContainersMountingVolume", reflect.TypeOf((*MockOrchestrator)(nil).GetContainersMountingVolume), v)
+}
+
+// ContainerExec mocks base method
+func (m *MockOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolume, command []string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContainerExec", mountedVolumes, command)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContainerExec indicates an expected call of ContainerExec
+func (mr *MockOrchestratorMockRecorder) ContainerExec(mountedVolumes, command interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContainerExec", reflect.TypeOf((*MockOrchestrator)(nil).ContainerExec), mountedVolumes, command)
 }
