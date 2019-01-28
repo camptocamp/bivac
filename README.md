@@ -89,11 +89,10 @@ Help Options:
 ### Backup all named volumes to S3 using Restic
 
 ```shell
-$ bivac \
+$ AWS_ACCESS_KEY_ID=<my_key_id> AWS_SECRET_ACCESS_KEY=<my_secret_key> \
+  bivac \
   -o docker \
   -u s3:s3.amazonaws.com/<my_bucket>/<my_dir> \
-  --aws-access-key-id=<my_key_id> \
-  --aws-secret-key-id=<my_secret_key> \
   --restic-password=<my_restic_password>
 ```
 
