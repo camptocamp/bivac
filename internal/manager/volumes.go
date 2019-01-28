@@ -5,6 +5,7 @@ import (
 	"unicode/utf8"
 
 	//"github.com/camptocamp/bivac/pkg/orchestrators"
+	"github.com/camptocamp/bivac/internal/engines"
 	"github.com/camptocamp/bivac/pkg/volume"
 )
 
@@ -36,6 +37,7 @@ func retrieveVolumes(m *Manager, volumeFilters volume.Filters) (err error) {
 		}
 		if !volumeManaged {
 			nv.SetupMetrics()
+			getLastBackupDate(m, nv)
 			m.Volumes = append(m.Volumes, nv)
 		}
 	}
@@ -89,4 +91,24 @@ func blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, 
 		return true, "blacklisted", "blacklist config"
 	}
 	return false, "", ""
+}
+
+func getLastBackupDate(m *Manager, v *volume.Volume) (err error) {
+	e := &engines.ResticEngine{
+		DefaultArgs: []string{
+			"--no-cache",
+			"--json",
+			"-r",
+			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
+		},
+	}
+
+	t, err := e.GetLastBackupDate()
+	if err != nil {
+		return
+	}
+
+	v.LastBackupDate = t.Format("2006-01-02 15:04:05")
+	v.LastBackupStatus = "Success"
+	return
 }

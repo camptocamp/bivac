@@ -1,6 +1,7 @@
 package engines
 
 import (
+	"encoding/json"
 	"os"
 	"os/exec"
 	"strings"
@@ -127,5 +128,22 @@ func (r *ResticEngine) unlockRepository() (err error) {
 		ExitCode: rc,
 	}
 	err = nil
+	return
+}
+
+func (r *ResticEngine) GetLastBackupDate() (t time.Time, err error) {
+	output, _ := exec.Command("restic", append(r.DefaultArgs, []string{"snapshots", "--last"}...)...).CombinedOutput()
+
+	var data []map[string]interface{}
+	err = json.Unmarshal(output, &data)
+	if err != nil {
+		return
+	}
+	snapshot := data[len(data)-1]
+
+	t, err = time.Parse("2006-01-02T15:04:05Z", snapshot["time"].(string))
+	if err != nil {
+		return
+	}
 	return
 }

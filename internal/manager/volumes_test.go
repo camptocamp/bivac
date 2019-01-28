@@ -49,6 +49,7 @@ func TestRetrieveVolumesBasic(t *testing.T) {
 	}
 
 	// Run test
+	mockOrchestrator.EXPECT().GetPath(gomock.Any()).Return("localhost").Times(2)
 	mockOrchestrator.EXPECT().GetVolumes(volume.Filters{}).Return(givenVolumes, nil).Times(1)
 
 	m.Volumes = []*volume.Volume{}
@@ -95,6 +96,7 @@ func TestRetrieveVolumesBlacklist(t *testing.T) {
 	}
 
 	// Run test
+	mockOrchestrator.EXPECT().GetPath(gomock.Any()).Return("localhost").Times(1)
 	mockOrchestrator.EXPECT().GetVolumes(volume.Filters{}).Return(givenVolumes, nil).Times(1)
 
 	m.Volumes = []*volume.Volume{}
