@@ -23,7 +23,7 @@ type Snapshot struct {
 
 // GetName returns the engine name
 func (*ResticEngine) GetName() string {
-	return "Restic"
+	return "restic"
 }
 
 // Backup performs the backup of the passed volume
