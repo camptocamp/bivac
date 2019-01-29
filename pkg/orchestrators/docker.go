@@ -63,8 +63,8 @@ func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 		return
 	}
 
+	var voll types.Volume
 	for _, vol := range vols.Volumes {
-		var voll types.Volume
 		voll, err = o.client.VolumeInspect(context.Background(), vol.Name)
 		if err != nil {
 			err = fmt.Errorf("failed to inspect volume `%s': %v", vol.Name, err)
