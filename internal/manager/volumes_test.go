@@ -266,6 +266,10 @@ func TestRetrieveVolumesRemove(t *testing.T) {
 			ID:   "bar",
 			Name: "bar",
 		},
+		&volume.Volume{
+			ID:   "fake",
+			Name: "fake",
+		},
 	}
 	err := retrieveVolumes(m, givenFilters)
 

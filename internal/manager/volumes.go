@@ -43,7 +43,8 @@ func retrieveVolumes(m *Manager, volumeFilters volume.Filters) (err error) {
 	}
 
 	// Remove deleted volumes
-	for mk, mv := range m.Volumes {
+	var vols []*volume.Volume
+	for _, mv := range m.Volumes {
 		volumeExists := false
 		for _, nv := range newVolumes {
 			if mv.ID == nv.ID {
@@ -51,11 +52,12 @@ func retrieveVolumes(m *Manager, volumeFilters volume.Filters) (err error) {
 				break
 			}
 		}
-		if !volumeExists {
-			m.Volumes = append(m.Volumes[:mk], m.Volumes[mk+1:]...)
+		if volumeExists {
+			vols = append(vols, mv)
 		}
 	}
 
+	m.Volumes = vols
 	return
 }
 
