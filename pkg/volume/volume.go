@@ -55,6 +55,7 @@ func (v *Volume) SetupMetrics() {
 		Name: "bivac_lastBackupDate",
 		Help: "Date of the last backup",
 		ConstLabels: map[string]string{
+			"id":       v.ID,
 			"volume":   v.Name,
 			"hostbind": v.HostBind,
 		},
@@ -63,6 +64,7 @@ func (v *Volume) SetupMetrics() {
 		Name: "bivac_lastBackupStatus",
 		Help: "Status of the last backup",
 		ConstLabels: map[string]string{
+			"id":       v.ID,
 			"volume":   v.Name,
 			"hostbind": v.HostBind,
 		},

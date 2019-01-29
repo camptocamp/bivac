@@ -86,9 +86,12 @@ func blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, 
 		return true, "blacklisted", "whitelist config"
 	}
 
-	i := sort.SearchStrings(volumeFilters.Blacklist, vol.Name)
-	if i < len(volumeFilters.Blacklist) && volumeFilters.Blacklist[i] == vol.Name {
-		return true, "blacklisted", "blacklist config"
+	if l := volumeFilters.Blacklist; len(l) > 0 && l[0] != "" {
+		sort.Strings(l)
+		i := sort.SearchStrings(l, vol.Name)
+		if i < len(l) && l[i] == vol.Name {
+			return true, "blacklisted", "blacklist config"
+		}
 	}
 	return false, "", ""
 }

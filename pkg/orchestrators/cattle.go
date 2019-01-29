@@ -330,10 +330,13 @@ func (o *CattleOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolume,
 }
 
 func (o *CattleOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, string, string) {
-	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "lost+found" {
+	if utf8.RuneCountInString(vol.Name) == 64 || utf8.RuneCountInString(vol.Name) == 0 {
 		return true, "unnamed", ""
 	}
 
+	if strings.Contains(vol.Name, "/") {
+		return true, "unnamed", "path"
+	}
 	// Use whitelist if defined
 	if l := volumeFilters.Whitelist; len(l) > 0 && l[0] != "" {
 		sort.Strings(l)

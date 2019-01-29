@@ -120,10 +120,11 @@ func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestr
 		}
 	} else {
 		log.Debugf("Trying to detect orchestrator based on environment...")
-		if orchestrators.DetectDocker(&orchs.Docker) {
-			o, err = orchestrators.NewDockerOrchestrator(&orchs.Docker)
-		} else if orchestrators.DetectCattle() {
+
+		if orchestrators.DetectCattle() {
 			o, err = orchestrators.NewCattleOrchestrator(&orchs.Cattle)
+		} else if orchestrators.DetectDocker(&orchs.Docker) {
+			o, err = orchestrators.NewDockerOrchestrator(&orchs.Docker)
 		} else {
 			err = fmt.Errorf("no orchestrator detected")
 			return
@@ -135,9 +136,9 @@ func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestr
 	return
 }
 
-func (m *Manager) BackupVolume(volumeName string, force bool) (err error) {
+func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 	for _, v := range m.Volumes {
-		if v.Name == volumeName {
+		if v.ID == volumeID {
 			log.Debugf("Forced backup of volume %s", v.Name)
 			err = backupVolume(m, v, true)
 			if err != nil {
