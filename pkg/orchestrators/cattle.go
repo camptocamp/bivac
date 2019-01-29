@@ -78,6 +78,7 @@ func (o *CattleOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 	}
 
 	var mountpoint string
+	var h *client.Host
 	for _, v := range vs.Data {
 		if len(v.Mounts) < 1 {
 			mountpoint = "/data"
@@ -87,7 +88,7 @@ func (o *CattleOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 
 		var hostID, hostname string
 		var spc *client.StoragePoolCollection
-		err := o.rawAPICall("GET", v.Links["storagePools"], &spc)
+		err = o.rawAPICall("GET", v.Links["storagePools"], &spc)
 		if err != nil {
 			continue
 		}
@@ -102,7 +103,7 @@ func (o *CattleOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 
 		hostID = spc.Data[0].HostIds[0]
 
-		h, err := o.client.Host.ById(hostID)
+		h, err = o.client.Host.ById(hostID)
 		if err != nil {
 			hostname = hostID
 		} else {
@@ -362,17 +363,21 @@ func (o *CattleOrchestrator) rawAPICall(method, endpoint string, object interfac
 	req, err := http.NewRequest(method, endpoint, strings.NewReader(v.Encode()))
 	req.SetBasicAuth(o.config.AccessKey, o.config.SecretKey)
 	resp, err := clientHTTP.Do(req)
+	defer resp.Body.Close()
 	if err != nil {
 		err = fmt.Errorf("failed to execute POST request: %s", err)
 		return
 	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		err = fmt.Errorf("failed to read response from rancher: %s", err)
+		return
 	}
 	err = json.Unmarshal(body, object)
 	if err != nil {
 		err = fmt.Errorf("failed to unmarshal: %s", err)
+		return
 	}
 	return
 }

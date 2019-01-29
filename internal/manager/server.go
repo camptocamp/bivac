@@ -9,7 +9,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	//"github.com/camptocamp/bivac/pkg/orchestrators"
 )
 
 type Server struct {
@@ -23,7 +22,7 @@ func (m *Manager) StartServer() (err error) {
 	router.Handle("/volumes", m.handleAPIRequest(http.HandlerFunc(m.getVolumes)))
 	router.Handle("/ping", m.handleAPIRequest(http.HandlerFunc(m.ping)))
 	router.Handle("/metrics", promhttp.Handler()).Methods("GET")
-	router.Handle("/backup/{volumeName}", m.handleAPIRequest(http.HandlerFunc(m.backupVolume)))
+	router.Handle("/backup/{volumeName}", m.handleAPIRequest(http.HandlerFunc(m.backupVolume))).Queries("force", "{force}")
 
 	log.Infof("Listening on %s", m.Server.Address)
 	log.Fatal(http.ListenAndServe(m.Server.Address, router))
@@ -60,6 +59,7 @@ func (m *Manager) backupVolume(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		force = false
 	}
+
 	err = m.BackupVolume(params["volumeName"], force)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

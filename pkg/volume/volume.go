@@ -51,22 +51,46 @@ type MountedVolume struct {
 func (v *Volume) SetupMetrics() {
 	v.Metrics = &Metrics{}
 
+	/*
+		v.Metrics.LastBackupDate = promauto.NewGauge(prometheus.GaugeOpts{
+			Name: "bivac_lastBackupDate",
+			Help: "Date of the last backup",
+			ConstLabels: map[string]string{
+				"volume_id":   v.ID,
+				"volume_name": v.Name,
+				"hostbind":    v.HostBind,
+				"hostname":    v.Hostname,
+			},
+		})
+		v.Metrics.LastBackupStatus = promauto.NewGauge(prometheus.GaugeOpts{
+			Name: "bivac_lastBackupStatus",
+			Help: "Status of the last backup",
+			ConstLabels: map[string]string{
+				"volume_id":   v.ID,
+				"volume_name": v.Name,
+				"hostbind":    v.HostBind,
+				"hostname":    v.Hostname,
+			},
+		})
+	*/
 	v.Metrics.LastBackupDate = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "bivac_lastBackupDate",
+		Name: "bivac_lastBackup",
 		Help: "Date of the last backup",
 		ConstLabels: map[string]string{
-			"id":       v.ID,
-			"volume":   v.Name,
-			"hostbind": v.HostBind,
+			"volume_id":   v.ID,
+			"volume_name": v.Name,
+			"hostbind":    v.HostBind,
+			"hostname":    v.Hostname,
 		},
 	})
 	v.Metrics.LastBackupStatus = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "bivac_lastBackupStatus",
+		Name: "bivac_backupExitCode",
 		Help: "Status of the last backup",
 		ConstLabels: map[string]string{
-			"id":       v.ID,
-			"volume":   v.Name,
-			"hostbind": v.HostBind,
+			"volume_id":   v.ID,
+			"volume_name": v.Name,
+			"hostbind":    v.HostBind,
+			"hostname":    v.Hostname,
 		},
 	})
 	return

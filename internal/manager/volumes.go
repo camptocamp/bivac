@@ -115,5 +115,9 @@ func getLastBackupDate(m *Manager, v *volume.Volume) (err error) {
 
 	v.LastBackupDate = t.Format("2006-01-02 15:04:05")
 	v.LastBackupStatus = "Success"
+
+	// Leads to several flaws, should be improved
+	v.Metrics.LastBackupDate.Set(float64(t.Unix()))
+	v.Metrics.LastBackupStatus.Set(0)
 	return
 }

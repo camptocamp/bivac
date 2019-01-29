@@ -45,7 +45,7 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters,
 			if err != nil {
 				log.Errorf("failed to retrieve volumes: %s", err)
 			}
-			time.Sleep(10 * time.Second)
+			time.Sleep(10 * time.Minute)
 		}
 	}(m, volumeFilters)
 
@@ -53,9 +53,11 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters,
 	go func(m *Manager) {
 		// Scheduling works but still not perfect, unacceptable as it stands
 		// TODO: Remove this awful time.Sleep()
-		instancesSem := make(map[string]chan bool)
+
+		var instancesSem map[string]chan bool
 		log.Debugf("Starting backup manager...")
 		for {
+			instancesSem = make(map[string]chan bool)
 			for _, v := range m.Volumes {
 				instancesSem[v.HostBind] = make(chan bool, 2)
 			}
@@ -79,7 +81,7 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters,
 					instancesSem[k] <- true
 				}
 			}
-			time.Sleep(10 * time.Second)
+			time.Sleep(10 * time.Minute)
 		}
 	}(m)
 
@@ -140,7 +142,7 @@ func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 	for _, v := range m.Volumes {
 		if v.ID == volumeID {
 			log.Debugf("Forced backup of volume %s", v.Name)
-			err = backupVolume(m, v, true)
+			err = backupVolume(m, v, force)
 			if err != nil {
 				err = fmt.Errorf("failed to backup volume: %s", err)
 				return
