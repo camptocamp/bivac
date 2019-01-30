@@ -98,7 +98,7 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters,
 }
 
 func isBackupNeeded(v *volume.Volume) bool {
-	if v.LastBackupDate == "" {
+	if v.LastBackupDate == "" || v.LastBackupStatus == "Unknown" {
 		return true
 	}
 
