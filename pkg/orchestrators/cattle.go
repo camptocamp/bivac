@@ -17,7 +17,6 @@ import (
 	"time"
 	"unicode/utf8"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/bivac/pkg/volume"
 	//"github.com/rancher/go-rancher-metadata/metadata"
 	"github.com/rancher/go-rancher/v2"
@@ -267,7 +266,6 @@ func (o *CattleOrchestrator) GetContainersMountingVolume(v *volume.Volume) (moun
 	for _, mount := range vol.Mounts {
 		instance, err := o.client.Container.ById(mount.InstanceId)
 		if err != nil {
-			log.Errorf("## %s", err)
 			continue
 		}
 
