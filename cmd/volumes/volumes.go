@@ -38,6 +38,7 @@ var volumesCmd = &cobra.Command{
 			tbl, err := prettytable.NewTable([]prettytable.Column{
 				{Header: "ID"},
 				{Header: "Name"},
+				{Header: "Hostname"},
 				{Header: "Mountpoint"},
 				{Header: "LastBackupDate"},
 				{Header: "LastBackupStatus"},
@@ -49,7 +50,7 @@ var volumesCmd = &cobra.Command{
 			tbl.Separator = "\t"
 
 			for _, v := range volumes {
-				tbl.AddRow(v.ID, v.Name, v.Mountpoint, v.LastBackupDate, v.LastBackupStatus)
+				tbl.AddRow(v.ID, v.Name, v.Hostname, v.Mountpoint, v.LastBackupDate, v.LastBackupStatus)
 			}
 
 			tbl.Print()
@@ -71,6 +72,7 @@ var volumesCmd = &cobra.Command{
 
 					fmt.Printf("ID: %s\n", v.ID)
 					fmt.Printf("Name: %s\n", v.Name)
+					fmt.Printf("Hostname: %s\n", v.Hostname)
 					fmt.Printf("Mountpoint: %s\n", v.Mountpoint)
 					fmt.Printf("Backup date: %s\n", v.LastBackupDate)
 					fmt.Printf("Backup status: %s\n", v.LastBackupStatus)

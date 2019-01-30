@@ -142,7 +142,7 @@ func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 	for _, v := range m.Volumes {
 		if v.ID == volumeID {
 			log.Debugf("Forced backup of volume %s", v.Name)
-			err = backupVolume(m, v, true)
+			err = backupVolume(m, v, force)
 			if err != nil {
 				err = fmt.Errorf("failed to backup volume: %s", err)
 				return

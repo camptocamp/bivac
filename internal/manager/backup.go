@@ -57,7 +57,7 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		log.Warningf("failed to unmarshal agent output: %s", err)
 	}
 
-	if agentOutput.Type == "error" {
+	if agentOutput.Type != "success" {
 		v.LastBackupStatus = "Failed"
 		v.Metrics.LastBackupStatus.Set(1.0)
 	} else {
@@ -76,8 +76,8 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 			v.LastBackupStatus = "Failed"
 			v.Metrics.LastBackupStatus.Set(1.0)
 		}
-
 	}
+
 	v.LastBackupDate = time.Now().Format("2006-01-02 15:04:05")
 	v.Metrics.LastBackupDate.SetToCurrentTime()
 

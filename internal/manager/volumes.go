@@ -118,6 +118,6 @@ func getLastBackupDate(m *Manager, v *volume.Volume) (err error) {
 
 	// Leads to several flaws, should be improved
 	v.Metrics.LastBackupDate.Set(float64(t.Unix()))
-	v.Metrics.LastBackupStatus.Set(1)
+	v.Metrics.LastBackupStatus.Set(0)
 	return
 }
