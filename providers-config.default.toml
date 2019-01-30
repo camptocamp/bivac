@@ -17,6 +17,6 @@
 	backup_dir = "backups"
 
 	[providers.openldap]
-	pre_cmd = "mkdir -p $volumes/backups && slapcat > $volume/backups/all.ldif"
+	pre_cmd = "mkdir -p $volume/backups && slapcat > $volume/backups/all.ldif"
 	detect_cmd = "[[ -f $volume/DB_CONFIG ]]"
 	backup_dir = "backups"
