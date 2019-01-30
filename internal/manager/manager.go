@@ -20,10 +20,11 @@ type Manager struct {
 	Server       *Server
 	Providers    *Providers
 	TargetURL    string
+	RetryCount   int
 }
 
 // Start starts a Bivac manager which handle backups management
-func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL string) (err error) {
+func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL string, retryCount int) (err error) {
 	p, err := LoadProviders(providersFile)
 	if err != nil {
 		err = fmt.Errorf("failed to read providers file: %s", err)
@@ -35,9 +36,10 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters,
 		Server:       &s,
 		Providers:    &p,
 		TargetURL:    targetURL,
+		RetryCount:   retryCount,
 	}
 
-	// Manage volummes
+	// Manage volumes
 	go func(m *Manager, volumeFilters volume.Filters) {
 		log.Debugf("Starting volume manager...")
 		for {
@@ -72,12 +74,22 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters,
 						"hostname": v.Hostname,
 					}).Debugf("Backing up volume.")
 					defer func() { <-instancesSem[v.HostBind] }()
-					err = backupVolume(m, v, false)
-					if err != nil {
-						log.WithFields(log.Fields{
-							"volume":   v.Name,
-							"hostname": v.Hostname,
-						}).Errorf("failed to backup volume: %s", err)
+					err = nil
+					for i := 0; ; i++ {
+						err = backupVolume(m, v, false)
+						if err != nil {
+							log.WithFields(log.Fields{
+								"volume":   v.Name,
+								"hostname": v.Hostname,
+								"try":      i + 1,
+							}).Errorf("failed to backup volume: %s", err)
+
+							if i >= m.RetryCount {
+								break
+							}
+
+							time.Sleep(2 * time.Second)
+						}
 					}
 				}(v)
 			}
