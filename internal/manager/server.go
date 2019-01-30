@@ -58,6 +58,7 @@ func (m *Manager) backupVolume(w http.ResponseWriter, r *http.Request) {
 	force, err := strconv.ParseBool(params["force"])
 	if err != nil {
 		force = false
+		err = nil
 	}
 
 	err = m.BackupVolume(params["volumeName"], force)

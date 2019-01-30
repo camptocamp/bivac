@@ -22,7 +22,10 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	if p.PreCmd != "" {
 		err = RunCmd(p, m.Orchestrator, v, p.PreCmd)
 		if err != nil {
-			log.Warningf("failed to run pre-command: %s", err)
+			log.WithFields(log.Fields{
+				"volume":   v.Name,
+				"hostname": v.Hostname,
+			}).Warningf("failed to run pre-command: %s", err)
 		}
 	}
 	cmd := []string{
@@ -54,7 +57,10 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	var agentOutput utils.MsgFormat
 	err = json.Unmarshal([]byte(output), &agentOutput)
 	if err != nil {
-		log.Warningf("failed to unmarshal agent output: %s", err)
+		log.WithFields(log.Fields{
+			"volume":   v.Name,
+			"hostname": v.Hostname,
+		}).Warningf("failed to unmarshal agent output: %s", err)
 	}
 
 	if agentOutput.Type != "success" {
@@ -84,7 +90,10 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	if p.PostCmd != "" {
 		err = RunCmd(p, m.Orchestrator, v, p.PostCmd)
 		if err != nil {
-			log.Warningf("failed to run post-command: %s", err)
+			log.WithFields(log.Fields{
+				"volume":   v.Name,
+				"hostname": v.Hostname,
+			}).Warningf("failed to run post-command: %s", err)
 		}
 	}
 	return

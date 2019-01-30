@@ -67,11 +67,17 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters,
 				}
 				instancesSem[v.HostBind] <- true
 				go func(v *volume.Volume) {
-					log.Debugf("Backup volume %s", v.Name)
+					log.WithFields(log.Fields{
+						"volume":   v.Name,
+						"hostname": v.Hostname,
+					}).Debugf("Backing up volume.")
 					defer func() { <-instancesSem[v.HostBind] }()
 					err = backupVolume(m, v, false)
 					if err != nil {
-						log.Errorf("failed to backup volume: %s", err)
+						log.WithFields(log.Fields{
+							"volume":   v.Name,
+							"hostname": v.Hostname,
+						}).Errorf("failed to backup volume: %s", err)
 					}
 				}(v)
 			}
@@ -98,7 +104,10 @@ func isBackupNeeded(v *volume.Volume) bool {
 
 	lbd, err := time.Parse("2006-01-02 15:04:05", v.LastBackupDate)
 	if err != nil {
-		log.Errorf("failed to parse backup date of volume `%s': %s", v.Name, err)
+		log.WithFields(log.Fields{
+			"volume":   v.Name,
+			"hostname": v.Hostname,
+		}).Errorf("failed to parse backup date of volume `%s': %s", v.Name, err)
 		return false
 	}
 
@@ -141,7 +150,11 @@ func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestr
 func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 	for _, v := range m.Volumes {
 		if v.ID == volumeID {
-			log.Debugf("Forced backup of volume %s", v.Name)
+			log.WithFields(log.Fields{
+				"volume":   v.Name,
+				"hostname": v.Hostname,
+			}).Debug("Backup manually requested.")
+
 			err = backupVolume(m, v, force)
 			if err != nil {
 				err = fmt.Errorf("failed to backup volume: %s", err)

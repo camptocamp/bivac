@@ -65,7 +65,10 @@ var volumesCmd = &cobra.Command{
 						{},
 					}...)
 					if err != nil {
-						log.Errorf("failed to format output: %s", err)
+						log.WithFields(log.Fields{
+							"volume":   v.Name,
+							"hostname": v.Hostname,
+						}).Errorf("failed to format output: %s", err)
 						return
 					}
 					tbl.Separator = "\t"
