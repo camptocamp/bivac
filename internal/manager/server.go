@@ -9,6 +9,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	"github.com/camptocamp/bivac/internal/utils"
 )
 
 type Server struct {
@@ -23,6 +25,7 @@ func (m *Manager) StartServer() (err error) {
 	router.Handle("/ping", m.handleAPIRequest(http.HandlerFunc(m.ping)))
 	router.Handle("/metrics", promhttp.Handler()).Methods("GET")
 	router.Handle("/backup/{volumeName}", m.handleAPIRequest(http.HandlerFunc(m.backupVolume))).Queries("force", "{force}")
+	router.Handle("/backup/{volumeID}/logs", m.handleAPIRequest(http.HandlerFunc(m.getBackupLogs)))
 
 	log.Infof("Listening on %s", m.Server.Address)
 	log.Fatal(http.ListenAndServe(m.Server.Address, router))
@@ -69,6 +72,33 @@ func (m *Manager) backupVolume(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"type": "success"}`))
+	return
+}
+
+func (m *Manager) getBackupLogs(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Data utils.MsgFormat
+	}
+
+	params := mux.Vars(r)
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Internal server error: " + err.Error()))
+		return
+	}
+
+	for _, v := range m.Volumes {
+		if v.ID == params["volumeID"] {
+			m.updateBackupLogs(v, data.Data)
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"type": "success"}`))
+			return
+		}
+	}
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte("404 - Volume not found"))
 	return
 }
 

@@ -26,6 +26,7 @@ var (
 	providersFile string
 	targetURL     string
 	retryCount    int
+	logServer     string
 )
 var envs = make(map[string]string)
 
@@ -49,7 +50,7 @@ var managerCmd = &cobra.Command{
 			return
 		}
 
-		err = manager.Start(o, server, volumesFilters, providersFile, targetURL, retryCount)
+		err = manager.Start(o, server, volumesFilters, providersFile, targetURL, logServer, retryCount)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return
@@ -87,6 +88,9 @@ func init() {
 
 	managerCmd.Flags().IntVarP(&retryCount, "retry.count", "", 0, "Retry to backup the volume if something goes wrong with Bivac.")
 	envs["BIVAC_RETRY_COUNT"] = "retry.count"
+
+	managerCmd.Flags().StringVarP(&logServer, "log.server", "", "", "Manager's API address that will receive logs from agents.")
+	envs["BIVAC_LOG_SERVER"] = "log.server"
 
 	cmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	cmd.RootCmd.AddCommand(managerCmd)
