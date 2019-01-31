@@ -13,6 +13,11 @@ import (
 )
 
 func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
+	useLogReceiver := false
+	if m.LogServer != "" {
+		useLogReceiver = true
+	}
+
 	p, err := m.Providers.GetProvider(m.Orchestrator, v)
 	if err != nil {
 		err = fmt.Errorf("failed to get provider: %s", err)
@@ -28,6 +33,7 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 			}).Warningf("failed to run pre-command: %s", err)
 		}
 	}
+
 	cmd := []string{
 		"agent",
 		"backup",
@@ -43,6 +49,10 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		cmd = append(cmd, "--force")
 	}
 
+	if useLogReceiver {
+		cmd = append(cmd, []string{"--log.receiver", m.LogServer + "/backup/" + v.ID + "/logs"}...)
+	}
+
 	_, output, err := m.Orchestrator.DeployAgent(
 		"cryptobioz/bivac:2.0.0",
 		cmd,
@@ -54,15 +64,39 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		return
 	}
 
-	var agentOutput utils.MsgFormat
-	err = json.Unmarshal([]byte(output), &agentOutput)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"volume":   v.Name,
-			"hostname": v.Hostname,
-		}).Warningf("failed to unmarshal agent output: %s", err)
+	if !useLogReceiver {
+		var agentOutput utils.MsgFormat
+		err = json.Unmarshal([]byte(output), &agentOutput)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"volume":   v.Name,
+				"hostname": v.Hostname,
+			}).Warningf("failed to unmarshal agent output: %s -> `%s`", err, output)
+		} else {
+			m.updateBackupLogs(v, agentOutput)
+		}
+	} else {
+		if output != "" {
+			log.WithFields(log.Fields{
+				"volume":   v.Name,
+				"hostname": v.Hostname,
+			}).Errorf("failed to send output: %s", output)
+		}
 	}
 
+	if p.PostCmd != "" {
+		err = RunCmd(p, m.Orchestrator, v, p.PostCmd)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"volume":   v.Name,
+				"hostname": v.Hostname,
+			}).Warningf("failed to run post-command: %s", err)
+		}
+	}
+	return
+}
+
+func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat) {
 	if agentOutput.Type != "success" {
 		v.LastBackupStatus = "Failed"
 		v.Metrics.LastBackupStatus.Set(1.0)
@@ -86,15 +120,5 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 
 	v.LastBackupDate = time.Now().Format("2006-01-02 15:04:05")
 	v.Metrics.LastBackupDate.SetToCurrentTime()
-
-	if p.PostCmd != "" {
-		err = RunCmd(p, m.Orchestrator, v, p.PostCmd)
-		if err != nil {
-			log.WithFields(log.Fields{
-				"volume":   v.Name,
-				"hostname": v.Hostname,
-			}).Warningf("failed to run post-command: %s", err)
-		}
-	}
 	return
 }
