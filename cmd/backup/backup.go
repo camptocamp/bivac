@@ -21,7 +21,7 @@ var envs = make(map[string]string)
 
 var backupCmd = &cobra.Command{
 	Use:   "backup [VOLUME_NAME]",
-	Short: "Backup a volume",
+	Short: "Backup volumes",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		c, err := client.NewClient(remoteAddress, psk)
@@ -29,10 +29,14 @@ var backupCmd = &cobra.Command{
 			log.Errorf("failed to create new client: %s", err)
 			return
 		}
-		err = c.BackupVolume(args[0], force)
-		if err != nil {
-			log.Errorf("failed to backup volume: %s", err)
-			return
+
+		for _, a := range args {
+			fmt.Printf("Backing up `%s'...\n", a)
+			err = c.BackupVolume(a, force)
+			if err != nil {
+				log.Errorf("failed to backup volume: %s", err)
+				return
+			}
 		}
 
 		volumes, err := c.GetVolumes()
@@ -41,31 +45,33 @@ var backupCmd = &cobra.Command{
 			return
 		}
 
-		for _, v := range volumes {
-			if v.ID == args[0] {
-				tbl, err := prettytable.NewTable([]prettytable.Column{
-					{},
-					{},
-				}...)
-				if err != nil {
-					log.WithFields(log.Fields{
-						"volume":   v.Name,
-						"hostname": v.Hostname,
-					}).Errorf("failed to format output: %s", err)
-					return
-				}
-				tbl.Separator = "\t"
+		for _, a := range args {
+			for _, v := range volumes {
+				if v.ID == a {
+					tbl, err := prettytable.NewTable([]prettytable.Column{
+						{},
+						{},
+					}...)
+					if err != nil {
+						log.WithFields(log.Fields{
+							"volume":   v.Name,
+							"hostname": v.Hostname,
+						}).Errorf("failed to format output: %s", err)
+						return
+					}
+					tbl.Separator = "\t"
 
-				fmt.Printf("ID: %s\n", v.ID)
-				fmt.Printf("Name: %s\n", v.Name)
-				fmt.Printf("Mountpoint: %s\n", v.Mountpoint)
-				fmt.Printf("Backup date: %s\n", v.LastBackupDate)
-				fmt.Printf("Backup status: %s\n", v.LastBackupStatus)
-				fmt.Printf("Logs:\n")
-				for stepKey, stepValue := range v.Logs {
-					tbl.AddRow(stepKey, stepValue)
+					fmt.Printf("ID: %s\n", v.ID)
+					fmt.Printf("Name: %s\n", v.Name)
+					fmt.Printf("Mountpoint: %s\n", v.Mountpoint)
+					fmt.Printf("Backup date: %s\n", v.LastBackupDate)
+					fmt.Printf("Backup status: %s\n", v.LastBackupStatus)
+					fmt.Printf("Logs:\n")
+					for stepKey, stepValue := range v.Logs {
+						tbl.AddRow(stepKey, stepValue)
+					}
+					tbl.Print()
 				}
-				tbl.Print()
 			}
 		}
 	},
