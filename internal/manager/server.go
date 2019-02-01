@@ -26,6 +26,7 @@ func (m *Manager) StartServer() (err error) {
 	router.Handle("/metrics", promhttp.Handler()).Methods("GET")
 	router.Handle("/backup/{volumeName}", m.handleAPIRequest(http.HandlerFunc(m.backupVolume))).Queries("force", "{force}")
 	router.Handle("/backup/{volumeID}/logs", m.handleAPIRequest(http.HandlerFunc(m.getBackupLogs)))
+	router.Handle("/restic/{volumeID}", m.handleAPIRequest(http.HandlerFunc(m.runRawCommand)))
 
 	log.Infof("Listening on %s", m.Server.Address)
 	log.Fatal(http.ListenAndServe(m.Server.Address, router))
@@ -102,6 +103,42 @@ func (m *Manager) getBackupLogs(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func (m *Manager) runRawCommand(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var err error
+	var output string
+
+	var postData map[string][]string
+
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&postData)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Internal server error: " + err.Error()))
+		return
+	}
+
+	for _, v := range m.Volumes {
+		if v.ID == params["volumeID"] {
+			output, err = m.RunResticCommand(v, postData["cmd"])
+		}
+	}
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Internal server error"))
+		return
+	}
+
+	data := map[string]string{
+		"type": "success",
+		"data": output,
+	}
+	encodedData, _ := json.Marshal(data)
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(encodedData))
+	return
+}
 func (m *Manager) ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"type":"pong"}`))

@@ -139,8 +139,6 @@ func (r *ResticEngine) retrieveBackupsStats() (err error) {
 		ExitCode: rc,
 	}
 
-	// TODO: `restic stats`
-
 	return
 }
 
@@ -179,6 +177,19 @@ func (r *ResticEngine) GetBackupDates() (latestSnapshotDate, oldestSnapshotDate 
 	oldestSnapshotDate = oldestSnapshot.Time
 	if err != nil {
 		return
+	}
+	return
+}
+
+func (r *ResticEngine) RawCommand(cmd []string) (err error) {
+	rc := 0
+	output, err := exec.Command("restic", append(r.DefaultArgs, cmd...)...).CombinedOutput()
+	if err != nil {
+		rc = handleExitCode(err)
+	}
+	r.Output["raw"] = utils.OutputFormat{
+		Stdout:   string(output),
+		ExitCode: rc,
 	}
 	return
 }
