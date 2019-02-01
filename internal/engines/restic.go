@@ -165,6 +165,10 @@ func (r *ResticEngine) GetBackupDates() (latestSnapshotDate, oldestSnapshotDate 
 		return
 	}
 
+	if len(data) == 0 {
+		return
+	}
+
 	latestSnapshot := data[len(data)-1]
 
 	latestSnapshotDate = latestSnapshot.Time
