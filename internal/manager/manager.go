@@ -10,8 +10,9 @@ import (
 )
 
 type Orchestrators struct {
-	Docker orchestrators.DockerConfig
-	Cattle orchestrators.CattleConfig
+	Docker     orchestrators.DockerConfig
+	Cattle     orchestrators.CattleConfig
+	Kubernetes orchestrators.KubernetesConfig
 }
 
 type Manager struct {
@@ -139,6 +140,8 @@ func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestr
 			o, err = orchestrators.NewDockerOrchestrator(&orchs.Docker)
 		case "cattle":
 			o, err = orchestrators.NewCattleOrchestrator(&orchs.Cattle)
+		case "kubernetes":
+			o, err = orchestrators.NewKubernetesOrchestrator(&orchs.Kubernetes)
 		default:
 			err = fmt.Errorf("'%s' is not a valid orchestrator", name)
 			return
@@ -148,6 +151,8 @@ func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestr
 
 		if orchestrators.DetectCattle() {
 			o, err = orchestrators.NewCattleOrchestrator(&orchs.Cattle)
+		} else if orchestrators.DetectKubernetes() {
+			o, err = orchestrators.NewKubernetesOrchestrator(&orchs.Kubernetes)
 		} else if orchestrators.DetectDocker(&orchs.Docker) {
 			o, err = orchestrators.NewDockerOrchestrator(&orchs.Docker)
 		} else {
