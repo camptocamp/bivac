@@ -78,7 +78,7 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters,
 					}).Debugf("Backing up volume.")
 					defer func() { <-instancesSem[v.HostBind] }()
 					err = nil
-					for i := 0; ; i++ {
+					for i := 0; i <= m.RetryCount; i++ {
 						err = backupVolume(m, v, false)
 						if err != nil {
 							log.WithFields(log.Fields{
@@ -87,11 +87,9 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters,
 								"try":      i + 1,
 							}).Errorf("failed to backup volume: %s", err)
 
-							if i >= m.RetryCount {
-								break
-							}
-
 							time.Sleep(2 * time.Second)
+						} else {
+							break
 						}
 					}
 				}(v)
