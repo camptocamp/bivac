@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
 
+	"github.com/camptocamp/bivac/internal/engines"
 	"github.com/camptocamp/bivac/internal/utils"
 	"github.com/camptocamp/bivac/pkg/volume"
 )
@@ -112,6 +114,7 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 		if success {
 			v.LastBackupStatus = "Success"
 			v.Metrics.LastBackupStatus.Set(0.0)
+			m.setOldestBackupDate(v)
 		} else {
 			v.LastBackupStatus = "Failed"
 			v.Metrics.LastBackupStatus.Set(1.0)
@@ -120,5 +123,24 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 
 	v.LastBackupDate = time.Now().Format("2006-01-02 15:04:05")
 	v.Metrics.LastBackupDate.SetToCurrentTime()
+	return
+}
+
+func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
+	// TODO: use regex
+	stdout := strings.Split(v.Logs["snapshots"], "]")[1]
+
+	var snapshots []engines.Snapshot
+
+	err = json.Unmarshal([]byte(stdout), &snapshots)
+	if err != nil {
+		err = fmt.Errorf("failed to unmarshal: %s", err)
+		return
+	}
+
+	if len(snapshots) > 0 {
+		v.Metrics.OldestBackupDate.Set(float64(snapshots[0].Time.Unix()))
+	}
+
 	return
 }
