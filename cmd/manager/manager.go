@@ -77,6 +77,15 @@ func init() {
 	managerCmd.Flags().StringVarP(&Orchestrators.Cattle.SecretKey, "cattle.secretkey", "", "", "The Cattle secret key.")
 	envs["CATTLE_SECRET_KEY"] = "cattle.secretkey"
 
+	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.Namespace, "kubernetes.namespace", "", "", "Namespace where you want to run Bivac.")
+	envs["KUBERNETES_NAMESPACE"] = "kubernetes.namespace"
+	managerCmd.Flags().BoolVarP(&Orchestrators.Kubernetes.AllNamespaces, "kubernetes.all-namespaces", "", false, "Backup volumes of all namespaces.")
+	envs["KUBERNETES_ALL_NAMESPACES"] = "kubernetes.all-namespaces"
+	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.KubeConfig, "kubernetes.kubeconfig", "", "", "Path to your kuberconfig file.")
+	envs["KUBERNETES_KUBECONFIG"] = "kubernetes.kubeconfig"
+	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.AgentServiceAccount, "kubernetes.agent-service-account", "", "", "Specify service account for agents.")
+	envs["KUBERNETES_AGENT_SERVICE_ACCOUNT"] = "kubernetes.agent-service-account"
+
 	managerCmd.Flags().StringVarP(&resticForgetArgs, "restic.forget.args", "", "--keep-daily 15 --prune", "Restic forget arguments.")
 	envs["RESTIC_FORGET_ARGS"] = "restic.forget.args"
 
