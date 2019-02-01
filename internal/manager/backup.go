@@ -144,3 +144,22 @@ func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
 
 	return
 }
+
+func (m *Manager) RunResticCommand(v *volume.Volume, cmd []string) (output string, err error) {
+	e := &engines.ResticEngine{
+		DefaultArgs: []string{
+			"--no-cache",
+			"-r",
+			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
+		},
+		Output: make(map[string]utils.OutputFormat),
+	}
+
+	err = e.RawCommand(cmd)
+	if err != nil {
+		return
+	}
+
+	output = e.Output["raw"].Stdout
+	return
+}
