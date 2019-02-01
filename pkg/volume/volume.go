@@ -37,6 +37,7 @@ type Filters struct {
 type Metrics struct {
 	LastBackupDate   prometheus.Gauge
 	LastBackupStatus prometheus.Gauge
+	OldestBackupDate prometheus.Gauge
 }
 
 // MountedVolume stores mounted volumes inside a container
@@ -93,5 +94,16 @@ func (v *Volume) SetupMetrics() {
 			"hostname":    v.Hostname,
 		},
 	})
+	v.Metrics.OldestBackupDate = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "bivac_oldestBackup",
+		Help: "Date of the oldest snapshot",
+		ConstLabels: map[string]string{
+			"volume_id":   v.ID,
+			"volume_name": v.Name,
+			"hostbind":    v.HostBind,
+			"hostname":    v.Hostname,
+		},
+	})
+
 	return
 }

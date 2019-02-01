@@ -108,16 +108,18 @@ func getLastBackupDate(m *Manager, v *volume.Volume) (err error) {
 		},
 	}
 
-	t, err := e.GetLastBackupDate()
+	latestBackup, oldestBackup, err := e.GetBackupDates()
 	if err != nil {
 		return
 	}
 
-	v.LastBackupDate = t.Format("2006-01-02 15:04:05")
+	v.LastBackupDate = latestBackup.Format("2006-01-02 15:04:05")
 	v.LastBackupStatus = "Unknown"
 
 	// Leads to several flaws, should be improved
-	v.Metrics.LastBackupDate.Set(float64(t.Unix()))
+	v.Metrics.LastBackupDate.Set(float64(latestBackup.Unix()))
+
+	v.Metrics.OldestBackupDate.Set(float64(oldestBackup.Unix()))
 
 	// Unknown status
 	v.Metrics.LastBackupStatus.Set(-1)
