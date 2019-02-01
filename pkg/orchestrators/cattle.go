@@ -168,8 +168,8 @@ func (o *CattleOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 
 	stopped := false
 	terminated := false
-	timeoutCount := 0
-	for !terminated && timeoutCount <= 30 {
+	timeout := time.After(60 * time.Second)
+	for !terminated {
 		container, err := o.client.Container.ById(container.Id)
 		if err != nil {
 			err = fmt.Errorf("failed to inspect agent: %s", err)
@@ -191,15 +191,15 @@ func (o *CattleOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 				terminated = true
 			}
 		} else if container.State == "starting" {
-			timeoutCount++
+			select {
+			case <-timeout:
+				err = fmt.Errorf("failed to start agent: timeout")
+				return false, "", err
+			default:
+				continue
+			}
 		}
 		time.Sleep(1 * time.Second)
-	}
-
-	if timeoutCount == 30 {
-		success = false
-		err = fmt.Errorf("failed to start container: timeout")
-		return
 	}
 
 	container, err = o.client.Container.ById(container.Id)
