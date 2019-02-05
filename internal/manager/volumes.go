@@ -12,8 +12,6 @@ import (
 func retrieveVolumes(m *Manager, volumeFilters volume.Filters) (err error) {
 	volumes, err := m.Orchestrator.GetVolumes(volume.Filters{})
 	if err != nil {
-		// Do we really want to cleanup volume list if an error occurs?
-		m.Volumes = []*volume.Volume{}
 		return
 	}
 
