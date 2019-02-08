@@ -123,11 +123,6 @@ func (m *Manager) runRawCommand(w http.ResponseWriter, r *http.Request) {
 			output, err = m.RunResticCommand(v, postData["cmd"])
 		}
 	}
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 - Internal server error"))
-		return
-	}
 
 	data := map[string]string{
 		"type": "success",
