@@ -156,9 +156,6 @@ func (m *Manager) RunResticCommand(v *volume.Volume, cmd []string) (output strin
 	}
 
 	err = e.RawCommand(cmd)
-	if err != nil {
-		return
-	}
 
 	output = e.Output["raw"].Stdout
 	return
