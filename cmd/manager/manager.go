@@ -6,7 +6,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/camptocamp/bivac/cmd"
+	bivacCmd "github.com/camptocamp/bivac/cmd"
 	"github.com/camptocamp/bivac/internal/manager"
 	"github.com/camptocamp/bivac/pkg/volume"
 )
@@ -29,7 +29,6 @@ var (
 	logServer     string
 )
 var envs = make(map[string]string)
-var bivacVersion = cmd.VERSION
 
 // TODO: Rename this command to something more explicit
 var managerCmd = &cobra.Command{
@@ -51,7 +50,7 @@ var managerCmd = &cobra.Command{
 			return
 		}
 
-		err = manager.Start(bivacVersion, o, server, volumesFilters, providersFile, targetURL, logServer, retryCount)
+		err = manager.Start(bivacCmd.VERSION, o, server, volumesFilters, providersFile, targetURL, logServer, retryCount)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return
@@ -102,6 +101,6 @@ func init() {
 	managerCmd.Flags().StringVarP(&logServer, "log.server", "", "", "Manager's API address that will receive logs from agents.")
 	envs["BIVAC_LOG_SERVER"] = "log.server"
 
-	cmd.SetValuesFromEnv(envs, managerCmd.Flags())
-	cmd.RootCmd.AddCommand(managerCmd)
+	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
+	bivacCmd.RootCmd.AddCommand(managerCmd)
 }

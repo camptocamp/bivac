@@ -190,7 +190,7 @@ func (m *Manager) GetInformations() (informations map[string]string) {
 		"version":       m.Version,
 		"orchestrator":  m.Orchestrator.GetName(),
 		"address":       m.Server.Address,
-		"volumes_count": string(len(m.Volumes)),
+		"volumes_count": fmt.Sprintf("%d", len(m.Volumes)),
 	}
 	return
 }

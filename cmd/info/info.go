@@ -38,7 +38,7 @@ var infoCmd = &cobra.Command{
 			if infok == "volumes_count" {
 				infok = "Managed volumes"
 			}
-			fmt.Printf("%s: %s", strings.Title(infok), infov)
+			fmt.Printf("%s: %s\n", strings.Title(infok), infov)
 		}
 	},
 }
