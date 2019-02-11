@@ -14,6 +14,7 @@ var (
 	verbose   bool
 	whitelist string
 	blacklist string
+	VERSION   string
 )
 
 var persistentEnvs = make(map[string]string)
@@ -45,7 +46,8 @@ func init() {
 }
 
 // Execute is the main thread, required by Cobra
-func Execute() {
+func Execute(version string) {
+	VERSION = version
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

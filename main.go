@@ -11,5 +11,5 @@ var exitCode int
 var version = "<<< filled in by build >>>"
 
 func main() {
-	cmd.Execute()
+	cmd.Execute(version)
 }

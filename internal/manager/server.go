@@ -27,6 +27,7 @@ func (m *Manager) StartServer() (err error) {
 	router.Handle("/backup/{volumeName}", m.handleAPIRequest(http.HandlerFunc(m.backupVolume))).Queries("force", "{force}")
 	router.Handle("/backup/{volumeID}/logs", m.handleAPIRequest(http.HandlerFunc(m.getBackupLogs)))
 	router.Handle("/restic/{volumeID}", m.handleAPIRequest(http.HandlerFunc(m.runRawCommand)))
+	router.Handle("/info", m.handleAPIRequest(http.HandlerFunc(m.info)))
 
 	log.Infof("Listening on %s", m.Server.Address)
 	log.Fatal(http.ListenAndServe(m.Server.Address, router))
@@ -73,6 +74,21 @@ func (m *Manager) backupVolume(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"type": "success"}`))
+	return
+}
+
+func (m *Manager) info(w http.ResponseWriter, r *http.Request) {
+	informations := m.GetInformations()
+
+	data := map[string]interface{}{
+		"type": "success",
+		"data": informations,
+	}
+
+	encodedData, _ := json.Marshal(data)
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(encodedData))
 	return
 }
 
