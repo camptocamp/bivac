@@ -29,6 +29,7 @@ var (
 	logServer     string
 )
 var envs = make(map[string]string)
+var bivacVersion = cmd.VERSION
 
 // TODO: Rename this command to something more explicit
 var managerCmd = &cobra.Command{
@@ -50,7 +51,7 @@ var managerCmd = &cobra.Command{
 			return
 		}
 
-		err = manager.Start(o, server, volumesFilters, providersFile, targetURL, logServer, retryCount)
+		err = manager.Start(bivacVersion, o, server, volumesFilters, providersFile, targetURL, logServer, retryCount)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return

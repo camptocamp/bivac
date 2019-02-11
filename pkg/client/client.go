@@ -71,6 +71,17 @@ func (c *Client) RunRawCommand(volumeID string, cmd []string) (output string, er
 	return
 }
 
+func (c *Client) GetInformations() (informations map[string]string, err error) {
+	var data map[string]interface{}
+	err = c.newRequest(&data, "GET", "/info", "")
+	if err != nil {
+		err = fmt.Errorf("failed to connect to the remote Bivac instance: %s", err)
+		return
+	}
+	informations = data["data"].(map[string]string)
+	return
+}
+
 func (c *Client) newRequest(data interface{}, method, endpoint, value string) (err error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(method, c.remoteAddress+endpoint, bytes.NewBuffer([]byte(value)))

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+
 	"github.com/camptocamp/bivac/pkg/orchestrators"
 	"github.com/camptocamp/bivac/pkg/volume"
 )
@@ -23,10 +24,11 @@ type Manager struct {
 	TargetURL    string
 	RetryCount   int
 	LogServer    string
+	Version      string
 }
 
 // Start starts a Bivac manager which handle backups management
-func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer string, retryCount int) (err error) {
+func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer string, retryCount int) (err error) {
 	p, err := LoadProviders(providersFile)
 	if err != nil {
 		err = fmt.Errorf("failed to read providers file: %s", err)
@@ -40,6 +42,7 @@ func Start(o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters,
 		TargetURL:    targetURL,
 		RetryCount:   retryCount,
 		LogServer:    logServer,
+		Version:      version,
 	}
 
 	// Manage volumes
@@ -178,6 +181,16 @@ func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 				return
 			}
 		}
+	}
+	return
+}
+
+func (m *Manager) GetInformations() (informations map[string]string) {
+	informations = map[string]string{
+		"version":       m.Version,
+		"orchestrator":  m.Orchestrator.GetName(),
+		"address":       m.Server.Address,
+		"volumes_count": string(len(m.Volumes)),
 	}
 	return
 }
