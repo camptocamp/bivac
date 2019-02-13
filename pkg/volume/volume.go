@@ -1,6 +1,8 @@
 package volume
 
 import (
+	"sync"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -24,6 +26,8 @@ type Volume struct {
 	Logs             map[string]string
 
 	Metrics *Metrics `json:"-"`
+
+	Mux sync.Mutex
 }
 
 // Filters hfcksdghfvd

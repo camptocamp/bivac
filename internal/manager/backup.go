@@ -15,6 +15,10 @@ import (
 )
 
 func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
+
+	v.Mux.Lock()
+	defer v.Mux.Unlock()
+
 	useLogReceiver := false
 	if m.LogServer != "" {
 		useLogReceiver = true
@@ -56,7 +60,7 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	}
 
 	_, output, err := m.Orchestrator.DeployAgent(
-		"cryptobioz/bivac:2.0.0",
+		"camptocamp/bivac:2.0.0-rc1",
 		cmd,
 		os.Environ(),
 		v,

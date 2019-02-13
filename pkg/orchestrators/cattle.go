@@ -198,6 +198,9 @@ func (o *CattleOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 			default:
 				continue
 			}
+		} else if container.State == "error" {
+			terminated = true
+			success = false
 		}
 		time.Sleep(1 * time.Second)
 	}

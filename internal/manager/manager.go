@@ -2,6 +2,7 @@ package manager
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -25,6 +26,8 @@ type Manager struct {
 	RetryCount   int
 	LogServer    string
 	Version      string
+
+	backupSlots chan map[string][]*volume.Volume
 }
 
 // Start starts a Bivac manager which handle backups management
@@ -43,67 +46,82 @@ func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters
 		RetryCount:   retryCount,
 		LogServer:    logServer,
 		Version:      version,
+
+		backupSlots: make(chan map[string][]*volume.Volume),
 	}
 
 	// Manage volumes
 	go func(m *Manager, volumeFilters volume.Filters) {
+		var bs map[string][]*volume.Volume
+
 		log.Debugf("Starting volume manager...")
+
 		for {
 			err = retrieveVolumes(m, volumeFilters)
 			if err != nil {
 				log.Errorf("failed to retrieve volumes: %s", err)
 			}
+
+			bs = make(map[string][]*volume.Volume)
+			for _, v := range m.Volumes {
+				if !isBackupNeeded(v) {
+					continue
+				}
+				bs[v.HostBind] = append(bs[v.HostBind], v)
+			}
+
+			if len(bs) > 0 {
+				select {
+				case m.backupSlots <- bs:
+				default:
+				}
+			}
+
 			time.Sleep(10 * time.Minute)
 		}
 	}(m, volumeFilters)
 
 	// Manage backups
 	go func(m *Manager) {
-		// Scheduling works but still not perfect, unacceptable as it stands
-		// TODO: Remove this awful time.Sleep()
+		var wg sync.WaitGroup
 
-		var instancesSem map[string]chan bool
 		log.Debugf("Starting backup manager...")
 		for {
-			instancesSem = make(map[string]chan bool)
-			for _, v := range m.Volumes {
-				instancesSem[v.HostBind] = make(chan bool, 2)
-			}
-			for _, v := range m.Volumes {
-				if !isBackupNeeded(v) {
-					continue
-				}
-				instancesSem[v.HostBind] <- true
-				go func(v *volume.Volume) {
-					log.WithFields(log.Fields{
-						"volume":   v.Name,
-						"hostname": v.Hostname,
-					}).Debugf("Backing up volume.")
-					defer func() { <-instancesSem[v.HostBind] }()
-					err = nil
-					for i := 0; i <= m.RetryCount; i++ {
-						err = backupVolume(m, v, false)
-						if err != nil {
+			bs := <-m.backupSlots
+
+			for _, volumes := range bs {
+				wg.Add(len(volumes))
+				go func(volumes []*volume.Volume) {
+					instanceSem := make(chan bool, 2)
+					for _, v := range volumes {
+						instanceSem <- true
+						go func(v *volume.Volume) {
 							log.WithFields(log.Fields{
 								"volume":   v.Name,
 								"hostname": v.Hostname,
-								"try":      i + 1,
-							}).Errorf("failed to backup volume: %s", err)
+							}).Debugf("Backing up volume.")
+							defer func() { <-instanceSem; wg.Done() }()
 
-							time.Sleep(2 * time.Second)
-						} else {
-							break
-						}
+							err = nil
+							for i := 0; i <= m.RetryCount; i++ {
+								err = backupVolume(m, v, false)
+								if err != nil {
+									log.WithFields(log.Fields{
+										"volume":   v.Name,
+										"hostname": v.Hostname,
+										"try":      i + 1,
+									}).Errorf("failed to backup volume: %s", err)
+
+									time.Sleep(2 * time.Second)
+								} else {
+									break
+								}
+							}
+						}(v)
 					}
-				}(v)
+				}(volumes)
 			}
-
-			for k, sem := range instancesSem {
-				for i := 0; i < cap(sem); i++ {
-					instancesSem[k] <- true
-				}
-			}
-			time.Sleep(10 * time.Minute)
+			wg.Wait()
 		}
 	}(m)
 
@@ -127,7 +145,7 @@ func isBackupNeeded(v *volume.Volume) bool {
 		return false
 	}
 
-	if lbd.Add(time.Hour * 24).Before(time.Now()) {
+	if lbd.Add(time.Hour * 23).Before(time.Now()) {
 		return true
 	}
 	return false
