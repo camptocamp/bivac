@@ -2,6 +2,8 @@ package utils
 
 import (
 	"encoding/json"
+	"os/exec"
+	"syscall"
 )
 
 type OutputFormat struct {
@@ -33,4 +35,14 @@ func ReturnError(e error) string {
 	}
 	data, _ := json.Marshal(msg)
 	return string(data)
+}
+
+// HandleExitCode retrieve a command exit code from an error
+func HandleExitCode(err error) int {
+	if exiterr, ok := err.(*exec.ExitError); ok {
+		if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+			return status.ExitStatus()
+		}
+	}
+	return 0
 }

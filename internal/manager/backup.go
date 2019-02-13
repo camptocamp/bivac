@@ -9,7 +9,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/camptocamp/bivac/internal/engines"
+	"github.com/camptocamp/bivac/internal/engine"
 	"github.com/camptocamp/bivac/internal/utils"
 	"github.com/camptocamp/bivac/pkg/volume"
 )
@@ -134,7 +134,7 @@ func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
 	// TODO: use regex
 	stdout := strings.Split(v.Logs["snapshots"], "]")[1]
 
-	var snapshots []engines.Snapshot
+	var snapshots []engine.Snapshot
 
 	err = json.Unmarshal([]byte(stdout), &snapshots)
 	if err != nil {
@@ -150,7 +150,7 @@ func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
 }
 
 func (m *Manager) RunResticCommand(v *volume.Volume, cmd []string) (output string, err error) {
-	e := &engines.ResticEngine{
+	e := &engine.Engine{
 		DefaultArgs: []string{
 			"--no-cache",
 			"-r",

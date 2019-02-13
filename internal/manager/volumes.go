@@ -4,8 +4,7 @@ import (
 	"sort"
 	"unicode/utf8"
 
-	//"github.com/camptocamp/bivac/pkg/orchestrators"
-	"github.com/camptocamp/bivac/internal/engines"
+	"github.com/camptocamp/bivac/internal/engine"
 	"github.com/camptocamp/bivac/pkg/volume"
 )
 
@@ -88,7 +87,7 @@ func blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, 
 }
 
 func getLastBackupDate(m *Manager, v *volume.Volume) (err error) {
-	e := &engines.ResticEngine{
+	e := &engine.Engine{
 		DefaultArgs: []string{
 			"--no-cache",
 			"--json",

@@ -9,12 +9,12 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/camptocamp/bivac/internal/engines"
+	"github.com/camptocamp/bivac/internal/engine"
 	"github.com/camptocamp/bivac/internal/utils"
 )
 
 func Backup(targetURL, backupPath, hostname string, force bool, logReceiver string) {
-	e := &engines.ResticEngine{
+	e := &engine.Engine{
 		DefaultArgs: []string{
 			"--no-cache",
 			"--json",
