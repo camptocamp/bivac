@@ -56,28 +56,6 @@ type MountedVolume struct {
 func (v *Volume) SetupMetrics() {
 	v.Metrics = &Metrics{}
 
-	/*
-		v.Metrics.LastBackupDate = promauto.NewGauge(prometheus.GaugeOpts{
-			Name: "bivac_lastBackupDate",
-			Help: "Date of the last backup",
-			ConstLabels: map[string]string{
-				"volume_id":   v.ID,
-				"volume_name": v.Name,
-				"hostbind":    v.HostBind,
-				"hostname":    v.Hostname,
-			},
-		})
-		v.Metrics.LastBackupStatus = promauto.NewGauge(prometheus.GaugeOpts{
-			Name: "bivac_lastBackupStatus",
-			Help: "Status of the last backup",
-			ConstLabels: map[string]string{
-				"volume_id":   v.ID,
-				"volume_name": v.Name,
-				"hostbind":    v.HostBind,
-				"hostname":    v.Hostname,
-			},
-		})
-	*/
 	v.Metrics.LastBackupDate = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "bivac_lastBackup",
 		Help: "Date of the last backup",
@@ -109,5 +87,12 @@ func (v *Volume) SetupMetrics() {
 		},
 	})
 
+	return
+}
+
+func (v *Volume) CleanupMetrics() {
+	prometheus.Unregister(v.Metrics.LastBackupDate)
+	prometheus.Unregister(v.Metrics.LastBackupStatus)
+	prometheus.Unregister(v.Metrics.OldestBackupDate)
 	return
 }

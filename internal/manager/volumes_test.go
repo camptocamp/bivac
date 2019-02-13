@@ -235,18 +235,23 @@ func TestRetrieveVolumesRemove(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mockOrchestrator := mocks.NewMockOrchestrator(mockCtrl)
+	mockRegisterer := mocks.NewMockRegisterer(mockCtrl)
 
 	givenVolumes := []*volume.Volume{
 		&volume.Volume{
-			ID:   "bar",
-			Name: "bar",
+			ID:       "bar",
+			Name:     "bar",
+			HostBind: "bar",
+			Hostname: "bar",
 		},
 	}
 	givenFilters := volume.Filters{}
 	expectedVolumes := []*volume.Volume{
 		&volume.Volume{
-			ID:   "bar",
-			Name: "bar",
+			ID:       "bar",
+			Name:     "bar",
+			HostBind: "bar",
+			Hostname: "bar",
 		},
 	}
 
@@ -256,22 +261,40 @@ func TestRetrieveVolumesRemove(t *testing.T) {
 
 	// Run test
 	mockOrchestrator.EXPECT().GetVolumes(volume.Filters{}).Return(givenVolumes, nil).Times(1)
+	mockRegisterer.EXPECT().Unregister(gomock.Any()).Return(true).AnyTimes()
 
 	m.Volumes = []*volume.Volume{
 		&volume.Volume{
-			ID:   "foo",
-			Name: "foo",
+			ID:       "foo",
+			Name:     "foo",
+			HostBind: "foo",
+			Hostname: "foo",
 		},
 		&volume.Volume{
-			ID:   "bar",
-			Name: "bar",
+			ID:       "bar",
+			Name:     "bar",
+			HostBind: "bar",
+			Hostname: "bar",
 		},
 		&volume.Volume{
-			ID:   "fake",
-			Name: "fake",
+			ID:       "fake",
+			Name:     "fake",
+			HostBind: "fake",
+			Hostname: "fake",
 		},
 	}
+
+	for _, v := range m.Volumes {
+		v.SetupMetrics()
+	}
+
 	err := retrieveVolumes(m, givenFilters)
+
+	// Do not manage Metrics field
+	// Should be properly fixed
+	for k, _ := range m.Volumes {
+		m.Volumes[k].Metrics = nil
+	}
 
 	assert.Nil(t, err)
 	assert.Equal(t, m.Volumes, expectedVolumes)

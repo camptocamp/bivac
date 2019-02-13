@@ -52,24 +52,15 @@ func retrieveVolumes(m *Manager, volumeFilters volume.Filters) (err error) {
 		}
 		if volumeExists {
 			vols = append(vols, mv)
+		} else {
+			mv.CleanupMetrics()
+			mv = nil
 		}
 	}
 
 	m.Volumes = vols
 	return
 }
-
-/*
-func initVolumes(m *Manager, volumeFilters volume.Filters) (err error) {
-	err = retrieveVolumes(m, volumeFilters)
-	if err != nil {
-		err = fmt.Errorf("failed to retrieve volumes: %s", err)
-		return
-	}
-
-	return
-}
-*/
 
 func blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "lost+found" {
