@@ -1,3 +1,16 @@
+# [2.0.0](https://github.com/camptocamp/bivac/releases/tag/2.0.0) (2019-02-14)
+
+The software has been almost entirely rewritten.
+
+Here the new features:
+
+ - Bivac now runs as a daemon, refresh the volume list every 10 minutes and backups volumes every day.
+ - The support of multiple backup engines has been dropped to focus on the Restic integration.
+ - A client is available and lets you manage your backups. You can manually force a backup, watch the logs or run custom Restic commands.
+ - An API is available to lets you build tools around Bivac.
+ - The API exposes a Prometheus endpoint from where you can collect metrics about Bivac and the backups.
+ - The scheduler can run multiple backups at the same time (at most 2 by host).
+
 # [1.0.0-alpha8](https://github.com/camptocamp/bivac/releases/tag/1.0.0-alpha8) (2018-10-18)
 
 BREAKING CHANGES:
