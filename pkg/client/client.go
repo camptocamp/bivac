@@ -11,11 +11,13 @@ import (
 	"github.com/camptocamp/bivac/pkg/volume"
 )
 
+// Client contains informations needed to connect to a Bivac API
 type Client struct {
 	remoteAddress string
 	psk           string
 }
 
+// NewClient returns a Bivac client
 func NewClient(remoteAddress string, psk string) (c *Client, err error) {
 	c = &Client{
 		remoteAddress: remoteAddress,
@@ -35,6 +37,7 @@ func NewClient(remoteAddress string, psk string) (c *Client, err error) {
 	return
 }
 
+// GetVolumes returns the list of the volumes managed by Bivac
 func (c *Client) GetVolumes() (volumes []volume.Volume, err error) {
 	err = c.newRequest(&volumes, "GET", "/volumes", "")
 	if err != nil {
@@ -44,6 +47,7 @@ func (c *Client) GetVolumes() (volumes []volume.Volume, err error) {
 	return
 }
 
+// BackupVolume requests a backup of a volume
 func (c *Client) BackupVolume(volumeName string, force bool) (err error) {
 	err = c.newRequest(nil, "POST", fmt.Sprintf("/backup/%s?force=%s", volumeName, strconv.FormatBool(force)), "")
 	if err != nil {
@@ -53,6 +57,7 @@ func (c *Client) BackupVolume(volumeName string, force bool) (err error) {
 	return
 }
 
+// RunRawCommand runs a custom Restic command on a volume's repository and returns the output
 func (c *Client) RunRawCommand(volumeID string, cmd []string) (output string, err error) {
 	var response map[string]interface{}
 
@@ -71,6 +76,7 @@ func (c *Client) RunRawCommand(volumeID string, cmd []string) (output string, er
 	return
 }
 
+// GetInformations returns informations about the Bivac manager
 func (c *Client) GetInformations() (informations map[string]string, err error) {
 	var data struct {
 		Type string `json:"type"`

@@ -156,6 +156,7 @@ func (r *Engine) unlockRepository() (err error) {
 	return
 }
 
+// GetBackupDates runs a Restic command locally to retrieve latest snapshot date
 func (r *Engine) GetBackupDates() (latestSnapshotDate, oldestSnapshotDate time.Time, err error) {
 	output, _ := exec.Command("restic", append(r.DefaultArgs, []string{"snapshots"}...)...).CombinedOutput()
 
@@ -185,6 +186,7 @@ func (r *Engine) GetBackupDates() (latestSnapshotDate, oldestSnapshotDate time.T
 	return
 }
 
+// RawCommand runs a custom Restic command locally
 func (r *Engine) RawCommand(cmd []string) (err error) {
 	rc := 0
 	output, err := exec.Command("restic", append(r.DefaultArgs, cmd...)...).CombinedOutput()

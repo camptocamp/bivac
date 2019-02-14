@@ -358,6 +358,15 @@ func (o *CattleOrchestrator) IsNodeAvailable(hostID string) (ok bool, err error)
 	return
 }
 
+// DetectCattle returns true if the Bivac is running on the orchestrator Cattle
+func DetectCattle() bool {
+	_, err := net.LookupHost("rancher-metadata")
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func (o *CattleOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || utf8.RuneCountInString(vol.Name) == 0 {
 		return true, "unnamed", ""
@@ -408,12 +417,4 @@ func (o *CattleOrchestrator) rawAPICall(method, endpoint string, data string, ob
 		return
 	}
 	return
-}
-
-func DetectCattle() bool {
-	_, err := net.LookupHost("rancher-metadata")
-	if err != nil {
-		return false
-	}
-	return true
 }

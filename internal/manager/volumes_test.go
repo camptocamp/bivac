@@ -57,7 +57,7 @@ func TestRetrieveVolumesBasic(t *testing.T) {
 
 	// Do not manage Metrics field
 	// Should be properly fixed
-	for k, _ := range m.Volumes {
+	for k := range m.Volumes {
 		m.Volumes[k].Metrics = nil
 	}
 
@@ -104,7 +104,7 @@ func TestRetrieveVolumesBlacklist(t *testing.T) {
 
 	// Do not manage Metrics field
 	// Should be properly fixed
-	for k, _ := range m.Volumes {
+	for k := range m.Volumes {
 		m.Volumes[k].Metrics = nil
 	}
 
@@ -292,7 +292,7 @@ func TestRetrieveVolumesRemove(t *testing.T) {
 
 	// Do not manage Metrics field
 	// Should be properly fixed
-	for k, _ := range m.Volumes {
+	for k := range m.Volumes {
 		m.Volumes[k].Metrics = nil
 	}
 

@@ -174,7 +174,7 @@ func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 	return
 }
 
-// RemoveContainer
+// RemoveContainer removes a container based on its ID
 func (o *DockerOrchestrator) RemoveContainer(containerID string) (err error) {
 	err = o.client.ContainerRemove(context.Background(), containerID, types.ContainerRemoveOptions{
 		Force:         true,
@@ -196,28 +196,7 @@ func DetectDocker(config *DockerConfig) bool {
 	return true
 }
 
-func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, string, string) {
-	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "lost+found" {
-		return true, "unnamed", ""
-	}
-
-	// Use whitelist if defined
-	if l := volumeFilters.Whitelist; len(l) > 0 && l[0] != "" {
-		sort.Strings(l)
-		i := sort.SearchStrings(l, vol.Name)
-		if i < len(l) && l[i] == vol.Name {
-			return false, "", ""
-		}
-		return true, "blacklisted", "whitelist config"
-	}
-
-	i := sort.SearchStrings(volumeFilters.Blacklist, vol.Name)
-	if i < len(volumeFilters.Blacklist) && volumeFilters.Blacklist[i] == vol.Name {
-		return true, "blacklisted", "blacklist config"
-	}
-	return false, "", ""
-}
-
+// PullImage pulls a Docker image
 func (o *DockerOrchestrator) PullImage(image string) (err error) {
 	if _, _, err = o.client.ImageInspectWithRaw(context.Background(), image); err != nil {
 		resp, err := o.client.ImagePull(context.Background(), image, types.ImagePullOptions{})
@@ -295,4 +274,26 @@ func (o *DockerOrchestrator) IsNodeAvailable(hostID string) (ok bool, err error)
 	// We can assume that, if Bivac is running then, the Docker daemon is available
 	ok = true
 	return
+}
+
+func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, string, string) {
+	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "lost+found" {
+		return true, "unnamed", ""
+	}
+
+	// Use whitelist if defined
+	if l := volumeFilters.Whitelist; len(l) > 0 && l[0] != "" {
+		sort.Strings(l)
+		i := sort.SearchStrings(l, vol.Name)
+		if i < len(l) && l[i] == vol.Name {
+			return false, "", ""
+		}
+		return true, "blacklisted", "whitelist config"
+	}
+
+	i := sort.SearchStrings(volumeFilters.Blacklist, vol.Name)
+	if i < len(volumeFilters.Blacklist) && volumeFilters.Blacklist[i] == vol.Name {
+		return true, "blacklisted", "blacklist config"
+	}
+	return false, "", ""
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/camptocamp/bivac/internal/utils"
 )
 
+// Backup runs Restic commands to backup a volume
 func Backup(targetURL, backupPath, hostname string, force bool, logReceiver string) {
 	e := &engine.Engine{
 		DefaultArgs: []string{
@@ -58,6 +59,7 @@ func Backup(targetURL, backupPath, hostname string, force bool, logReceiver stri
 	return
 }
 
+// Restore runs Restic commands to restore backed up data to a new volume
 func Restore(targetURL, backupPath, hostname string) {
 	return
 }

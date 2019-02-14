@@ -11,12 +11,14 @@ import (
 	"github.com/camptocamp/bivac/pkg/volume"
 )
 
+// Orchestrators groups the parameters of all supported orchestrators in one structure
 type Orchestrators struct {
 	Docker     orchestrators.DockerConfig
 	Cattle     orchestrators.CattleConfig
 	Kubernetes orchestrators.KubernetesConfig
 }
 
+// Manager contains all informations used by the Bivac manager
 type Manager struct {
 	Orchestrator orchestrators.Orchestrator
 	Volumes      []*volume.Volume
@@ -70,7 +72,7 @@ func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters
 				bs[v.HostBind] = append(bs[v.HostBind], v)
 			}
 
-			for node, _ := range bs {
+			for node := range bs {
 				if ok, _ := m.Orchestrator.IsNodeAvailable(node); !ok {
 					log.WithFields(log.Fields{
 						"node": node,
@@ -160,6 +162,7 @@ func isBackupNeeded(v *volume.Volume) bool {
 	return false
 }
 
+// GetOrchestrator returns an orchestrator interface based on the name you specified or on the orchestrator Bivac is running on
 func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestrator, err error) {
 	if name != "" {
 		log.Debugf("Choosing orchestrator based on configuration...")
@@ -194,6 +197,7 @@ func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestr
 	return
 }
 
+// BackupVolume does a backup of a volume
 func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 	for _, v := range m.Volumes {
 		if v.ID == volumeID {
@@ -212,6 +216,7 @@ func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 	return
 }
 
+// GetInformations returns informations regarding the Bivac manager
 func (m *Manager) GetInformations() (informations map[string]string) {
 	informations = map[string]string{
 		"version":       m.Version,

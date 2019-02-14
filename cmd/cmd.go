@@ -14,7 +14,9 @@ var (
 	verbose   bool
 	whitelist string
 	blacklist string
-	VERSION   string
+
+	// Version is the Bivac version (filled by main.go at build time)
+	Version string
 )
 
 var persistentEnvs = make(map[string]string)
@@ -47,13 +49,14 @@ func init() {
 
 // Execute is the main thread, required by Cobra
 func Execute(version string) {
-	VERSION = version
+	Version = version
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
+// SetValuesFromEnv assigns values to Cobra variables from environment variables
 func SetValuesFromEnv(envs map[string]string, flags *pflag.FlagSet) {
 	for env, flag := range envs {
 		flag := flags.Lookup(flag)

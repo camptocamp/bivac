@@ -53,6 +53,7 @@ type MountedVolume struct {
 	Path        string
 }
 
+// SetupMetrics initializes the volume's metrics
 func (v *Volume) SetupMetrics() {
 	v.Metrics = &Metrics{}
 
@@ -90,6 +91,7 @@ func (v *Volume) SetupMetrics() {
 	return
 }
 
+// CleanupMetrics cleans up volume's metrics
 func (v *Volume) CleanupMetrics() {
 	prometheus.Unregister(v.Metrics.LastBackupDate)
 	prometheus.Unregister(v.Metrics.LastBackupStatus)

@@ -228,7 +228,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	return
 }
 
-// RemoveContainer removes pod based on its name
+// DeletePod removes pod based on its name
 func (o *KubernetesOrchestrator) DeletePod(name string) {
 	err := o.client.CoreV1().Pods(o.config.Namespace).Delete(name, &metav1.DeleteOptions{})
 	if err != nil {
@@ -363,6 +363,15 @@ func (o *KubernetesOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFil
 	return false, "", ""
 }
 
+// DetectKubernetes returns true if Bivac is running on the orchestrator Kubernetes
+func DetectKubernetes() bool {
+	_, err := rest.InClusterConfig()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func (o *KubernetesOrchestrator) getConfig() (config *rest.Config, err error) {
 	if o.config.KubeConfig != "" {
 		config, err = clientcmd.BuildConfigFromFlags("", o.config.KubeConfig)
@@ -398,12 +407,4 @@ func (o *KubernetesOrchestrator) getNamespaces() (namespaces []string, err error
 		namespaces = append(namespaces, o.config.Namespace)
 	}
 	return
-}
-
-func DetectKubernetes() bool {
-	_, err := rest.InClusterConfig()
-	if err != nil {
-		return false
-	}
-	return true
 }

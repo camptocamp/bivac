@@ -13,11 +13,13 @@ import (
 	"github.com/camptocamp/bivac/internal/utils"
 )
 
+// Server contains informations used by the server part
 type Server struct {
 	Address string
 	PSK     string
 }
 
+// StartServer starts the API server
 func (m *Manager) StartServer() (err error) {
 	router := mux.NewRouter().StrictSlash(true)
 

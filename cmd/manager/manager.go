@@ -12,12 +12,11 @@ import (
 )
 
 var (
-	// Server stores informations relative the Bivac server
-	server manager.Server
+	server       manager.Server
+	orchestrator string
 
-	// Orchestrator is the name of the orchestrator on which Bivac should connect to
-	Orchestrator string
-
+	// Orchestrators is a copy of manager.Orchestrators which allows orchestrator
+	// configuration from Cobra variables
 	Orchestrators manager.Orchestrators
 
 	dbPath           string
@@ -30,7 +29,6 @@ var (
 )
 var envs = make(map[string]string)
 
-// TODO: Rename this command to something more explicit
 var managerCmd = &cobra.Command{
 	Use:   "manager",
 	Short: "Start Bivac backup manager",
@@ -44,13 +42,13 @@ var managerCmd = &cobra.Command{
 			Blacklist: strings.Split(blacklistVolumes, ","),
 		}
 
-		o, err := manager.GetOrchestrator(Orchestrator, Orchestrators)
+		o, err := manager.GetOrchestrator(orchestrator, Orchestrators)
 		if err != nil {
 			log.Errorf("failed to retrieve orchestrator: %s", err)
 			return
 		}
 
-		err = manager.Start(bivacCmd.VERSION, o, server, volumesFilters, providersFile, targetURL, logServer, retryCount)
+		err = manager.Start(bivacCmd.Version, o, server, volumesFilters, providersFile, targetURL, logServer, retryCount)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return
@@ -64,7 +62,7 @@ func init() {
 	managerCmd.Flags().StringVarP(&server.PSK, "server.psk", "", "", "Pre-shared key.")
 	envs["BIVAC_SERVER_PSK"] = "server.psk"
 
-	managerCmd.Flags().StringVarP(&Orchestrator, "orchestrator", "o", "", "Orchestrator on which Bivac should connect to.")
+	managerCmd.Flags().StringVarP(&orchestrator, "orchestrator", "o", "", "Orchestrator on which Bivac should connect to.")
 	envs["BIVAC_ORCHESTRATOR"] = "orchestrator"
 
 	managerCmd.Flags().StringVarP(&Orchestrators.Docker.Endpoint, "docker.endpoint", "", "unix:///var/run/docker.sock", "Docker endpoint.")

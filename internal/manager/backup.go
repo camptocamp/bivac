@@ -149,6 +149,7 @@ func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
 	return
 }
 
+// RunResticCommand runs a custom Restic command
 func (m *Manager) RunResticCommand(v *volume.Volume, cmd []string) (output string, err error) {
 	e := &engine.Engine{
 		DefaultArgs: []string{

@@ -1,7 +1,7 @@
 DEPS = $(wildcard */*/*/*.go)
 VERSION = $(shell git describe --always --dirty)
 
-all: bivac
+all: imports lint vet test bivac
 
 bivac: main.go $(DEPS)
 	CGO_ENABLED=0 GOOS=linux \
@@ -18,10 +18,10 @@ lint:
 	done; \
 	exit $${status:-0}
 
-vet: bivac.go
+vet: main.go
 	go vet $<
 
-imports: bivac.go
+imports: main.go
 	dep ensure
 	goimports -d $<
 
@@ -29,6 +29,6 @@ clean:
 	rm -f bivac
 
 test:
-	richgo test -cover -coverprofile=coverage -v ./...
+	go test -cover -coverprofile=coverage -v ./...
 
 .PHONY: all imports lint vet clean test

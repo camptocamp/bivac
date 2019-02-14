@@ -6,16 +6,19 @@ import (
 	"syscall"
 )
 
+// OutputFormat stores output of Restic commands
 type OutputFormat struct {
 	Stdout   string `json:"stdout"`
 	ExitCode int    `json:"rc"`
 }
 
+// MsgFormat is a format used to communicate with the Bivac API
 type MsgFormat struct {
 	Type    string      `json:"type"`
 	Content interface{} `json:"content"`
 }
 
+// ReturnFormattedOutput returns a formatted message
 func ReturnFormattedOutput(output interface{}) string {
 	m := MsgFormat{
 		Type:    "success",
@@ -28,6 +31,7 @@ func ReturnFormattedOutput(output interface{}) string {
 	return string(b)
 }
 
+// ReturnError returns a formatted error
 func ReturnError(e error) string {
 	msg := MsgFormat{
 		Type:    "error",
