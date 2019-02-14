@@ -31,7 +31,7 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	}
 
 	if p.PreCmd != "" {
-		err = RunCmd(p, m.Orchestrator, v, p.PreCmd)
+		err = RunCmd(p, m.Orchestrator, v, p.PreCmd, "precmd")
 		if err != nil {
 			log.WithFields(log.Fields{
 				"volume":   v.Name,
@@ -91,7 +91,7 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	}
 
 	if p.PostCmd != "" {
-		err = RunCmd(p, m.Orchestrator, v, p.PostCmd)
+		err = RunCmd(p, m.Orchestrator, v, p.PostCmd, "postcmd")
 		if err != nil {
 			log.WithFields(log.Fields{
 				"volume":   v.Name,

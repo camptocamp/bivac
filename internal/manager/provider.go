@@ -89,23 +89,25 @@ func (providers *Providers) GetProvider(o orchestrators.Orchestrator, v *volume.
 }
 
 // RunCmd runs a command into a container
-func RunCmd(p Provider, o orchestrators.Orchestrator, v *volume.Volume, cmd string) (err error) {
+func RunCmd(p Provider, o orchestrators.Orchestrator, v *volume.Volume, cmd, cmdKey string) (err error) {
 	containers, err := o.GetContainersMountingVolume(v)
 	if err != nil {
 		return err
 	}
 
 	cmdSuccess := false
-	//var stdout string
+	var stdout string
 	for _, container := range containers {
 		cmd = strings.Replace(cmd, "$volume", container.Path, -1)
 
-		_, err = o.ContainerExec(container, []string{"bash", "-c", cmd})
+		stdout, err = o.ContainerExec(container, []string{"bash", "-c", cmd})
 		if err == nil {
 			cmdSuccess = true
 			break
 		}
 	}
+	v.Logs[cmdKey] = fmt.Sprintf("$ %s\n%s", cmd, stdout)
+
 	if !cmdSuccess {
 		return fmt.Errorf("failed to run command \"%s\" in containers mounting volume %s", cmd, v.Name)
 	}
