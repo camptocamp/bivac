@@ -1,28 +1,26 @@
 language: go
 sudo: required
 services: docker
+go_import_path: github.com/camptocamp/bivac
 go:
-- '1.10'
+  - "1.11"
 install:
-- go get golang.org/x/tools/cmd/goimports
-- go get github.com/mattn/goveralls
-- go get golang.org/x/tools/cmd/cover
-- go get github.com/golang/dep/cmd/dep
+  - go get github.com/bradfitz/goimports
+  - go get github.com/mattn/goveralls
+  - go get golang.org/x/tools/cmd/cover
+  - go get github.com/golang/dep/cmd/dep
 script:
-- make
-- "./.travis/build.sh && ./.travis/test.sh && ./.travis/publish.sh"
-- make coverage
-- "$HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=coverage.out"
-deploy:
-  provider: releases
-  api_key:
-    secure: Ae95idY3YjwpFrMTysmsqMgbFQXxyjm3soTk5/UrWbGl0UvXU+4dEDDwzQBl3SZqLFIccXU2yn+XUMKeWmwjiDx4nOp6iPMsv7I3rbCe5t6yvnn8FaBtaHgql8H3mdPTK79GnB7XetkaFSoEojBhGXIWiDMpNL5sBIgkbKsBJIAD7/2uwGNzGNUe0dou5aArbY/dlqVsHwsxSrn9aSPJYq1FVqpZXvTJzQi6MsREQXTlWsYvchy0/DvEW6efkyR0ApKV0cMBUBZBE7ubPxBzyiEFwvEycIEoSHaKj1Mx/wfbU2vzHYRRioCo4sTWEHQ3Xex0JIVcWN7BBE2R3AxdJosj91fIf+TfzjlcT6GMoquLTM0/R/s74VkE/sihBHXL1JXrYp0rKpliQGVJh4se3coNxjr8o0RXg/82SYV6Rdxdia9u7ISDhmzJV2bUwh6dlPqGOeSd0CLpF/ogXexcSXgPES5p3wyRdUAy3eWTo2P9e5/T5I4pl9z0BySbUZDl1pRG453YJp88c0Tvabf+kGWekmqTZ+28/VHGQZGvDAGLuK/t0HFpl6pEKW417KXceGfkMGB3sKIbNDK6gABeJLCLaxGMCyWgtdXF5ozjZXy3RWpVQgjrd1rvAsU6caPB9jnXXSVBIBCN7smBBx5UON0k12uEplzu0DxN8TJfSVo=
-  file:
-  - bivac
-  - bivac.1
-  on:
-    repo: camptocamp/bivac
-    tags: true
-env:
-  global:
-  - secure: OR22/136PE+q3i5XAwDvXbbCdnPEVRg4uFZZvjClUheM8XhqVTxh2nu9l0f6Ftubg2FNoGTT6RBnKsIoxMcavZb3jgxyQyursAQPO0utDIiJi+Vr8yULanGqicvKesO7xr0io/x60PP3drZ0pcvUtS9zN9/2uAir/fybEYQLuMBKpR5iTO8w5SY0X6xwoARW6ZRq6uIP++pcGtkY7gYlcHqc6qVO5acsG/290SBTiSGdZ9hbMYO8vuVzLzf67nI8zcMzesYl/PctQ4U/Nv6/3XHHrzQ0Hw2fto6pONopPFDbYZMfnnJ+sc10NRL/2qi4o5JZ98mWZ2yk/G4b6IN0cMOJSXzUjpB3+DdC4HCAxlJkgTXDIdvCL3jQnAPi8UvJd8klEP/rwXrkwy9sLV7UExgpskRgCyeqFT1JJO7RNZepfiaaSdvSO23jPFrLQOamYQFyL+9WyqBv/rPaN1nLbIQHv6m/cAiK89+wGouiAzLJ8+i22tAdTOfHSitjjBPBi5mR96+rh6xqKWhGCLmAPAU5o+jqOSsSnRh2bkMLwebDu0JqPFeq8hWNyJ0CSYw5F16R4gSdl7A9uqzYuf0nRgSYrQW3VqV+0GRhVid7Z7gLGvJghNBkJxvtlpB2lqqkemQCbf97gNLaweNOole9tWYz6LxG2CEVNxVa0K10kto=
+  - build-binary
+  - build-docker-image
+  - coverage
+jobs:
+  include:
+    - stage: build-binary
+      script: make
+    - stage: build-docker-image
+      script: docker build .
+    - stage: coverage
+      if: repo = camptocamp/bivac
+      script:
+        - make test
+        - "$HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=coverage"

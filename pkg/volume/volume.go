@@ -30,7 +30,7 @@ type Volume struct {
 	Mux sync.Mutex
 }
 
-// Filters hfcksdghfvd
+// Filters contains the volumes filters
 type Filters struct {
 	Whitelist []string
 	Blacklist []string
