@@ -289,3 +289,10 @@ func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolume,
 	stdout = stdoutput.String()
 	return
 }
+
+// IsNodeAvailable checks if the node is available to run backups on it
+func (o *DockerOrchestrator) IsNodeAvailable(hostID string) (ok bool, err error) {
+	// We can assume that, if Bivac is running then, the Docker daemon is available
+	ok = true
+	return
+}

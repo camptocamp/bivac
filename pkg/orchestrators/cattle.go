@@ -343,6 +343,21 @@ func (o *CattleOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolume,
 	return
 }
 
+// IsNodeAvailable checks if the node is available to run backups on it
+func (o *CattleOrchestrator) IsNodeAvailable(hostID string) (ok bool, err error) {
+	ok = false
+	node, err := o.client.Host.ById(hostID)
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve node from the ID `%s': %s", hostID, err)
+		return
+	}
+
+	if node.State == "active" {
+		ok = true
+	}
+	return
+}
+
 func (o *CattleOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || utf8.RuneCountInString(vol.Name) == 0 {
 		return true, "unnamed", ""

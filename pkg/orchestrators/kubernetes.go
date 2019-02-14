@@ -316,6 +316,24 @@ func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVol
 	return
 }
 
+// IsNodeAvailable checks if the node is available to run backups on it
+func (o *KubernetesOrchestrator) IsNodeAvailable(hostID string) (ok bool, err error) {
+	ok = false
+
+	node, err := o.client.CoreV1().Nodes().Get(hostID, metav1.GetOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve node from the ID `%s': %s", hostID, err)
+		return
+	}
+
+	for _, condition := range node.Status.Conditions {
+		if condition.Type == apiv1.NodeReady && condition.Status == apiv1.ConditionTrue {
+			ok = true
+		}
+	}
+	return
+}
+
 func (o *KubernetesOrchestrator) setNamespace(namespace string) {
 	o.config.Namespace = namespace
 }

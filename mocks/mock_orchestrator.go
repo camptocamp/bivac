@@ -121,3 +121,18 @@ func (mr *MockOrchestratorMockRecorder) ContainerExec(mountedVolumes, command in
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContainerExec", reflect.TypeOf((*MockOrchestrator)(nil).ContainerExec), mountedVolumes, command)
 }
+
+// IsNodeAvailable mocks base method
+func (m *MockOrchestrator) IsNodeAvailable(hostID string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsNodeAvailable", hostID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsNodeAvailable indicates an expected call of IsNodeAvailable
+func (mr *MockOrchestratorMockRecorder) IsNodeAvailable(hostID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsNodeAvailable", reflect.TypeOf((*MockOrchestrator)(nil).IsNodeAvailable), hostID)
+}

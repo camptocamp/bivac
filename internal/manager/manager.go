@@ -70,6 +70,15 @@ func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters
 				bs[v.HostBind] = append(bs[v.HostBind], v)
 			}
 
+			for node, _ := range bs {
+				if ok, _ := m.Orchestrator.IsNodeAvailable(node); !ok {
+					log.WithFields(log.Fields{
+						"node": node,
+					}).Warning("Node unavailable.")
+					delete(bs, node)
+				}
+			}
+
 			if len(bs) > 0 {
 				select {
 				case m.backupSlots <- bs:
