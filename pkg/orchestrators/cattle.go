@@ -398,13 +398,17 @@ func (o *CattleOrchestrator) rawAPICall(method, endpoint string, data string, ob
 	clientHTTP := &http.Client{}
 	//v := url.Values{}
 	req, err := http.NewRequest(method, endpoint, strings.NewReader(data))
+	if err != nil {
+		err = fmt.Errorf("failed to build request: %s", err)
+		return
+	}
 	req.SetBasicAuth(o.config.AccessKey, o.config.SecretKey)
 	resp, err := clientHTTP.Do(req)
-	defer resp.Body.Close()
 	if err != nil {
 		err = fmt.Errorf("failed to execute POST request: %s", err)
 		return
 	}
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
