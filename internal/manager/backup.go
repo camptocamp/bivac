@@ -60,7 +60,7 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	}
 
 	_, output, err := m.Orchestrator.DeployAgent(
-		"camptocamp/bivac:2.0.0-rc1",
+		m.AgentImage,
 		cmd,
 		os.Environ(),
 		v,
