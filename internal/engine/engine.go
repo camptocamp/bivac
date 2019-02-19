@@ -53,14 +53,24 @@ func (r *Engine) Backup(backupPath, hostname string, force bool) string {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
 
-	err = r.forget()
+	// A backup lock may remains. A retry loop with sleeps is probably the best solution to avoid lock errors.
+	for i := 0; i < 3; i++ {
+		err = r.forget()
+		if err == nil {
+			break
+		}
+		time.Sleep(10 * time.Second)
+	}
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
 
-	err = r.retrieveBackupsStats()
-	if err != nil {
-		return utils.ReturnFormattedOutput(r.Output)
+	for i := 0; i < 3; i++ {
+		err = r.retrieveBackupsStats()
+		if err == nil {
+			break
+		}
+		time.Sleep(10 * time.Second)
 	}
 
 	return utils.ReturnFormattedOutput(r.Output)
