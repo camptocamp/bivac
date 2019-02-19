@@ -49,7 +49,7 @@ var managerCmd = &cobra.Command{
 			return
 		}
 
-		err = manager.Start(bivacCmd.Version, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount)
+		err = manager.Start(bivacCmd.BuildInfo, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return

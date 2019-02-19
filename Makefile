@@ -1,12 +1,14 @@
 DEPS = $(wildcard */*/*/*.go)
 VERSION = $(shell git describe --always --dirty)
+COMMIT_SHA1 = $(shell git rev-parse HEAD)
+BUILD_DATE = $(shell date +%Y-%m-%d)
 
 all: lint vet test bivac
 
 bivac: main.go $(DEPS)
 	CGO_ENABLED=0 GOOS=linux \
 	  go build -a \
-		  -ldflags="-s -X main.version=$(VERSION)" \
+		  -ldflags="-s -X main.version=$(VERSION) -X main.buildDate=$(BUILD_DATE) -X main.commitSha1=$(COMMIT_SHA1)" \
 	    -installsuffix cgo -o $@ $<
 	strip $@
 

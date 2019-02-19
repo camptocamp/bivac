@@ -7,6 +7,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
+	"github.com/camptocamp/bivac/internal/utils"
 	"github.com/camptocamp/bivac/pkg/orchestrators"
 	"github.com/camptocamp/bivac/pkg/volume"
 )
@@ -27,14 +28,14 @@ type Manager struct {
 	TargetURL    string
 	RetryCount   int
 	LogServer    string
-	Version      string
+	BuildInfo    utils.BuildInfo
 	AgentImage   string
 
 	backupSlots chan map[string][]*volume.Volume
 }
 
 // Start starts a Bivac manager which handle backups management
-func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount int) (err error) {
+func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount int) (err error) {
 	p, err := LoadProviders(providersFile)
 	if err != nil {
 		err = fmt.Errorf("failed to read providers file: %s", err)
@@ -48,7 +49,7 @@ func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters
 		TargetURL:    targetURL,
 		RetryCount:   retryCount,
 		LogServer:    logServer,
-		Version:      version,
+		BuildInfo:    buildInfo,
 		AgentImage:   agentImage,
 
 		backupSlots: make(chan map[string][]*volume.Volume),
@@ -221,10 +222,13 @@ func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 // GetInformations returns informations regarding the Bivac manager
 func (m *Manager) GetInformations() (informations map[string]string) {
 	informations = map[string]string{
-		"version":       m.Version,
-		"orchestrator":  m.Orchestrator.GetName(),
-		"address":       m.Server.Address,
-		"volumes_count": fmt.Sprintf("%d", len(m.Volumes)),
+		"version":        m.BuildInfo.Version,
+		"build_date":     m.BuildInfo.Date,
+		"build_commit":   m.BuildInfo.CommitSha1,
+		"golang_version": m.BuildInfo.Runtime,
+		"orchestrator":   m.Orchestrator.GetName(),
+		"address":        m.Server.Address,
+		"volumes_count":  fmt.Sprintf("%d", len(m.Volumes)),
 	}
 	return
 }
