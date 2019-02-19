@@ -6,8 +6,8 @@ BUILD_DATE = $(shell date +%Y-%m-%d)
 all: lint vet test bivac
 
 bivac: main.go $(DEPS)
-	CGO_ENABLED=0 GOOS=linux \
-	  go build -a \
+	GO111MODULE=on CGO_ENABLED=0 GOOS=linux \
+	  go build -mod=vendor -a \
 		  -ldflags="-s -X main.version=$(VERSION) -X main.buildDate=$(BUILD_DATE) -X main.commitSha1=$(COMMIT_SHA1)" \
 	    -installsuffix cgo -o $@ $<
 	strip $@
@@ -23,14 +23,13 @@ lint:
 vet: main.go
 	go vet $<
 
-imports: main.go
-	dep ensure
-	goimports -d $<
-
 clean:
 	rm -f bivac
 
 test:
 	go test -cover -coverprofile=coverage -v ./...
 
-.PHONY: all imports lint vet clean test
+vendor:
+	go mod vendor
+
+.PHONY: all vendor lint vet clean test
