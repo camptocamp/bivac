@@ -162,6 +162,10 @@ func isBackupNeeded(v *volume.Volume) bool {
 	if lbd.Add(time.Hour * 23).Before(time.Now()) {
 		return true
 	}
+
+	if lbd.Add(time.Hour).Before(time.Now()) && v.LastBackupStatus == "Failed" {
+		return true
+	}
 	return false
 }
 
