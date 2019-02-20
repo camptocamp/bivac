@@ -79,6 +79,7 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 				Name:      pvc.Name,
 				Namespace: namespace,
 				Logs:      make(map[string]string),
+				Labels:    pvc.Labels,
 			}
 
 			containers, _ := o.GetContainersMountingVolume(v)
@@ -341,6 +342,11 @@ func (o *KubernetesOrchestrator) setNamespace(namespace string) {
 func (o *KubernetesOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || utf8.RuneCountInString(vol.Name) == 0 {
 		return true, "unnamed", ""
+	}
+
+	// Check labels
+	if ignored, ok := vol.Labels["bivac.ignore"]; ok && ignored == "true" {
+		return true, "ignored", "volume config"
 	}
 
 	if strings.Contains(vol.Name, "/") {

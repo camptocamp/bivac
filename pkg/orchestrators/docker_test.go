@@ -105,6 +105,13 @@ func TestDockerGetVolumesBlacklisted(t *testing.T) {
 				Name:       "bar",
 				Mountpoint: "/bar",
 			},
+			&types.Volume{
+				Name:       "toto",
+				Mountpoint: "/toto",
+				Labels: map[string]string{
+					"bivac.ignore": "true",
+				},
+			},
 		},
 	}
 
@@ -119,6 +126,13 @@ func TestDockerGetVolumesBlacklisted(t *testing.T) {
 	mockDocker.EXPECT().VolumeInspect(context.Background(), "bar").Return(types.Volume{
 		Name:       "bar",
 		Mountpoint: "/bar",
+	}, nil).Times(1)
+	mockDocker.EXPECT().VolumeInspect(context.Background(), "toto").Return(types.Volume{
+		Name:       "toto",
+		Mountpoint: "/toto",
+		Labels: map[string]string{
+			"bivac.ignore": "true",
+		},
 	}, nil).Times(1)
 
 	expectedVolumes := []*volume.Volume{
@@ -334,6 +348,22 @@ func TestDockerBlacklistedVolume(t *testing.T) {
 				true,
 				"blacklisted",
 				"blacklist config",
+			},
+		},
+		{
+			name:                   "volume config ignore",
+			configVolumesBlacklist: []string{},
+			givenVolume: &volume.Volume{
+				Name: "toto",
+				Labels: map[string]string{
+					"bivac.ignore": "true",
+				},
+			},
+			givenFilters: volume.Filters{},
+			expected: []interface{}{
+				true,
+				"ignored",
+				"volume config",
 			},
 		},
 	}

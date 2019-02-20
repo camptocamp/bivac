@@ -281,6 +281,11 @@ func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters
 		return true, "unnamed", ""
 	}
 
+	// Check labels
+	if ignored, ok := vol.Labels["bivac.ignore"]; ok && ignored == "true" {
+		return true, "ignored", "volume config"
+	}
+
 	// Use whitelist if defined
 	if l := volumeFilters.Whitelist; len(l) > 0 && l[0] != "" {
 		sort.Strings(l)
