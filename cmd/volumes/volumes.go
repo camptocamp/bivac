@@ -2,6 +2,7 @@ package volumes
 
 import (
 	"fmt"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -63,6 +64,7 @@ var volumesCmd = &cobra.Command{
 					tbl, err := prettytable.NewTable([]prettytable.Column{
 						{},
 						{},
+						{},
 					}...)
 					if err != nil {
 						log.WithFields(log.Fields{
@@ -80,9 +82,10 @@ var volumesCmd = &cobra.Command{
 					fmt.Printf("Backup date: %s\n", v.LastBackupDate)
 					fmt.Printf("Backup status: %s\n", v.LastBackupStatus)
 					fmt.Printf("Logs:\n")
-					for stepKey, stepValue := range v.Logs {
-						tbl.AddRow(stepKey, stepValue)
-					}
+					tbl.AddRow("", "testInit", strings.Replace(v.Logs["testInit"], "\n", "\n\t\t\t", -1))
+					tbl.AddRow("", "init", strings.Replace(v.Logs["init"], "\n", "\n\t\t\t", -1))
+					tbl.AddRow("", "backup", strings.Replace(v.Logs["backup"], "\n", "\n\t\t\t", -1))
+					tbl.AddRow("", "forget", strings.Replace(v.Logs["forget"], "\n", "\n\t\t\t", -1))
 					tbl.Print()
 				}
 			}
