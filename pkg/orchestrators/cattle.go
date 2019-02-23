@@ -18,7 +18,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/camptocamp/bivac/pkg/volume"
-	//"github.com/rancher/go-rancher-metadata/metadata"
+	"github.com/rancher/go-rancher-metadata/metadata"
 	"github.com/rancher/go-rancher/v2"
 	"golang.org/x/net/websocket"
 )
@@ -144,6 +144,13 @@ func (o *CattleOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 		splitted := strings.Split(env, "=")
 		environment[splitted[0]] = splitted[1]
 	}
+
+	additionalVolumes, err := o.getAdditionalVolumes()
+	if err != nil {
+		err = fmt.Errorf("failed to get additional volumes: %s", err)
+		return
+	}
+
 	container, err := o.client.Container.Create(&client.Container{
 		Name:            createAgentName(),
 		RequestedHostId: v.HostBind,
@@ -157,9 +164,7 @@ func (o *CattleOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 		Labels: map[string]interface{}{
 			"io.rancher.container.pull_image": "always",
 		},
-		DataVolumes: []string{
-			v.Name + ":" + v.Mountpoint,
-		},
+		DataVolumes: append([]string{v.Name + ":" + v.Mountpoint}, additionalVolumes...),
 	})
 	if err != nil {
 		err = fmt.Errorf("failed to create an agent container: %s", err)
@@ -420,5 +425,49 @@ func (o *CattleOrchestrator) rawAPICall(method, endpoint string, data string, ob
 		err = fmt.Errorf("failed to unmarshal: %s", err)
 		return
 	}
+	return
+}
+
+func (o *CattleOrchestrator) getAdditionalVolumes() (mounts []string, err error) {
+	mounts = []string{}
+
+	metadataClient, err := metadata.NewClientAndWait("http://rancher-metadata/latest/")
+	if err != nil {
+		// We assume Bivac is running outside the orchestrator
+		err = nil
+		return
+	}
+
+	selfContainer, err := metadataClient.GetSelfContainer()
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve container: %s", err)
+		return
+	}
+
+	containers, err := o.client.Container.List(&client.ListOpts{
+		Filters: map[string]interface{}{
+			"limit": -2,
+			"all":   true,
+		},
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to list containers: %s", err)
+		return
+	}
+
+	var managerContainer *client.Container
+	for _, container := range containers.Data {
+		if container.Name == selfContainer.Name {
+			managerContainer = &container
+			break
+		}
+	}
+
+	if managerContainer == nil {
+		err = fmt.Errorf("failed to get manager container: %s", err)
+		return
+	}
+
+	mounts = managerContainer.DataVolumes
 	return
 }

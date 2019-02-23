@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"sort"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/docker/docker/api/types"
@@ -98,6 +100,12 @@ func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 		return
 	}
 
+	additionalVolumes, err := o.getAdditionalVolumes()
+	if err != nil {
+		err = fmt.Errorf("failed to get additional volumes: %s", err)
+		return
+	}
+
 	mounts := []mount.Mount{
 		mount.Mount{
 			Type:     "volume",
@@ -106,6 +114,8 @@ func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 			ReadOnly: v.ReadOnly,
 		},
 	}
+
+	mounts = append(mounts, additionalVolumes...)
 
 	container, err := o.client.ContainerCreate(
 		context.Background(),
@@ -301,4 +311,36 @@ func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters
 		return true, "blacklisted", "blacklist config"
 	}
 	return false, "", ""
+}
+
+func (o *DockerOrchestrator) getAdditionalVolumes() (mounts []mount.Mount, err error) {
+	mounts = []mount.Mount{}
+
+	managerHostname, err := os.Hostname()
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve hostname: %s", err)
+		return
+	}
+
+	managerContainer, err := o.client.ContainerInspect(context.Background(), managerHostname)
+	if err != nil {
+		if strings.Contains(err.Error(), "No such container") {
+			// We assume Bivac is running outside the orchestrator
+			err = nil
+		} else {
+			err = fmt.Errorf("failed to inspect container: %s", err)
+		}
+		return
+	}
+
+	for _, v := range managerContainer.Mounts {
+		mounts = append(mounts, mount.Mount{
+			Type:     v.Type,
+			Source:   v.Source,
+			Target:   v.Destination,
+			ReadOnly: !v.RW,
+		})
+	}
+
+	return
 }

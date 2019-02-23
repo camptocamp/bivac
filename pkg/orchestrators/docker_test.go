@@ -209,6 +209,9 @@ func TestDockerDeployAgentSuccess(t *testing.T) {
 
 	// PullImage passthrough
 	mockDocker.EXPECT().ImageInspectWithRaw(context.Background(), fakeImage).Return(types.ImageInspect{}, make([]byte, 0), nil).Times(1)
+	mockDocker.EXPECT().ContainerInspect(context.Background(), gomock.Any()).Return(types.ContainerJSON{
+		Mounts: []types.MountPoint{},
+	}, nil).Times(1)
 	mockDocker.EXPECT().ContainerCreate(context.Background(), gomock.Any(), containerHostConfig, nil, "").Return(containertypes.ContainerCreateCreatedBody{ID: "alpha"}, nil).Times(1)
 	mockDocker.EXPECT().ContainerRemove(context.Background(), "alpha", types.ContainerRemoveOptions{
 		Force:         true,

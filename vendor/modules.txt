@@ -130,6 +130,8 @@ github.com/prometheus/procfs/xfs
 github.com/prometheus/procfs/internal/util
 # github.com/rancher/go-rancher v0.0.0-20190109212254-cbc1b0a3f68d
 github.com/rancher/go-rancher/v2
+# github.com/rancher/go-rancher-metadata v0.0.0-20170929155856-d2103caca587
+github.com/rancher/go-rancher-metadata/metadata
 # github.com/spf13/afero v1.2.0
 github.com/spf13/afero
 github.com/spf13/afero/mem

@@ -3,6 +3,7 @@ package orchestrators
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -114,6 +115,12 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 		})
 	}
 
+	additionalVolumes, err := o.getAdditionalVolumes()
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve additional volumes: %s", err)
+		return
+	}
+
 	o.setNamespace(v.Namespace)
 	pvc, err := o.client.CoreV1().PersistentVolumeClaims(o.config.Namespace).Get(v.Name, metav1.GetOptions{})
 	if err != nil {
@@ -146,6 +153,24 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	}
 
 	kvms = append(kvms, kvm)
+
+	for _, additionalVolume := range additionalVolumes {
+		kvs = append(kvs, apiv1.Volume{
+			Name: additionalVolume.Name,
+			VolumeSource: apiv1.VolumeSource{
+				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+					ClaimName: additionalVolume.Name,
+					ReadOnly:  additionalVolume.ReadOnly,
+				},
+			},
+		})
+
+		kvms = append(kvms, apiv1.VolumeMount{
+			Name:      additionalVolume.Name,
+			ReadOnly:  additionalVolume.ReadOnly,
+			MountPath: additionalVolume.Mountpoint,
+		})
+	}
 
 	// Get current namespace
 	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -411,6 +436,42 @@ func (o *KubernetesOrchestrator) getNamespaces() (namespaces []string, err error
 		}
 	} else {
 		namespaces = append(namespaces, o.config.Namespace)
+	}
+	return
+}
+
+func (o *KubernetesOrchestrator) getAdditionalVolumes() (mounts []*volume.Volume, err error) {
+	mounts = []*volume.Volume{}
+
+	managerHostname, err := os.Hostname()
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve manager's hostname: %s", err)
+		return
+	}
+
+	// get the namespace
+	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{},
+	)
+	namespace, _, err := kubeconfig.Namespace()
+	if err != nil {
+		err = fmt.Errorf("failed to get namespace: %v", err)
+		return
+	}
+
+	managerPod, err := o.client.CoreV1().Pods(namespace).Get(managerHostname, metav1.GetOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve manager's pod: %s", err)
+		return
+	}
+
+	for _, v := range managerPod.Spec.Containers[0].VolumeMounts {
+		mounts = append(mounts, &volume.Volume{
+			Name:       v.Name,
+			ReadOnly:   v.ReadOnly,
+			Mountpoint: v.MountPath,
+		})
 	}
 	return
 }

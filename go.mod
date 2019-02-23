@@ -34,6 +34,7 @@ require (
 	github.com/prometheus/common v0.1.0 // indirect
 	github.com/prometheus/procfs v0.0.0-20190117184657-bf6a532e95b1 // indirect
 	github.com/rancher/go-rancher v0.0.0-20190109212254-cbc1b0a3f68d
+	github.com/rancher/go-rancher-metadata v0.0.0-20170929155856-d2103caca587
 	github.com/spf13/afero v1.2.0 // indirect
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
