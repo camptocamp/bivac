@@ -21,6 +21,7 @@ type Volume struct {
 	Hostname   string
 	Namespace  string
 
+	BackingUp        bool
 	LastBackupDate   string
 	LastBackupStatus string
 	Logs             map[string]string

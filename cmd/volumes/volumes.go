@@ -2,6 +2,7 @@ package volumes
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -43,6 +44,7 @@ var volumesCmd = &cobra.Command{
 				{Header: "Mountpoint"},
 				{Header: "LastBackupDate"},
 				{Header: "LastBackupStatus"},
+				{Header: "Backing up"},
 			}...)
 			if err != nil {
 				log.Errorf("failed to format output: %s", err)
@@ -51,7 +53,7 @@ var volumesCmd = &cobra.Command{
 			tbl.Separator = "\t"
 
 			for _, v := range volumes {
-				tbl.AddRow(v.ID, v.Name, v.Hostname, v.Mountpoint, v.LastBackupDate, v.LastBackupStatus)
+				tbl.AddRow(v.ID, v.Name, v.Hostname, v.Mountpoint, v.LastBackupDate, v.LastBackupStatus, strconv.FormatBool(v.BackingUp))
 			}
 
 			tbl.Print()

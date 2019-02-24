@@ -76,6 +76,7 @@ func TestDockerGetVolumesSuccess(t *testing.T) {
 			HostBind:   fakeHostname,
 			Hostname:   fakeHostname,
 			Logs:       make(map[string]string),
+			BackingUp:  false,
 		},
 	}
 

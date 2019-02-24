@@ -105,16 +105,48 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 
 			for _, volumes := range bs {
 				wg.Add(len(volumes))
+				// Release goroutines if they take more than 12h to run
+				go func() {
+					timeout := time.After(12 * time.Hour)
+					<-timeout
+					for i := 0; i < len(volumes); i++ {
+						wg.Done()
+					}
+				}()
 				go func(volumes []*volume.Volume) {
 					instanceSem := make(chan bool, 2)
 					for _, v := range volumes {
 						instanceSem <- true
 						go func(v *volume.Volume) {
+							var timedout bool
+							tearDown := make(chan bool)
+
 							log.WithFields(log.Fields{
 								"volume":   v.Name,
 								"hostname": v.Hostname,
 							}).Debugf("Backing up volume.")
-							defer func() { <-instanceSem; wg.Done() }()
+							defer func() {
+								if !timedout {
+									tearDown <- true
+									<-instanceSem
+									wg.Done()
+								}
+							}()
+
+							// Workaround which avoid a stucked backup to block the whole backup process
+							// If the backup process takes more than one hour,
+							// the backup slot is released.
+							go func() {
+								timeout := time.After(1 * time.Hour)
+								select {
+								case <-tearDown:
+									return
+								case <-timeout:
+									timedout = true
+									<-instanceSem
+									wg.Done()
+								}
+							}()
 
 							err = nil
 							for i := 0; i <= m.RetryCount; i++ {
@@ -146,6 +178,10 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 }
 
 func isBackupNeeded(v *volume.Volume) bool {
+	if v.BackingUp {
+		return false
+	}
+
 	if v.LastBackupDate == "" {
 		return true
 	}
@@ -212,7 +248,6 @@ func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 				"volume":   v.Name,
 				"hostname": v.Hostname,
 			}).Debug("Backup manually requested.")
-
 			err = backupVolume(m, v, force)
 			if err != nil {
 				err = fmt.Errorf("failed to backup volume: %s", err)

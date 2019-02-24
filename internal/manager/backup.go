@@ -16,6 +16,9 @@ import (
 
 func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 
+	v.BackingUp = true
+	defer func() { v.BackingUp = false }()
+
 	v.Mux.Lock()
 	defer v.Mux.Unlock()
 
