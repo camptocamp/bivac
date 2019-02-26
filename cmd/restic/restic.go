@@ -19,7 +19,7 @@ var (
 var envs = make(map[string]string)
 
 var resticCmd = &cobra.Command{
-	Use:   "restic --volume [VOLUME_ID] [COMMAND]",
+	Use:   "restic --volume [VOLUME_ID] -- [RESTIC_COMMAND]",
 	Short: "Run Restic command on a volume's repository",
 	Args:  cobra.ArbitraryArgs,
 	PreRun: func(cmd *cobra.Command, args []string) {
