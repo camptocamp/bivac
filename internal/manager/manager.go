@@ -2,7 +2,6 @@ package manager
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -31,7 +30,7 @@ type Manager struct {
 	BuildInfo    utils.BuildInfo
 	AgentImage   string
 
-	backupSlots chan map[string][]*volume.Volume
+	backupSlots chan *volume.Volume
 }
 
 // Start starts a Bivac manager which handle backups management
@@ -52,12 +51,11 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 		BuildInfo:    buildInfo,
 		AgentImage:   agentImage,
 
-		backupSlots: make(chan map[string][]*volume.Volume),
+		backupSlots: make(chan *volume.Volume, 100),
 	}
 
 	// Manage volumes
 	go func(m *Manager, volumeFilters volume.Filters) {
-		var bs map[string][]*volume.Volume
 
 		log.Debugf("Starting volume manager...")
 
@@ -67,108 +65,162 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 				log.Errorf("failed to retrieve volumes: %s", err)
 			}
 
-			bs = make(map[string][]*volume.Volume)
 			for _, v := range m.Volumes {
 				if !isBackupNeeded(v) {
 					continue
 				}
-				bs[v.HostBind] = append(bs[v.HostBind], v)
-			}
 
-			for node := range bs {
-				if ok, _ := m.Orchestrator.IsNodeAvailable(node); !ok {
-					log.WithFields(log.Fields{
-						"node": node,
-					}).Warning("Node unavailable.")
-					delete(bs, node)
-				}
+				m.backupSlots <- v
 			}
-
-			if len(bs) > 0 {
-				select {
-				case m.backupSlots <- bs:
-				default:
-				}
-			}
-
 			time.Sleep(10 * time.Minute)
 		}
 	}(m, volumeFilters)
 
 	// Manage backups
 	go func(m *Manager) {
-		var wg sync.WaitGroup
+		slots := make(map[string](chan bool))
 
-		log.Debugf("Starting backup manager...")
+		log.Infof("Starting backup manager...")
+
 		for {
-			bs := <-m.backupSlots
+			v := <-m.backupSlots
+			if _, ok := slots[v.HostBind]; !ok {
+				slots[v.HostBind] = make(chan bool, 2)
+			}
+			select {
+			case slots[v.HostBind] <- true:
+			default:
+				continue
+			}
+			if ok, _ := m.Orchestrator.IsNodeAvailable(v.HostBind); !ok {
+				log.WithFields(log.Fields{
+					"node": v.HostBind,
+				}).Warning("Node unavailable.")
+				<-slots[v.HostBind]
+				continue
+			}
 
-			for _, volumes := range bs {
-				wg.Add(len(volumes))
-				// Release goroutines if they take more than 12h to run
-				go func() {
-					timeout := time.After(12 * time.Hour)
-					<-timeout
-					for i := 0; i < len(volumes); i++ {
-						wg.Done()
+			go func(v *volume.Volume) {
+				var timedout bool
+				tearDown := make(chan bool)
+
+				log.WithFields(log.Fields{
+					"volume":   v.Name,
+					"hostname": v.Hostname,
+				}).Debugf("Backing up volume.")
+				defer func() {
+					if !timedout {
+						tearDown <- true
+						<-slots[v.HostBind]
 					}
 				}()
-				go func(volumes []*volume.Volume) {
-					instanceSem := make(chan bool, 2)
-					for _, v := range volumes {
-						instanceSem <- true
-						go func(v *volume.Volume) {
-							var timedout bool
-							tearDown := make(chan bool)
 
-							log.WithFields(log.Fields{
-								"volume":   v.Name,
-								"hostname": v.Hostname,
-							}).Debugf("Backing up volume.")
-							defer func() {
-								if !timedout {
-									tearDown <- true
-									<-instanceSem
-									wg.Done()
-								}
-							}()
-
-							// Workaround which avoid a stucked backup to block the whole backup process
-							// If the backup process takes more than one hour,
-							// the backup slot is released.
-							go func() {
-								timeout := time.After(1 * time.Hour)
-								select {
-								case <-tearDown:
-									return
-								case <-timeout:
-									timedout = true
-									<-instanceSem
-									wg.Done()
-								}
-							}()
-
-							err = nil
-							for i := 0; i <= m.RetryCount; i++ {
-								err = backupVolume(m, v, false)
-								if err != nil {
-									log.WithFields(log.Fields{
-										"volume":   v.Name,
-										"hostname": v.Hostname,
-										"try":      i + 1,
-									}).Errorf("failed to backup volume: %s", err)
-
-									time.Sleep(2 * time.Second)
-								} else {
-									break
-								}
-							}
-						}(v)
+				// Workaround which avoid a stucked backup to block the whole backup process
+				// If the backup process takes more than one hour,
+				// the backup slot is released.
+				go func() {
+					timeout := time.After(1 * time.Hour)
+					select {
+					case <-tearDown:
+						return
+					case <-timeout:
+						timedout = true
+						<-slots[v.HostBind]
 					}
-				}(volumes)
-			}
-			wg.Wait()
+				}()
+
+				err = nil
+				for i := 0; i <= m.RetryCount; i++ {
+					err = backupVolume(m, v, false)
+					if err != nil {
+						log.WithFields(log.Fields{
+							"volume":   v.Name,
+							"hostname": v.Hostname,
+							"try":      i + 1,
+						}).Errorf("failed to backup volume: %s", err)
+
+						time.Sleep(2 * time.Second)
+					} else {
+						break
+					}
+				}
+			}(v)
 		}
+
+		/*
+			var wg sync.WaitGroup
+
+			log.Debugf("Starting backup manager...")
+			for {
+				bs := <-m.backupSlots
+
+				for _, volumes := range bs {
+					wg.Add(len(volumes))
+					// Release goroutines if they take more than 12h to run
+					go func() {
+						timeout := time.After(12 * time.Hour)
+						<-timeout
+						for i := 0; i < len(volumes); i++ {
+							wg.Done()
+						}
+					}()
+					go func(volumes []*volume.Volume) {
+						instanceSem := make(chan bool, 2)
+						for _, v := range volumes {
+							instanceSem <- true
+							go func(v *volume.Volume) {
+								var timedout bool
+								tearDown := make(chan bool)
+
+								log.WithFields(log.Fields{
+									"volume":   v.Name,
+									"hostname": v.Hostname,
+								}).Debugf("Backing up volume.")
+								defer func() {
+									if !timedout {
+										tearDown <- true
+										<-instanceSem
+										wg.Done()
+									}
+								}()
+
+								// Workaround which avoid a stucked backup to block the whole backup process
+								// If the backup process takes more than one hour,
+								// the backup slot is released.
+								go func() {
+									timeout := time.After(1 * time.Hour)
+									select {
+									case <-tearDown:
+										return
+									case <-timeout:
+										timedout = true
+										<-instanceSem
+										wg.Done()
+									}
+								}()
+
+								err = nil
+								for i := 0; i <= m.RetryCount; i++ {
+									err = backupVolume(m, v, false)
+									if err != nil {
+										log.WithFields(log.Fields{
+											"volume":   v.Name,
+											"hostname": v.Hostname,
+											"try":      i + 1,
+										}).Errorf("failed to backup volume: %s", err)
+
+										time.Sleep(2 * time.Second)
+									} else {
+										break
+									}
+								}
+							}(v)
+						}
+					}(volumes)
+				}
+				wg.Wait()
+			}
+		*/
 	}(m)
 
 	// Manage API server
