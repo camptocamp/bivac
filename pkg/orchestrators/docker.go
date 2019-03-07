@@ -179,7 +179,10 @@ func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 		err = fmt.Errorf("failed to read logs from response: %s", err)
 		return
 	}
-	output = stdout.String()
+	logs := strings.Split(stdout.String(), "\n")
+	if len(logs) > 0 {
+		output = logs[len(logs)-2]
+	}
 	success = true
 	return
 }

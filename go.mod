@@ -10,7 +10,7 @@ require (
 	github.com/docker/go-units v0.3.3 // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/gogo/protobuf v1.2.0 // indirect
-	github.com/golang/lint v0.0.0-20181217174547-8f45f776aaf1 // indirect
+	github.com/golang/lint v0.0.0-20190301231843-5614ed5bae6f // indirect
 	github.com/golang/mock v1.2.0
 	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect
 	github.com/googleapis/gnostic v0.2.0 // indirect

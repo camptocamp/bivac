@@ -248,8 +248,9 @@ func (o *CattleOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 	io.Copy(&data, ws)
 
 	re := regexp.MustCompile(`(?m)[0-9]{2,} [ZT\-\:\.0-9]+ (.*)`)
-	for _, line := range re.FindAllStringSubmatch(data.String(), -1) {
-		output = strings.Join([]string{output, line[1]}, "\n")
+	logs := re.FindAllStringSubmatch(data.String(), -1)
+	if len(logs) > 0 {
+		output = logs[len(logs)-1][1]
 	}
 	return
 }

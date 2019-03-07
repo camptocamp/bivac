@@ -249,8 +249,10 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	defer readCloser.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(readCloser)
-	output = buf.String()
-
+	logs := strings.Split(buf.String(), "\n")
+	if len(logs) > 0 {
+		output = logs[len(logs)-2]
+	}
 	return
 }
 

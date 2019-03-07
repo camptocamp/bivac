@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -103,6 +104,7 @@ func (r *Engine) initializeRepository() (err error) {
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
+	fmt.Printf("init: %s\n", output)
 	err = nil
 	return
 }
@@ -117,6 +119,7 @@ func (r *Engine) backupVolume(hostname, backupPath string) (err error) {
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
+	fmt.Printf("backup: %s\n", output)
 	err = nil
 	return
 }
@@ -134,6 +137,7 @@ func (r *Engine) forget() (err error) {
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
+	fmt.Printf("forget: %s\n", output)
 	err = nil
 	return
 }
@@ -148,6 +152,7 @@ func (r *Engine) retrieveBackupsStats() (err error) {
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
+	fmt.Printf("snapshots: %s\n", output)
 
 	return
 }
@@ -162,6 +167,7 @@ func (r *Engine) unlockRepository() (err error) {
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
+	fmt.Printf("unlock: %s\n", output)
 	err = nil
 	return
 }
