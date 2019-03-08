@@ -84,13 +84,6 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		} else {
 			m.updateBackupLogs(v, agentOutput)
 		}
-	} else {
-		if output != "" {
-			log.WithFields(log.Fields{
-				"volume":   v.Name,
-				"hostname": v.Hostname,
-			}).Errorf("failed to send output: %s", output)
-		}
 	}
 
 	if p.PostCmd != "" {
