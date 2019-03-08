@@ -98,6 +98,52 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	return
 }
 
+func (m *Manager) attachOrphanAgent(containerID string, v *volume.Volume) {
+	defer func() { v.BackingUp = false }()
+
+	p, err := m.Providers.GetProvider(m.Orchestrator, v)
+	if err != nil {
+		err = fmt.Errorf("failed to get provider: %s", err)
+		return
+	}
+	useLogReceiver := false
+	if m.LogServer != "" {
+		useLogReceiver = true
+	}
+
+	_, output, err := m.Orchestrator.AttachOrphanAgent(containerID)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"volume":   v.Name,
+			"hostname": v.Hostname,
+		}).Errorf("failed to attach orphan agent: %s", err)
+		return
+	}
+
+	if !useLogReceiver {
+		var agentOutput utils.MsgFormat
+		err = json.Unmarshal([]byte(output), &agentOutput)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"volume":   v.Name,
+				"hostname": v.Hostname,
+			}).Warningf("failed to unmarshal agent output: %s -> `%s`", err, output)
+		} else {
+			m.updateBackupLogs(v, agentOutput)
+		}
+	}
+	if p.PostCmd != "" {
+		err = RunCmd(p, m.Orchestrator, v, p.PostCmd, "postcmd")
+		if err != nil {
+			log.WithFields(log.Fields{
+				"volume":   v.Name,
+				"hostname": v.Hostname,
+			}).Warningf("failed to run post-command: %s", err)
+		}
+	}
+	return
+}
+
 func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat) {
 	if agentOutput.Type != "success" {
 		v.LastBackupStatus = "Failed"

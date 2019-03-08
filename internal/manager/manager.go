@@ -54,6 +54,12 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 		backupSlots: make(chan *volume.Volume, 100),
 	}
 
+	// Catch orphan agents
+	orphanAgents, err := m.Orchestrator.RetrieveOrphanAgents()
+	if err != nil {
+		log.Errorf("failed to retrieve orphan agents: %s", err)
+	}
+
 	// Manage volumes
 	go func(m *Manager, volumeFilters volume.Filters) {
 
@@ -66,6 +72,12 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 			}
 
 			for _, v := range m.Volumes {
+				if val, ok := orphanAgents[v.ID]; ok {
+					v.BackingUp = true
+					go m.attachOrphanAgent(val, v)
+					delete(orphanAgents, val)
+				}
+
 				if !isBackupNeeded(v) {
 					continue
 				}

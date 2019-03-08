@@ -120,6 +120,7 @@ func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 	container, err := o.client.ContainerCreate(
 		context.Background(),
 		&containertypes.Config{
+			Hostname:     createAgentName(),
 			Cmd:          cmd,
 			Env:          envs,
 			Image:        image,
@@ -286,6 +287,85 @@ func (o *DockerOrchestrator) ContainerExec(mountedVolumes *volume.MountedVolume,
 func (o *DockerOrchestrator) IsNodeAvailable(hostID string) (ok bool, err error) {
 	// We can assume that, if Bivac is running then, the Docker daemon is available
 	ok = true
+	return
+}
+
+// RetrieveOrphanAgents returns the list of orphan Bivac agents
+func (o *DockerOrchestrator) RetrieveOrphanAgents() (containers map[string]string, err error) {
+	c, err := o.client.ContainerList(context.Background(), types.ContainerListOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to list containers: %s", err)
+		return
+	}
+
+	for _, container := range c {
+		if !strings.HasPrefix(container.ID, "bivac-agent-") {
+			continue
+		}
+
+		for _, mount := range container.Mounts {
+			if mount.Type == "volume" {
+				containers[mount.Name] = container.ID
+			}
+		}
+	}
+	return
+}
+
+// AttachOrphanAgent connects to a running agent and wait for the end of the backup proccess
+func (o *DockerOrchestrator) AttachOrphanAgent(containerID string) (success bool, output string, err error) {
+	container, err := o.client.ContainerInspect(context.Background(), containerID)
+	if err != nil {
+		err = fmt.Errorf("failed to inspect container: %s", err)
+		return
+	}
+
+	defer o.RemoveContainer(container.ID)
+
+	err = o.client.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to start container: %s", err)
+		return
+	}
+
+	var exited bool
+
+	for !exited {
+		var cont types.ContainerJSON
+		cont, err = o.client.ContainerInspect(context.Background(), container.ID)
+		if err != nil {
+			err = fmt.Errorf("failed to inspect container: %s", err)
+			return
+		}
+
+		if cont.State.Status == "exited" {
+			exited = true
+		}
+	}
+
+	body, err := o.client.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+		Details:    true,
+		Follow:     true,
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve logs: %s", err)
+		return
+	}
+
+	defer body.Close()
+	stdout := new(bytes.Buffer)
+	_, err = stdcopy.StdCopy(stdout, ioutil.Discard, body)
+	if err != nil {
+		err = fmt.Errorf("failed to read logs from response: %s", err)
+		return
+	}
+	logs := strings.Split(stdout.String(), "\n")
+	if len(logs) > 1 {
+		output = logs[len(logs)-2]
+	}
+	success = true
 	return
 }
 
