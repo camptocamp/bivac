@@ -85,7 +85,7 @@ func init() {
 	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.AgentServiceAccount, "kubernetes.agent-service-account", "", "", "Specify service account for agents.")
 	envs["KUBERNETES_AGENT_SERVICE_ACCOUNT"] = "kubernetes.agent-service-account"
 
-	managerCmd.Flags().StringVarP(&resticForgetArgs, "restic.forget.args", "", "--keep-daily 15 --prune", "Restic forget arguments.")
+	managerCmd.Flags().StringVarP(&resticForgetArgs, "restic.forget.args", "", "--group-by host --keep-daily 15 --prune", "Restic forget arguments.")
 	envs["RESTIC_FORGET_ARGS"] = "restic.forget.args"
 
 	managerCmd.Flags().StringVarP(&providersFile, "providers.config", "", "/providers-config.default.toml", "Configuration file for providers.")
