@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
+	"regexp"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -173,8 +173,8 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 }
 
 func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
-	// TODO: use regex
-	stdout := strings.Split(v.Logs["snapshots"], "]")[1]
+	r, err := regexp.Compile(`\S{3} (.*)`)
+	stdout := r.FindStringSubmatch(v.Logs["snapshots"])[1]
 
 	var snapshots []engine.Snapshot
 
