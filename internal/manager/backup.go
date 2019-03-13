@@ -160,7 +160,10 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 		if success {
 			v.LastBackupStatus = "Success"
 			v.Metrics.LastBackupStatus.Set(0.0)
-			m.setOldestBackupDate(v)
+			err := m.setOldestBackupDate(v)
+			if err != nil {
+				log.Errorf("failed to set oldest backup date: %s", err)
+			}
 		} else {
 			v.LastBackupStatus = "Failed"
 			v.Metrics.LastBackupStatus.Set(1.0)
