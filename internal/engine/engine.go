@@ -60,7 +60,7 @@ func (r *Engine) Backup(backupPath, hostname string, force bool) string {
 		if err == nil {
 			break
 		}
-		time.Sleep(10 * time.Second)
+		time.Sleep(60 * time.Second)
 	}
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
