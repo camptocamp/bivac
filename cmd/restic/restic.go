@@ -1,4 +1,4 @@
-package backup
+package restic
 
 import (
 	"fmt"
