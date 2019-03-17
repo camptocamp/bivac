@@ -1,6 +1,7 @@
 module github.com/camptocamp/bivac
 
 require (
+	cloud.google.com/go v0.36.0 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Microsoft/go-winio v0.4.11 // indirect
 	github.com/Sirupsen/logrus v1.0.6
@@ -10,8 +11,8 @@ require (
 	github.com/docker/go-units v0.3.3 // indirect
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
 	github.com/gogo/protobuf v1.2.0 // indirect
-	github.com/golang/lint v0.0.0-20190301231843-5614ed5bae6f // indirect
 	github.com/golang/mock v1.2.0
+	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect
 	github.com/googleapis/gnostic v0.2.0 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
@@ -41,11 +42,12 @@ require (
 	github.com/spf13/viper v1.3.1
 	github.com/stretchr/testify v1.3.0
 	github.com/tatsushid/go-prettytable v0.0.0-20141013043238-ed2d14c29939
-	golang.org/x/lint v0.0.0-20181217174547-8f45f776aaf1 // indirect
-	golang.org/x/net v0.0.0-20190213061140-3a22650c66bd
+	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a // indirect
+	golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3 // indirect
+	golang.org/x/net v0.0.0-20190313220215-9f648a60d977
 	golang.org/x/oauth2 v0.0.0-20190130055435-99b60b757ec1 // indirect
-	golang.org/x/sys v0.0.0-20190122071731-054c452bb702 // indirect
-	golang.org/x/tools v0.0.0-20190219035721-0a7d439b5fa8 // indirect
+	golang.org/x/sys v0.0.0-20190316082340-a2f829d7f35f // indirect
+	golang.org/x/tools v0.0.0-20190315214010-f0bfdbff1f9c // indirect
 	gopkg.in/jarcoal/httpmock.v1 v1.0.0-20181117152235-275e9df93516
 	k8s.io/api v0.0.0-20190126160303-ccdd560a045f
 	k8s.io/apimachinery v0.0.0-20190126155707-0e6dcdd1b5ce
