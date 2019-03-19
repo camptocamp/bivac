@@ -115,11 +115,15 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 		})
 	}
 
-	additionalVolumes, err := o.getAdditionalVolumes()
-	if err != nil {
-		err = fmt.Errorf("failed to retrieve additional volumes: %s", err)
-		return
-	}
+	// An additional volume may not be a Persistent Volume (but a ConfigMap for example)
+	// Nice feature but the function should be improved
+	/*
+		additionalVolumes, err := o.getAdditionalVolumes()
+		if err != nil {
+			err = fmt.Errorf("failed to retrieve additional volumes: %s", err)
+			return
+		}
+	*/
 
 	o.setNamespace(v.Namespace)
 	pvc, err := o.client.CoreV1().PersistentVolumeClaims(o.config.Namespace).Get(v.Name, metav1.GetOptions{})
@@ -154,23 +158,25 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 
 	kvms = append(kvms, kvm)
 
-	for _, additionalVolume := range additionalVolumes {
-		kvs = append(kvs, apiv1.Volume{
-			Name: additionalVolume.Name,
-			VolumeSource: apiv1.VolumeSource{
-				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
-					ClaimName: additionalVolume.Name,
-					ReadOnly:  additionalVolume.ReadOnly,
+	/*
+		for _, additionalVolume := range additionalVolumes {
+			kvs = append(kvs, apiv1.Volume{
+				Name: additionalVolume.Name,
+				VolumeSource: apiv1.VolumeSource{
+					PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+						ClaimName: additionalVolume.Name,
+						ReadOnly:  additionalVolume.ReadOnly,
+					},
 				},
-			},
-		})
+			})
 
-		kvms = append(kvms, apiv1.VolumeMount{
-			Name:      additionalVolume.Name,
-			ReadOnly:  additionalVolume.ReadOnly,
-			MountPath: additionalVolume.Mountpoint,
-		})
-	}
+			kvms = append(kvms, apiv1.VolumeMount{
+				Name:      additionalVolume.Name,
+				ReadOnly:  additionalVolume.ReadOnly,
+				MountPath: additionalVolume.Mountpoint,
+			})
+		}
+	*/
 
 	// Get current namespace
 	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -213,7 +219,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	agentName := pod.ObjectMeta.Name
 	defer o.DeletePod(agentName)
 
-	timeout := time.After(60 * time.Second)
+	timeout := time.After(60 * 5 * time.Second)
 	terminated := false
 	for !terminated {
 		pod, err := o.client.CoreV1().Pods(o.config.Namespace).Get(agentName, metav1.GetOptions{})
