@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+var seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // OutputFormat stores output of Restic commands
 type OutputFormat struct {
@@ -59,7 +59,7 @@ func HandleExitCode(err error) int {
 	return 0
 }
 
-// Generate a random string
+// GenerateRandomString generate a random string
 func GenerateRandomString(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyz" +
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -70,7 +70,7 @@ func GenerateRandomString(length int) string {
 	return string(stringByte)
 }
 
-// Get a random file name unique from the files found in the parentPath
+// GetRandomFileName get a random file name unique from the files found in the parentPath
 func GetRandomFileName(parentPath string) (string, error) {
 	randomFileName := GenerateRandomString(16)
 	randomFilePath := strings.ReplaceAll(parentPath+"/"+randomFileName, "//", "/")
@@ -84,7 +84,7 @@ func GetRandomFileName(parentPath string) (string, error) {
 	return GetRandomFileName(parentPath)
 }
 
-// Get a random file name unique from the file paths found in the parentPath
+// GetRandomFilePath get a random file name unique from the file paths found in the parentPath
 func GetRandomFilePath(parentPath string) (string, error) {
 	randomFileName, err := GetRandomFileName(parentPath)
 	if err != nil {
@@ -94,7 +94,7 @@ func GetRandomFilePath(parentPath string) (string, error) {
 	return randomFilePath, nil
 }
 
-// Merge a source path into a target path
+// MergePaths merge a source path into a target path
 func MergePaths(rootSourcePath string, rootTargetDir string) error {
 	rootSourceFInfo, err := os.Stat(rootSourcePath)
 	if err != nil {
@@ -162,7 +162,7 @@ func MergePaths(rootSourcePath string, rootTargetDir string) error {
 	return nil
 }
 
-// Copy a file's binary contents to another file
+// CopyFile copy a file's binary contents to another file
 func CopyFile(sourcePath string, targetPath string) error {
 	sourceFInfo, err := os.Stat(sourcePath)
 	if err != nil {

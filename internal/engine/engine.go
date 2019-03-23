@@ -270,9 +270,9 @@ func (r *Engine) getOrigionalBackupPath(
 	type Header struct {
 		Paths []string `json:"paths"`
 	}
-	headerJson := []byte(strings.Split(string(output), "\n")[1])
+	headerJSON := []byte(strings.Split(string(output), "\n")[1])
 	var header Header
-	err = json.Unmarshal(headerJson, &header)
+	err = json.Unmarshal(headerJSON, &header)
 	if err != nil {
 		return "/"
 	}
