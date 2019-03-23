@@ -28,6 +28,8 @@ func (m *Manager) StartServer() (err error) {
 	router.Handle("/metrics", promhttp.Handler()).Methods("GET")
 	router.Handle("/backup/{volumeName}", m.handleAPIRequest(http.HandlerFunc(m.backupVolume))).Queries("force", "{force}")
 	router.Handle("/backup/{volumeID}/logs", m.handleAPIRequest(http.HandlerFunc(m.getBackupLogs)))
+	router.Handle("/restore/{volumeName}", m.handleAPIRequest(http.HandlerFunc(m.restoreVolume))).Queries("force", "{force}")
+	router.Handle("/restore/{volumeName}/{snapshotName}", m.handleAPIRequest(http.HandlerFunc(m.restoreVolume))).Queries("force", "{force}")
 	router.Handle("/restic/{volumeID}", m.handleAPIRequest(http.HandlerFunc(m.runRawCommand)))
 	router.Handle("/info", m.handleAPIRequest(http.HandlerFunc(m.info)))
 
@@ -69,6 +71,28 @@ func (m *Manager) backupVolume(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = m.BackupVolume(params["volumeName"], force)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Internal server error"))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"type": "success"}`))
+	return
+}
+
+func (m *Manager) restoreVolume(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	force, err := strconv.ParseBool(params["force"])
+	if err != nil {
+		force = false
+		err = nil
+	}
+	snapshotName := "latest"
+	if _, ok := params["snapshotName"]; ok {
+		snapshotName = params["snapshotName"]
+	}
+	err = m.RestoreVolume(params["volumeName"], force, snapshotName)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("500 - Internal server error"))
