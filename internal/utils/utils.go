@@ -2,6 +2,8 @@ package utils
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"os"
 	"os/exec"
 	"syscall"
 )
@@ -49,4 +51,60 @@ func HandleExitCode(err error) int {
 		}
 	}
 	return 0
+}
+
+// Copy a file's binary contents to another file
+func CopyFile(sourcePath string, targetPath string) error {
+	sourceFInfo, err := os.Stat(sourcePath)
+	if err != nil {
+		return err
+	}
+	if !sourceFInfo.Mode().IsRegular() {
+		return nil
+	}
+	targetFInfo, err := os.Stat(targetPath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+	} else if !targetFInfo.Mode().IsRegular() {
+		if targetFInfo.IsDir() {
+			err := os.RemoveAll(targetPath)
+			if err != nil {
+				return err
+			}
+		} else {
+			return nil
+		}
+	}
+	if os.SameFile(sourceFInfo, targetFInfo) {
+		return nil
+	}
+	err = os.Link(sourcePath, targetPath)
+	if err != nil {
+		err = copyFileContents(sourcePath, targetPath)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// slower but safer than creating a hardlink when a target file exists
+func copyFileContents(sourcePath string, targetPath string) error {
+	sourceFInfo, err := os.Stat(sourcePath)
+	if err != nil {
+		return err
+	}
+	sourceData, err := ioutil.ReadFile(sourcePath)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(targetPath, sourceData, sourceFInfo.Mode())
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+	}
+	return nil
 }
