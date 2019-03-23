@@ -92,9 +92,9 @@ func init() {
 		"remote.address",
 		"",
 		"http://127.0.0.1:8182",
-		"Address of the remote Volback server.",
+		"Address of the remote Bivac server.",
 	)
-	envs["VOLBACK_REMOTE_ADDRESS"] = "remote.address"
+	envs["BIVAC_REMOTE_ADDRESS"] = "remote.address"
 	restoreCmd.Flags().StringVarP(
 		&psk,
 		"server.psk",
@@ -102,7 +102,7 @@ func init() {
 		"",
 		"Pre-shared key.",
 	)
-	envs["VOLBACK_SERVER_PSK"] = "server.psk"
+	envs["BIVAC_SERVER_PSK"] = "server.psk"
 	restoreCmd.Flags().BoolVarP(
 		&force,
 		"force",

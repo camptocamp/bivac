@@ -76,7 +76,7 @@ func (c *Client) RestoreVolume(
 	)
 	if err != nil {
 		err = fmt.Errorf(
-			"failed to connect to the remote Volback instance: %s",
+			"failed to connect to the remote Bivac instance: %s",
 			err,
 		)
 		return
