@@ -3,12 +3,15 @@ package utils
 import (
 	"encoding/json"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
 )
+
+var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // OutputFormat stores output of Restic commands
 type OutputFormat struct {
@@ -53,6 +56,17 @@ func HandleExitCode(err error) int {
 		}
 	}
 	return 0
+}
+
+// Generate a random string
+func GenerateRandomString(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyz" +
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	stringByte := make([]byte, length)
+	for i := range stringByte {
+		stringByte[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(stringByte)
 }
 
 // Merge a source path into a target path
