@@ -218,6 +218,31 @@ func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 	return
 }
 
+// RestoreVolume does a restore of a volume
+func (m *Manager) RestoreVolume(
+	volumeID string,
+	force bool,
+	snapshotName string,
+) (err error) {
+	for _, v := range m.Volumes {
+		if v.ID == volumeID {
+			log.WithFields(log.Fields{
+				"volume":   v.Name,
+				"hostname": v.Hostname,
+			}).Debug("Restore manually requested.")
+			err = restoreVolume(m, v, force, snapshotName)
+			if err != nil {
+				err = fmt.Errorf(
+					"failed to restore volume: %s",
+					err,
+				)
+				return
+			}
+		}
+	}
+	return
+}
+
 // GetInformations returns informations regarding the Bivac manager
 func (m *Manager) GetInformations() (informations map[string]string) {
 	informations = map[string]string{
