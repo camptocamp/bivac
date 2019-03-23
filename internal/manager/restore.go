@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/codejamninja/volback/internal/utils"
-	"github.com/codejamninja/volback/pkg/volume"
+	"github.com/camptocamp/bivac/internal/utils"
+	"github.com/camptocamp/bivac/pkg/volume"
 	"os"
 	"time"
 )
