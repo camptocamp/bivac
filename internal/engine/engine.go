@@ -66,6 +66,31 @@ func (r *Engine) Backup(backupPath, hostname string, force bool) string {
 	return utils.ReturnFormattedOutput(r.Output)
 }
 
+// Restore performs the restore of the passed volume
+func (r *Engine) Restore(
+	backupPath,
+	hostname string,
+	force bool,
+	snapshotName string,
+) string {
+	var err error
+	if force {
+		err = r.unlockRepository()
+		if err != nil {
+			return utils.ReturnFormattedOutput(r.Output)
+		}
+	}
+	err = r.restoreVolume(hostname, backupPath, snapshotName)
+	if err != nil {
+		return utils.ReturnFormattedOutput(r.Output)
+	}
+	err = r.retrieveBackupsStats()
+	if err != nil {
+		return utils.ReturnFormattedOutput(r.Output)
+	}
+	return utils.ReturnFormattedOutput(r.Output)
+}
+
 func (r *Engine) initializeRepository() (err error) {
 	rc := 0
 
@@ -121,6 +146,107 @@ func (r *Engine) forget() (err error) {
 		rc = utils.HandleExitCode(err)
 	}
 	r.Output["forget"] = utils.OutputFormat{
+		Stdout:   string(output),
+		ExitCode: rc,
+	}
+	err = nil
+	return
+}
+
+func (r *Engine) restoreVolume(
+	hostname,
+	backupPath string,
+	snapshotName string,
+) (err error) {
+	rc := 0
+	origionalBackupPath := r.getOrigionalBackupPath(
+		hostname,
+		backupPath,
+		snapshotName,
+	)
+	workingPath, err := utils.GetRandomFilePath(backupPath)
+	workingPath = strings.ReplaceAll(workingPath, "//", "/")
+	if err != nil {
+		rc = utils.HandleExitCode(err)
+	}
+	err = os.MkdirAll(workingPath, 0700)
+	if err != nil {
+		rc = utils.HandleExitCode(err)
+	}
+	output, err := exec.Command(
+		"restic",
+		append(
+			r.DefaultArgs,
+			[]string{
+				"--host",
+				hostname,
+				"restore",
+				snapshotName,
+				"--target",
+				workingPath,
+			}...,
+		)...,
+	).CombinedOutput()
+	restoreDumpPath := workingPath + origionalBackupPath
+	files, err := ioutil.ReadDir(restoreDumpPath)
+	if err != nil {
+		rc = utils.HandleExitCode(err)
+	}
+	collisionName := ""
+	for _, f := range files {
+		fileName := f.Name()
+		restoreSubPath := strings.ReplaceAll(backupPath+"/"+fileName, "//", "/")
+		if restoreSubPath == workingPath {
+			collisionName, err = utils.GetRandomFileName(workingPath)
+			if err != nil {
+				rc = utils.HandleExitCode(err)
+			}
+			restoreSubPath = strings.ReplaceAll(workingPath+"/"+collisionName, "//", "/")
+		}
+		err = utils.MergePaths(
+			strings.ReplaceAll(restoreDumpPath+"/"+fileName, "//", "/"),
+			restoreSubPath,
+		)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+		err = os.RemoveAll(
+			strings.ReplaceAll(restoreDumpPath+"/"+fileName, "//", "/"),
+		)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+	}
+	if len(collisionName) > 0 {
+		tmpWorkingPath, err := utils.GetRandomFilePath(backupPath)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+		err = os.Rename(
+			workingPath,
+			tmpWorkingPath,
+		)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+		err = os.Rename(
+			strings.ReplaceAll(tmpWorkingPath+"/"+collisionName, "//", "/"),
+			workingPath,
+		)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+		err = os.RemoveAll(tmpWorkingPath)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+	} else {
+		err = os.RemoveAll(workingPath)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+	}
+	r.Output["restore"] = utils.OutputFormat{
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
