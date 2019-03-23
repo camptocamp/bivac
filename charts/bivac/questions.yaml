@@ -1,0 +1,63 @@
+categories:
+  - Server
+questions:
+
+# Images
+  - variable: images.bivac.repository
+    default: camptocamp/bivac
+    description: ''
+    type: string
+    required: true
+    label: repository
+    group: Images
+  - variable: images.bivac.tag
+    default: 2.0.0
+    description: ''
+    type: string
+    required: true
+    label: tag
+    group: Images
+
+# Config
+  - variable: config.awsAccessKey
+    default: ''
+    description: 'aws access key'
+    type: string
+    required: true
+    label: 'aws access key'
+    group: Config
+  - variable: config.awsSecretKey
+    default: ''
+    description: 'aws secret key'
+    type: password
+    required: true
+    label: 'aws secret key'
+    group: Config
+  - variable: config.targetUrl
+    default: ''
+    description: 'target url'
+    type: string
+    required: true
+    label: 'target url'
+    group: Config
+  - variable: config.resticPassword
+    default: 'bivac'
+    description: 'restic password'
+    type: password
+    required: true
+    label: 'restic password'
+    group: Config
+  - variable: config.serverPsk
+    default: 'bivac'
+    description: 'server psk'
+    type: password
+    required: true
+    label: 'server psk'
+    group: Config
+  - variable: config.forgetArgs
+    default: '--keep-last 3'
+    description: 'forget args'
+    type: string
+    required: false
+    label: 'forget args'
+    group: Config

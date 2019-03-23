@@ -1,0 +1,25 @@
+name: bivac
+home: https://github.com/camptocamp/bivac
+icon: https://raw.githubusercontent.com/camptocamp/bivac/master/img/bivac_small.png
+version: 0.0.1
+appVersion: latest
+description: 'backup interface for volumes attached to containers'
+keywords:
+  - bivac
+  - bivac
+  - backup
+  - bivac
+  - docker
+  - volume
+  - kubernetes
+  - persist
+  - restore
+  - dedup
+  - deduplication
+  - restic
+  - duplicity
+sources:
+  - https://github.com/camptocamp/bivac
+maintainers:
+  - name: 'Jam Risser'
+    email: jam@codejam.ninja

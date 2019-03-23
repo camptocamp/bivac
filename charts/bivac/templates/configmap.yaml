@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "bivac.fullname" . }}
+  labels:
+    app: {{ template "bivac.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  aws_access_key: {{ .Values.config.awsAccessKey | quote }}
+  target_url: {{ .Values.config.targetUrl | quote }}
+  forget_args: {{ .Values.config.forgetArgs | quote }}

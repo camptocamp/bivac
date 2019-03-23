@@ -1,0 +1,50 @@
+images:
+  bivac:
+    repository: camptocamp/bivac
+    tag: 2.0.0
+    pullPolicy: IfNotPresent
+
+config:
+  awsAccessKey: ''
+  awsSecretKey: ''
+  forgetArgs: '--keep-last 3'
+  resticPassword: 'bivac'
+  serverPsk: 'bivac'
+  targetUrl: ''
+
+service:
+  type: NodePort
+  externalTrafficPolicy: Cluster
+  nodePorts:
+    bivac:
+      http: ''
+
+ingress:
+  enabled: false
+  tls: false
+  hosts:
+    bivac:
+      - name: ''
+        path: /
+
+issuer:
+  name: letsencrypt-staging
+  kind: ClusterIssuer
+
+probes:
+  liveness:
+    initialDelaySeconds: 120
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+  readiness:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+serviceAccount:
+  create: true
+  name: ''

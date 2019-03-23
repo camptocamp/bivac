@@ -2,4 +2,4 @@
 hugo/public
 *.out
 coverage
-bivac
+/bivac

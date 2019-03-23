@@ -1,0 +1,51 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "bivac.fullname" . }}-bivac
+  labels:
+    app: {{ template "bivac.name" . }}-bivac
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "bivac.fullname" . }}-bivac
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "bivac.fullname" . }}-bivac
+  labels:
+    app: {{ template "bivac.name" . }}-bivac
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
+  - apiGroups: ['']
+    resources:
+      - pods
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+  - apiGroups: ['']
+    resources:
+      - persistentvolumeclaims
+      - namespaces
+    verbs:
+      - get
+      - list
+  - apiGroups: ['']
+    resources:
+      - pods/log
+      - pods/exec
+    verbs:
+      - get
+      - post
+      - create

@@ -1,0 +1,71 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "bivac.fullname" . }}-bivac
+  labels:
+    app: {{ template "bivac.name" . }}-bivac
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ template "bivac.name" . }}-bivac
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ template "bivac.fullname" . }}-bivac
+          image: {{ .Values.images.bivac.repository }}:{{ .Values.images.bivac.tag }}
+          imagePullPolicy: {{ .Values.images.bivac.pullPolicy }}
+          args: [manager, -v]
+          ports:
+            - name: container
+              containerPort: 8182
+          env:
+            - name: BIVAC_ORCHESTRATOR
+              value: kubernetes
+            - name: KUBERNETES_ALL_NAMESPACES
+              value: 'true'
+            # - name: KUBERNETES_KUBECONFIG
+            #   value: ''
+            - name: KUBERNETES_AGENT_SERVICE_ACCOUNT
+              value: {{ template "bivac.fullname" . }}-bivac
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "bivac.fullname" . }}
+                  key: aws_access_key
+            - name: RESTIC_FORGET_ARGS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "bivac.fullname" . }}
+                  key: forget_args
+            - name: BIVAC_TARGET_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "bivac.fullname" . }}
+                  key: target_url
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "bivac.fullname" . }}
+                  key: aws_secret_key
+            - name: RESTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "bivac.fullname" . }}
+                  key: restic_password
+            - name: BIVAC_SERVER_PSK
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "bivac.fullname" . }}
+                  key: server_psk
+          livenessProbe:
+            tcpSocket:
+              port: container
+{{ toYaml .Values.probes.liveness | indent 12 }}
+          readinessProbe:
+            tcpSocket:
+              port: container
+{{ toYaml .Values.probes.readiness | indent 12 }}
