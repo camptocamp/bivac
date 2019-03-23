@@ -128,6 +128,30 @@ func (r *Engine) forget() (err error) {
 	return
 }
 
+func (r *Engine) getOrigionalBackupPath(
+	hostname,
+	backupPath string,
+	snapshotName string,
+) string {
+	output, err := exec.Command(
+		"restic",
+		append(
+			r.DefaultArgs,
+			[]string{"--host", hostname, "ls", snapshotName}...,
+		)...,
+	).CombinedOutput()
+	type Header struct {
+		Paths []string `json:"paths"`
+	}
+	headerJson := []byte(strings.Split(string(output), "\n")[1])
+	var header Header
+	err = json.Unmarshal(headerJson, &header)
+	if err != nil {
+		return "/"
+	}
+	return header.Paths[0]
+}
+
 func (r *Engine) retrieveBackupsStats() (err error) {
 	rc := 0
 	output, err := exec.Command("restic", append(r.DefaultArgs, []string{"snapshots"}...)...).CombinedOutput()
