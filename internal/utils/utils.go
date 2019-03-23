@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 )
 
 var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -67,6 +68,30 @@ func GenerateRandomString(length int) string {
 		stringByte[i] = charset[seededRand.Intn(len(charset))]
 	}
 	return string(stringByte)
+}
+
+// Get a random file name unique from the files found in the parentPath
+func GetRandomFileName(parentPath string) (string, error) {
+	randomFileName := GenerateRandomString(16)
+	randomFilePath := strings.ReplaceAll(parentPath+"/"+randomFileName, "//", "/")
+	_, err := os.Stat(randomFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return randomFileName, nil
+		}
+		return "", err
+	}
+	return GetRandomFileName(parentPath)
+}
+
+// Get a random file name unique from the file paths found in the parentPath
+func GetRandomFilePath(parentPath string) (string, error) {
+	randomFileName, err := GetRandomFileName(parentPath)
+	if err != nil {
+		return "", err
+	}
+	randomFilePath := strings.ReplaceAll(parentPath+"/"+randomFileName, "//", "/")
+	return randomFilePath, nil
 }
 
 // Merge a source path into a target path
