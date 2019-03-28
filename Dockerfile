@@ -14,7 +14,7 @@ RUN chmod 755 /usr/bin/rclone
 
 FROM debian
 RUN apt-get update && \
-    apt-get install -y openssh-client && \
+    apt-get install -y openssh-client procps && \
 	rm -rf /var/lib/apt/lists/*
 COPY --from=builder /etc/ssl /etc/ssl
 COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /bin/
