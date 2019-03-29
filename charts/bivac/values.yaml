@@ -1,8 +1,7 @@
-images:
-  bivac:
-    repository: camptocamp/bivac
-    tag: 2.0.0
-    pullPolicy: IfNotPresent
+image:
+  repository: camptocamp/bivac
+  tag: 2.0.0
+  pullPolicy: IfNotPresent
 
 config:
   awsAccessKey: ''
@@ -11,6 +10,9 @@ config:
   resticPassword: 'bivac'
   serverPsk: 'bivac'
   targetUrl: ''
+
+bivac:
+  env: {}
 
 service:
   type: NodePort

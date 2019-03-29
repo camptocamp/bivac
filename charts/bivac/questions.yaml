@@ -3,14 +3,14 @@ categories:
 questions:
 
 # Images
-  - variable: images.bivac.repository
+  - variable: image.repository
     default: camptocamp/bivac
     description: ''
     type: string
     required: true
     label: repository
     group: Images
-  - variable: images.bivac.tag
+  - variable: image.tag
     default: 2.0.0
     description: ''
     type: string

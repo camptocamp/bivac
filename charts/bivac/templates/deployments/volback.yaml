@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: {{ template "bivac.fullname" . }}-bivac
-          image: {{ .Values.images.bivac.repository }}:{{ .Values.images.bivac.tag }}
-          imagePullPolicy: {{ .Values.images.bivac.pullPolicy }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           args: [manager, -v]
           ports:
             - name: container

@@ -6,9 +6,7 @@ appVersion: latest
 description: 'backup interface for volumes attached to containers'
 keywords:
   - bivac
-  - bivac
   - backup
-  - bivac
   - docker
   - volume
   - kubernetes
@@ -17,9 +15,8 @@ keywords:
   - dedup
   - deduplication
   - restic
-  - duplicity
 sources:
   - https://github.com/camptocamp/bivac
 maintainers:
-  - name: 'Jam Risser'
-    email: jam@codejam.ninja
+  - name: Camptocamp
+    email: info@camptocamp.com
