@@ -30,7 +30,7 @@ spec:
             # - name: KUBERNETES_KUBECONFIG
             #   value: ''
             - name: KUBERNETES_AGENT_SERVICE_ACCOUNT
-              value: {{ template "bivac.fullname" . }}-bivac
+              value: {{ template "bivac.name" . }}
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 configMapKeyRef:
