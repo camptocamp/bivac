@@ -36,16 +36,19 @@ rules:
       - list
   - apiGroups: ['']
     resources:
-      - persistentvolumeclaims
       - namespaces
+      - nodes
+      - persistentvolumeclaims
+      - serviceaccounts
     verbs:
       - get
       - list
   - apiGroups: ['']
     resources:
-      - pods/log
       - pods/exec
+      - pods/log
     verbs:
-      - get
-      - post
       - create
+      - get
+      - list
+      - post
