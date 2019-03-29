@@ -11,7 +11,7 @@ bivac: main.go $(DEPS)
 	strip $@
 
 lint:
-	@ go get -v github.com/golang/lint/golint
+	@go get -v golang.org/x/lint/golint
 	@for file in $$(go list ./... | grep -v '_workspace/' | grep -v 'vendor'); do \
 		export output="$$(golint $${file} | grep -v 'type name will be used as docker.DockerInfo')"; \
 		[ -n "$${output}" ] && echo "$${output}" && export status=1; \
