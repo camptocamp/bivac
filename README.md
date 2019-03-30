@@ -99,4 +99,5 @@ Bivac detects automatically the kind of data that is stored on a volume and adap
 * PostgreSQL: Run `pg_dumpall` before backup
 * MySQL: Run `mysqldump` before backup
 * OpenLDAP: Run `slapcat` before backup
+* Mongo: Run `mongodump` before backup
 * Default: Backup volume data as is
