@@ -179,8 +179,6 @@ func (r *Engine) restoreVolume(
 		append(
 			r.DefaultArgs,
 			[]string{
-				"--host",
-				hostname,
 				"restore",
 				snapshotName,
 				"--target",
@@ -264,17 +262,27 @@ func (r *Engine) getOrigionalBackupPath(
 		"restic",
 		append(
 			r.DefaultArgs,
-			[]string{"--host", hostname, "ls", snapshotName}...,
+			[]string{"ls", snapshotName}...,
 		)...,
 	).CombinedOutput()
+	if err != nil {
+		return err.Error()
+	}
 	type Header struct {
 		Paths []string `json:"paths"`
 	}
-	headerJSON := []byte(strings.Split(string(output), "\n")[1])
+	headerJSON := []byte("{\"paths\": [\"\"]")
+	jsons := strings.Split(string(output), "\n")
+	for i := 0; i < len(jsons); i++ {
+		if strings.Index(jsons[i], "\",\"paths\":[\"") > -1 {
+			headerJSON = []byte(jsons[i])
+			break
+		}
+	}
 	var header Header
 	err = json.Unmarshal(headerJSON, &header)
 	if err != nil {
-		return "/"
+		return ""
 	}
 	return header.Paths[0]
 }
