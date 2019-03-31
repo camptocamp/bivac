@@ -116,6 +116,7 @@ func (o *CattleOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 			HostBind:   hostID,
 			Hostname:   hostname,
 			Logs:       make(map[string]string),
+			SubPath:    "",
 		}
 
 		if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {

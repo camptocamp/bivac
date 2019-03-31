@@ -40,17 +40,11 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		}
 	}
 
-	subPath := ""
-	splitVolumeID := strings.Split(v.ID, ":")
-	if len(splitVolumeID) > 0 {
-		subPath = "/" + splitVolumeID[1]
-	}
-
 	cmd := []string{
 		"agent",
 		"backup",
 		"-p",
-		v.Mountpoint + subPath + "/" + v.BackupDir,
+		v.Mountpoint + v.SubPath + "/" + v.BackupDir,
 		"-r",
 		m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
 		"--host",

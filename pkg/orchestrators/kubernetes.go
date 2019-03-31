@@ -281,8 +281,10 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 								clonedV.ID = v.ID + ":" + volumeMount.SubPath
 							}
 						}
+						fullSubPath := ""
 						if len(subPath) > 0 {
 							subpathMap[splitVolumeID[0]] = true
+							fullSubPath = "/" + subPath
 						}
 						if volumeMount.SubPath == subPath {
 							mv := &volume.MountedVolume{
@@ -292,6 +294,7 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 								Volume:      clonedV,
 								Path:        volumeMount.MountPath,
 							}
+							mv.Volume.SubPath = fullSubPath
 							containerMap[mv.ContainerID+mv.Volume.ID] = mv
 						}
 					}
