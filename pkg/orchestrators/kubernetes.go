@@ -83,16 +83,21 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 			}
 
 			containers, _ := o.GetContainersMountingVolume(v)
+			containerMap := make(map[string]bool)
 
 			for i := 0; i < len(containers); i++ {
-				v = containers[i].Volume
-				v.HostBind = containers[i].HostID
-				v.Hostname = containers[i].HostID
-				v.Mountpoint = containers[i].Path
-				if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
-					continue
+				container := containers[i]
+				if _, ok := containerMap[container.Volume.ID]; !ok {
+					v = containers[i].Volume
+					v.HostBind = containers[i].HostID
+					v.Hostname = containers[i].HostID
+					v.Mountpoint = containers[i].Path
+					if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
+						continue
+					}
+					volumes = append(volumes, v)
 				}
-				volumes = append(volumes, v)
+				containerMap[container.Volume.ID] = true
 			}
 		}
 	}
@@ -293,9 +298,7 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 				}
 			}
 		}
-
 	}
-
 	for _, container := range containerMap {
 		if _, ok := subpathMap[strings.Split(container.Volume.ID, ":")[0]]; ok {
 			if _, ok := containerMap[strings.Split(container.ContainerID+container.Volume.ID, ":")[0]]; !ok {
