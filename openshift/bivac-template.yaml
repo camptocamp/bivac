@@ -1,4 +1,4 @@
-# yamllint disable-line rule:line-length
+# yamllint disable rule:line-length
 ---
 apiVersion: v1
 kind: Template
@@ -23,7 +23,7 @@ objects:
   - kind: ClusterRole
     apiVersion: rbac.authorization.k8s.io/v1
     metadata:
-      name: ${APP_NAME}
+      name: bivac
     rules:
       - apiGroups:
           - ""
@@ -60,18 +60,18 @@ objects:
     roleRef:
       apiGroup: rbac.authorization.k8s.io
       kind: ClusterRole
-      name: ${APP_NAME}
+      name: bivac
     subjects:
       - kind: ServiceAccount
-        name: ${APP_NAME}
+        name: bivac
         namespace: ${NAMESPACE}
   - apiVersion: v1
     kind: ServiceAccount
     metadata:
-      name: ${APP_NAME}
+      name: bivac
       namespace: ${NAMESPACE}
     secrets:
-      - name: ${APP_NAME}
+      - name: bivac
   - kind: DeploymentConfig
     apiVersion: apps.openshift.io/v1
     metadata:
@@ -104,11 +104,10 @@ objects:
           restartPolicy: Always
           schedulerName: default-scheduler
           securityContext: {}
-          serviceAccount: ${APP_NAME}
-          serviceAccountName: ${APP_NAME}
+          serviceAccount: bivac
+          serviceAccountName: bivac
           terminationGracePeriodSeconds: 30
           containers:
-            # - command: /bin/bivac
             - image: ${BIVAC_MANAGER_IMAGE}
               args:
                 - manager
@@ -123,7 +122,7 @@ objects:
                 - name: RESTIC_FORGET_ARGS
                   value: ${RESTIC_FORGET_ARGS}
                 - name: KUBERNETES_AGENT_SERVICE_ACCOUNT
-                  value: ${APP_NAME}
+                  value: bivac
                 - name: BIVAC_TARGET_URL
                   value: ${BIVAC_TARGET_URL}
                 - name: BIVAC_RETRY_COUNT
@@ -191,9 +190,9 @@ objects:
 parameters:
   - name: NAMESPACE
     description: namespace
-    value: ${APP_NAME}
+    required: true
   - name: APP_NAME
-    description: Name used for all bivac objects. This name should be unique across project.
+    description: Name used for most bivac objects. This name should be unique across project.
     value: bivac
     required: true
   - name: KUBERNETES_ALL_NAMESPACES
@@ -203,10 +202,12 @@ parameters:
     description: Namespace where you want to run Bivac
   - name: RESTIC_FORGET_ARGS
     description: retention policy for restic in restic syntax (https://restic.readthedocs.io/en/latest/060_forget.html#removing-snapshots-according-to-a-policy)
-    value: "--keep-daily 15 --keep-weekly=5 --keep-hourly=48 --keep-monthly=13 --keep-last 50 --prune"
+    value: "--keep-daily 15 --keep-weekly 5 --keep-hourly 48 --keep-monthly 13 --keep-last 50 --prune"
   - name: RESTIC_PASSWORD
     from: '[\w]{64}'
     generate: expression
+    description: password used by restic to encrypt backups. Note that you will need this value to access your backups - if you don't provide one, it will be randomly generated, please securely store a copy of this key off-site!
+    required: true
   - name: BIVAC_TARGET_URL
     description: URL of the bucket where backups are to be stored, in the form s3://s3.amazonaws.com/bucketname/subdir
     required: true
@@ -221,15 +222,17 @@ parameters:
     description: Retry to backup the volume if something goes wrong with Bivac.
     value: "0"
   - name: BIVAC_VOLUMES_WHITELIST
-    description: Only backup whitelisted volumes
+    description: Only backup whitelisted volumes (comma-separated list of PVC names)
   - name: BIVAC_VOLUMES_BLACKLIST
-    description: Do not backup blacklisted volumes
+    description: Do not backup blacklisted volumes (comma-separated list of PVC names)
   - name: BIVAC_MANAGER_IMAGE
     value: camptocamp/bivac:2.0.0
+    description: image used for bivac manager
     # value: camptocamp/bivac:2.1-dev
   - name: BIVAC_AGENT_IMAGE
     value: camptocamp/bivac:2.0.0
     # value: camptocamp/bivac:2.1-dev
-    description: Agent's Docker image (default "camptocamp/bivac:2.0.0")
+    description: Agent's Docker image
   - name: BIVAC_VERBOSE
     description: Enable verbose output (bool)
+    value: "true"
