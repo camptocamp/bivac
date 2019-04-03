@@ -77,9 +77,11 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 		for _, pvc := range pvcs.Items {
 			v := &volume.Volume{
 				ID:        string(pvc.UID),
+				Logs:      make(map[string]string),
 				Name:      pvc.Name,
 				Namespace: namespace,
-				Logs:      make(map[string]string),
+				RepoName:  pvc.Name,
+				SubPath:   "",
 			}
 
 			containers, _ := o.GetContainersMountingVolume(v)
@@ -272,21 +274,15 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 						clonedV := &volume.Volume{}
 						copier.Copy(&clonedV, &v)
 						splitVolumeID := strings.Split(clonedV.ID, ":")
-						subPath := ""
-						if len(splitVolumeID) > 1 {
-							subPath = splitVolumeID[1]
-						} else {
-							if len(volumeMount.SubPath) > 0 {
-								subPath = volumeMount.SubPath
-								clonedV.ID = v.ID + ":" + volumeMount.SubPath
-							}
+						if len(clonedV.SubPath) <= 0 && len(volumeMount.SubPath) > 0 {
+							clonedV.ID = v.ID + ":" + volumeMount.SubPath
+							clonedV.SubPath = "/" + volumeMount.SubPath
+							clonedV.RepoName = v.Name + "_" + strings.ReplaceAll(volumeMount.SubPath, "/", "_")
 						}
-						fullSubPath := ""
-						if len(subPath) > 0 {
+						if len(clonedV.SubPath) > 0 {
 							subpathMap[splitVolumeID[0]] = true
-							fullSubPath = "/" + subPath
 						}
-						if volumeMount.SubPath == subPath {
+						if ("/" + volumeMount.SubPath) == clonedV.SubPath {
 							mv := &volume.MountedVolume{
 								PodID:       pod.Name,
 								ContainerID: container.Name,
@@ -294,7 +290,6 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 								Volume:      clonedV,
 								Path:        volumeMount.MountPath,
 							}
-							mv.Volume.SubPath = fullSubPath
 							containerMap[mv.ContainerID+mv.Volume.ID] = mv
 						}
 					}

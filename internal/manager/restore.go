@@ -42,7 +42,7 @@ func restoreVolume(
 		"-p",
 		v.Mountpoint + "/" + v.BackupDir,
 		"-r",
-		m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
+		m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.RepoName,
 		"-s",
 		snapshotName,
 		"--host",

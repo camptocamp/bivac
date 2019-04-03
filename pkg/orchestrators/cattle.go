@@ -110,12 +110,13 @@ func (o *CattleOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 		}
 
 		v := &volume.Volume{
-			ID:         v.Id,
-			Name:       v.Name,
-			Mountpoint: mountpoint,
 			HostBind:   hostID,
 			Hostname:   hostname,
+			ID:         v.Id,
 			Logs:       make(map[string]string),
+			Mountpoint: mountpoint,
+			Name:       v.Name,
+			RepoName:   v.Name,
 			SubPath:    "",
 		}
 

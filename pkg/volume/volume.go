@@ -21,6 +21,7 @@ type Volume struct {
 	Hostname   string
 	Namespace  string
 	SubPath    string
+	RepoName   string
 
 	LastBackupDate   string
 	LastBackupStatus string
