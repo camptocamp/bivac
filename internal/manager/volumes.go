@@ -92,7 +92,7 @@ func getLastBackupDate(m *Manager, v *volume.Volume) (err error) {
 			"--no-cache",
 			"--json",
 			"-r",
-			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
+			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.RepoName,
 		},
 	}
 

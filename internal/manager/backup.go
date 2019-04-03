@@ -155,7 +155,7 @@ func (m *Manager) RunResticCommand(v *volume.Volume, cmd []string) (output strin
 		DefaultArgs: []string{
 			"--no-cache",
 			"-r",
-			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
+			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.RepoName,
 		},
 		Output: make(map[string]utils.OutputFormat),
 	}
