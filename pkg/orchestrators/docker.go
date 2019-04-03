@@ -79,6 +79,7 @@ func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 			Hostname:   info.Name,
 			Labels:     voll.Labels,
 			Logs:       make(map[string]string),
+			SubPath:    "",
 		}
 
 		if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
