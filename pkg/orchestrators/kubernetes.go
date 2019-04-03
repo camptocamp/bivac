@@ -273,21 +273,24 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 					if c == v.Name {
 						clonedV := &volume.Volume{}
 						copier.Copy(&clonedV, &v)
-						if len(clonedV.SubPath) <= 0 && len(volumeMount.SubPath) > 0 {
+						splitVolumeID := strings.Split(clonedV.ID, ":")
+						if len(splitVolumeID) > 1 {
+							clonedV.SubPath = "/" + splitVolumeID[1]
+						} else if len(clonedV.SubPath) <= 0 && len(volumeMount.SubPath) > 0 {
 							clonedV.ID = v.ID + ":" + volumeMount.SubPath
 							clonedV.SubPath = "/" + volumeMount.SubPath
-							clonedV.RepoName = v.Name + "_" + strings.ReplaceAll(volumeMount.SubPath, "/", "_")
 						}
 						if len(clonedV.SubPath) > 0 {
-							subpathMap[strings.Split(clonedV.ID, ":")[0]] = true
+							subpathMap[splitVolumeID[0]] = true
+							clonedV.RepoName = v.Name + strings.ReplaceAll(clonedV.SubPath, "/", "_")
 						}
 						if ("/" + volumeMount.SubPath) == clonedV.SubPath {
 							mv := &volume.MountedVolume{
-								PodID:       pod.Name,
 								ContainerID: container.Name,
 								HostID:      pod.Spec.NodeName,
-								Volume:      clonedV,
 								Path:        volumeMount.MountPath,
+								PodID:       pod.Name,
+								Volume:      clonedV,
 							}
 							containerMap[mv.ContainerID+mv.Volume.ID] = mv
 						}
