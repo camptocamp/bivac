@@ -146,18 +146,6 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 
 	kvms = append(kvms, kvm)
 
-	// Get current namespace
-	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		clientcmd.NewDefaultClientConfigLoadingRules(),
-		&clientcmd.ConfigOverrides{},
-	)
-	namespace, _, err := kubeconfig.Namespace()
-	if err != nil {
-		err = fmt.Errorf("failed to get namespace: %s", err)
-		return
-	}
-	o.setNamespace(namespace)
-
 	pod, err := o.client.CoreV1().Pods(o.config.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "bivac-agent-",
@@ -224,6 +212,18 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(readCloser)
 	output = buf.String()
+
+	// Get current namespace
+	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{},
+	)
+	namespace, _, err := kubeconfig.Namespace()
+	if err != nil {
+		err = fmt.Errorf("failed to get namespace: %s", err)
+		return
+	}
+	o.setNamespace(namespace)
 
 	return
 }
