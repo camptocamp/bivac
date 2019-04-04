@@ -42,6 +42,11 @@ spec:
                 configMapKeyRef:
                   name: {{ template "bivac.fullname" . }}
                   key: target_url
+            - name: BIVAC_REFRESH_TIME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "bivac.fullname" . }}
+                  key: refresh_time
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:

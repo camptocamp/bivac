@@ -7,6 +7,7 @@ config:
   awsAccessKey: ''
   awsSecretKey: ''
   forgetArgs: '--keep-last 3'
+  refreshTime: 10
   resticPassword: 'bivac'
   serverPsk: 'bivac'
   targetUrl: ''

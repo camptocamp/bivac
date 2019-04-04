@@ -61,3 +61,10 @@ questions:
     required: false
     label: 'forget args'
     group: Config
+  - variable: config.refreshTime
+    default: 10
+    description: 'refresh time'
+    type: int
+    required: true
+    label: 'refresh time'
+    group: Config

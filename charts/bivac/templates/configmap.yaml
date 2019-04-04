@@ -9,5 +9,6 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   aws_access_key: {{ .Values.config.awsAccessKey | quote }}
-  target_url: {{ .Values.config.targetUrl | quote }}
   forget_args: {{ .Values.config.forgetArgs | quote }}
+  refresh_time: {{ .Values.config.refreshTime | quote }}
+  target_url: {{ .Values.config.targetUrl | quote }}
