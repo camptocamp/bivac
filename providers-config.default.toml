@@ -20,7 +20,7 @@
 	detect_cmd = "[[ -f $volume/PG_VERSION ]]"
 	post_cmd = "rm -rf $volume/backups"
 	pre_cmd = "mkdir -p $volume/backups && pg_dumpall --clean -Upostgres > $volume/backups/all.sql"
-	restore_post_cmd = "psql -f $volume/backups/all.sql postgres && rm -rf $volume/backups"
+	restore_post_cmd = "psql -U postgres -f $volume/backups/all.sql && rm -rf $volume/backups"
 
 	[providers.openldap]
 	pre_cmd = "mkdir -p $volume/backups && slapcat > $volume/backups/all.ldif"
