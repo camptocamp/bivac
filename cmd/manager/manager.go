@@ -27,6 +27,7 @@ var (
 	retryCount    int
 	logServer     string
 	agentImage    string
+	refreshTime   int
 )
 var envs = make(map[string]string)
 
@@ -49,7 +50,7 @@ var managerCmd = &cobra.Command{
 			return
 		}
 
-		err = manager.Start(bivacCmd.Version, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount)
+		err = manager.Start(bivacCmd.Version, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount, refreshTime)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return
@@ -102,6 +103,9 @@ func init() {
 
 	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "camptocamp/bivac:2.0.0", "Agent's Docker image.")
 	envs["BIVAC_AGENT_IMAGE"] = "agent.image"
+
+	managerCmd.Flags().IntVarP(&refreshTime, "refresh.time", "", 10, "The time in minutes between automatic backups.")
+	envs["BIVAC_REFRESH_TIME"] = "refresh.time"
 
 	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	bivacCmd.RootCmd.AddCommand(managerCmd)

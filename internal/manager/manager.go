@@ -34,7 +34,7 @@ type Manager struct {
 }
 
 // Start starts a Bivac manager which handle backups management
-func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount int) (err error) {
+func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount int, refreshTime int) (err error) {
 	p, err := LoadProviders(providersFile)
 	if err != nil {
 		err = fmt.Errorf("failed to read providers file: %s", err)
@@ -90,7 +90,7 @@ func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters
 				}
 			}
 
-			time.Sleep(10 * time.Minute)
+			time.Sleep(time.Duration(refreshTime) * time.Minute)
 		}
 	}(m, volumeFilters)
 
