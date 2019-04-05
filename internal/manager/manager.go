@@ -175,7 +175,14 @@ func isBackupNeeded(v *volume.Volume) bool {
 		return true
 	}
 
-	lbd, err := time.Parse("2006-01-02 15:04:05", v.LastBackupDate)
+	var dateRef string
+	if v.LastBackupStartDate == "" {
+		dateRef = v.LastBackupDate
+	} else {
+		dateRef = v.LastBackupStartDate
+	}
+
+	lbd, err := time.Parse("2006-01-02 15:04:05", dateRef)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"volume":   v.Name,

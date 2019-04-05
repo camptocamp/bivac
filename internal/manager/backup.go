@@ -27,6 +27,8 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		useLogReceiver = true
 	}
 
+	v.LastBackupStartDate = time.Now().Format("2006-01-02 15:04:05")
+
 	p, err := m.Providers.GetProvider(m.Orchestrator, v)
 	if err != nil {
 		err = fmt.Errorf("failed to get provider: %s", err)
