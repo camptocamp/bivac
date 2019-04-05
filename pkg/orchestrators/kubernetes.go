@@ -163,7 +163,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "bivac-agent-",
 			Labels: map[string]string{
-				"generateFromPod": os.Getenv("HOSTNAME"),
+				"generatedFromPod": os.Getenv("HOSTNAME"),
 			},
 		},
 		Spec: apiv1.PodSpec{
