@@ -1,29 +1,33 @@
 # Bivac Openshift Template
-Template to install bivac in openshift without helm
+Templates to install bivac in openshift/OKD without helm
 
 * Install template:
 ```bash
 oc create -f bivac-template.yaml
 ```
-* Instanciate template:
+* Instanciate template directly from file:
 ```bash
-oc process bivac \
-  -p SCHEDULE="0 2 * * *" \
+oc process -f bivac-template.yaml \
   -p BIVAC_TARGET_URL=s3:s3.amazonaws.com/<BUCKET NAME> \
   -p AWS_ACCESS_KEY_ID=<AWS ACCESS KEY> \
   -p AWS_SECRET_ACCESS_KEY=<AWS SECRET KEY> \
   -p RESTIC_PASSWORD=<RESTIC PASSWORD> \
-  -p NAMESPACE=<OPENSHIFT NAMESPACE> | oc create -f -
+  -p NAMESPACE=<BIVAC-MANAGER PROJECT> | oc create -f -
 ```
-* Delete cronjob:
+
+This will create a new namespace with a bivac-manager deployment, including all required resources like serviceaccount and secret. Note that you will need to create serviceaccounts & rolebindings for all namespaces in which you wish to backup PVCs. You can use the second file (bivac2-agent.template.yaml) for this:
 ```bash
-oc delete cronjob bivac
+oc process -f bivac2-agent.template.yaml -p NAMESPACE=<TARGET NAMESPACE>
+```
+
+* To delete bivac and all related resources:
+```bash
+oc delete -n <BIVAC-MANAGER PROJECT> serviceaccount bivac
+oc delete -n <BIVAC-MANAGER PROJECT> deploymentconfig bivac
+oc delete -n <BIVAC-MANAGER PROJECT> secret bivac
+oc delete -n <BIVAC-MANAGER PROJECT> service bivac
+oc delete -n <BIVAC-MANAGER PROJECT> route bivac
 oc delete clusterrolebinding bivac
 oc delete clusterrole bivac
-oc delete serviceaccount bivac
-oc delete configmap bivac
-```
-* Delete template:
-```bash
-oc delete template bivac
+oc delete namespace <BIVAC-MANAGER PROJECT>
 ```
