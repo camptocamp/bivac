@@ -1,220 +1,238 @@
+# yamllint disable rule:line-length
+---
 apiVersion: v1
 kind: Template
 labels:
-  app: bivac
+  app: ${APP_NAME}
 metadata:
-  name: bivac
+  name: ${APP_NAME}
   annotations:
-    description: "Bivac lets you backup all your containers volumes deployed on Docker Engine or Kubernetes using Restic, Duplicity or RClone."
-    tags: "backup,duplicity,restic,rclone,volume"
+    description: "Bivac lets you backup all your containers volumes on Amazon S3 using Restic."
+    tags: "backup,bivac,restic"
 objects:
-- apiVersion: batch/v1beta1
-  kind: CronJob
-  metadata:
-    name: ${APP_NAME}
-  spec:
-    successfulJobsHistoryLimit: 3
-    failedJobsHistoryLimit: 1
-    schedule: "${SCHEDULE}"
-    concurrencyPolicy: Forbid
-    jobTemplate:
-      spec:
-        template:
-          metadata:
-            labels:
-              app: ${APP_NAME}
-          spec:
-            serviceAccountName: ${APP_NAME}
-            containers:
-              - name: bivac
-                image: "${BIVAC_IMAGE}"
-                imagePullPolicy: Always
-                env:
-                  - name: BIVAC_ORCHESTRATOR
-                    value: kubernetes
-                  - name: BIVAC_TARGET_URL
-                    value: ${BIVAC_TARGET_URL}
-                  - name: AWS_ACCESS_KEY_ID
-                    value: ${AWS_ACCESS_KEY_ID}
-                  - name: AWS_SECRET_ACCESS_KEY
-                    value: ${AWS_SECRET_ACCESS_KEY}
-                  - name: SWIFT_USERNAME
-                    value: ${SWIFT_USERNAME}
-                  - name: SWIFT_PASSWORD
-                    value: ${SWIFT_PASSWORD}
-                  - name: SWIFT_AUTHURL
-                    value: ${SWIFT_AUTHURL}
-                  - name: SWIFT_TENANTNAME
-                    value: ${SWIFT_TENANTNAME}
-                  - name: SWIFT_REGIONNAME
-                    value: ${SWIFT_REGIONNAME}
-                  - name: RESTIC_PASSWORD
-                    value: ${RESTIC_PASSWORD}
-                  - name: K8S_WORKER_SERVICE_ACCOUNT
-                    value: ${K8S_WORKER_SERVICE_ACCOUNT}
-                volumeMounts:
-                  - name: providers-config
-                    mountPath: /providers-config.default.toml
-                    subPath: providers-config.default.toml
-            volumes:
-              - name: providers-config
-                configMap:
-                  name: ${APP_NAME}
-                  items:
-                    - key: providers-config
-                      path: providers-config.default.toml
-            restartPolicy: OnFailure
-- kind: ClusterRole
-  apiVersion: rbac.authorization.k8s.io/v1
-  metadata:
-    name: ${APP_NAME}
-  rules:
-  - apiGroups:
-    - ""
-    resources:
-    - pods
-    verbs:
-    - create
-    - delete
-    - get
-    - list
-  - apiGroups:
-    - ""
-    resources:
-    - persistentvolumeclaims
-    verbs:
-    - get
-    - list
-  - apiGroups:
-    - ""
-    resources:
-    - pods/log
-    - pods/exec
-    verbs:
-    - get
-    - post
-    - create
-- apiVersion: v1
-  kind: ServiceAccount
-  metadata:
-    name: ${APP_NAME}
-- kind: ClusterRoleBinding
-  apiVersion: rbac.authorization.k8s.io/v1
-  metadata:
-    name: ${APP_NAME}
-  roleRef:
-    apiGroup: rbac.authorization.k8s.io
-    kind: ClusterRole
-    name: ${APP_NAME}
-  subjects:
-  - kind: ServiceAccount
-    name: ${APP_NAME}
-    namespace: ${NAMESPACE}
-- kind: ConfigMap
-  apiVersion: v1
-  metadata:
-    name: ${APP_NAME}
-  data:
-    providers-config: |-
-      [providers]
-        [providers.mysql]
-        pre_cmd = """${MYSQL_PRE_CMD}"""
-        detect_cmd = """${MYSQL_DETECT_CMD}"""
-        post_cmd = """${MYSQL_POST_CMD}"""
-        backup_dir = "${MYSQL_BACKUP_DIR}"
-
-        [providers.postgresql]
-        pre_cmd = """${POSTGRES_PRE_CMD}"""
-        post_cmd = """${POSTGRES_POST_CMD}"""
-        detect_cmd = """${POSTGRES_DETECT_CMD}"""
-        backup_dir = "${POSTGRES_BACKUP_DIR}"
-
-        [providers.openldap]
-        pre_cmd = """${LDAP_PRE_CMD}"""
-        post_cmd = """${LDAP_POST_CMD}"""
-        detect_cmd = """${LDAP_DETECT_CMD}"""
-        backup_dir = "${LDAP_BACKUP_DIR}"
-
+  - kind: Namespace
+    apiVersion: v1
+    metadata:
+      annotations:
+        openshift.io/description: Bivac Backup Manager
+      name: ${NAMESPACE}
+    spec:
+      finalizers:
+        - openshift.io/origin
+        - kubernetes
+  - kind: ClusterRole
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: bivac
+    rules:
+      - apiGroups:
+          - ""
+        resources:
+          - pods
+        verbs:
+          - create
+          - delete
+          - get
+          - list
+      - apiGroups:
+          - ""
+        resources:
+          - persistentvolumeclaims
+          - persistentvolumes
+          - namespaces
+          - nodes
+        verbs:
+          - get
+          - list
+      - apiGroups:
+          - ""
+        resources:
+          - pods/log
+          - pods/exec
+        verbs:
+          - get
+          - post
+          - create
+  - kind: ClusterRoleBinding
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: ${APP_NAME}
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: bivac
+    subjects:
+      - kind: ServiceAccount
+        name: bivac
+        namespace: ${NAMESPACE}
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: bivac
+      namespace: ${NAMESPACE}
+    secrets:
+      - name: bivac
+  - kind: DeploymentConfig
+    apiVersion: apps.openshift.io/v1
+    metadata:
+      labels:
+        app: ${APP_NAME}
+      name: ${APP_NAME}
+      namespace: ${NAMESPACE}
+    spec:
+      replicas: 1
+      selector:
+        app: ${APP_NAME}
+        deploymentconfig: ${APP_NAME}
+      strategy:
+        activeDeadlineSeconds: 21600
+        resources: {}
+        rollingParams:
+          intervalSeconds: 1
+          maxSurge: 25%
+          maxUnavailable: 25%
+          timeoutSeconds: 600
+          updatePeriodSeconds: 1
+        type: Rolling
+      template:
+        metadata:
+          labels:
+            app: ${APP_NAME}
+            deploymentconfig: ${APP_NAME}
+        spec:
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: {}
+          serviceAccount: bivac
+          serviceAccountName: bivac
+          terminationGracePeriodSeconds: 30
+          containers:
+            - image: ${BIVAC_MANAGER_IMAGE}
+              args:
+                - manager
+              imagePullPolicy: IfNotPresent
+              name: bivac
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              env:
+                - name: BIVAC_ORCHESTRATOR
+                  value: kubernetes
+                - name: RESTIC_FORGET_ARGS
+                  value: ${RESTIC_FORGET_ARGS}
+                - name: KUBERNETES_AGENT_SERVICE_ACCOUNT
+                  value: bivac
+                - name: BIVAC_TARGET_URL
+                  value: ${BIVAC_TARGET_URL}
+                - name: BIVAC_RETRY_COUNT
+                  value: ${BIVAC_RETRY_COUNT}
+                - name: KUBERNETES_NAMESPACE
+                  value: ${KUBERNETES_NAMESPACE}
+                - name: KUBERNETES_ALL_NAMESPACES
+                  value: ${KUBERNETES_ALL_NAMESPACES}
+                - name: BIVAC_VOLUMES_WHITELIST
+                  value: ${BIVAC_VOLUMES_WHITELIST}
+                - name: BIVAC_VOLUMES_BLACKLIST
+                  value: ${BIVAC_VOLUMES_BLACKLIST}
+                - name: BIVAC_AGENT_IMAGE
+                  value: ${BIVAC_AGENT_IMAGE}
+                - name: BIVAC_VERBOSE
+                  value: ${BIVAC_VERBOSE}
+              envFrom:
+                - secretRef:
+                    name: ${APP_NAME}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: ${APP_NAME}
+      namespace: ${NAMESPACE}
+    stringData:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      BIVAC_SERVER_PSK: ${BIVAC_SERVER_PSK}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD}
+  - kind: Service
+    apiVersion: v1
+    metadata:
+      labels:
+        app: ${APP_NAME}
+      name: ${APP_NAME}
+      namespace: ${NAMESPACE}
+    spec:
+      ports:
+        - name: 8182-tcp
+          port: 8182
+          protocol: TCP
+          targetPort: 8182
+      selector:
+        deploymentconfig: ${APP_NAME}
+      sessionAffinity: None
+      type: ClusterIP
+  - kind: Route
+    apiVersion: route.openshift.io/v1
+    metadata:
+      labels:
+        app: ${APP_NAME}
+      name: ${APP_NAME}
+      namespace: ${NAMESPACE}
+    spec:
+      port:
+        targetPort: 8182-tcp
+      tls:
+        insecureEdgeTerminationPolicy: Redirect
+        termination: edge
+      to:
+        kind: Service
+        name: ${APP_NAME}
+        weight: 100
+      wildcardPolicy: None
 parameters:
-- name: APP_NAME
-  description: Name use for all bivac objects. This name should be unique across project.
-  value: bivac
-- name: BIVAC_IMAGE
-  description: Name of bivac docker image to use, including tag.
-  value: 'camptocamp/bivac:latest'
-- name: SCHEDULE
-  description: "Cron format schedule specification. Ex: '0 * * * *' backup every hour."
-  value: "0 2 * * *"
-- name: BIVAC_TARGET_URL
-  description: The target URL to push backup to.
-- name: AWS_ACCESS_KEY_ID
-  description: The AWS access key ID (optional).
-  value: ""
-- name: AWS_SECRET_ACCESS_KEY
-  description: The AWS secret access key (optional).
-  value: ""
-- name: SWIFT_USERNAME
-  description: The Swift user name (optional).
-  value: ""
-- name: SWIFT_PASSWORD
-  description: The Swift password (optional).
-  value: ""
-- name: SWIFT_AUTHURL
-  description: The Swift auth URL (optional).
-  value: ""
-- name: SWIFT_TENANTNAME
-  description: The Swift tenant name (optional).
-  value: ""
-- name: SWIFT_REGIONNAME
-  description: The Swift region name (optional).
-  value: ""
-- name: RESTIC_PASSWORD
-  description: The restic backup password.
-- name: K8S_WORKER_SERVICE_ACCOUNT
-  description: Kubernetes service account to use for workers.
-  value: bivac
-- name: NAMESPACE
-  description: Openshift project name (namespace)
-- name: MYSQL_PRE_CMD
-  description: command to prepare backup on MySQL
-  value: |-
-    mkdir -p $volume/backups && \
-    echo $(if [ -z '$MYSQL_ROOT_PASSWORD' ]; then \
-      mysqldump --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD; else \
-      mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD; \
-    fi) > $volume/backups/all.sql
-- name: MYSQL_DETECT_CMD
-  description: Command to detect MySQL database
-  value: "[[ -d $volume/mysql ]]"
-- name: MYSQL_POST_CMD
-  description: Command run after backup
-  value: ""
-- name: MYSQL_BACKUP_DIR
-  description: Directory that contains database dump, relative to volume root
-  value: "backups"
-- name: POSTGRES_PRE_CMD
-  description: command to prepare backup on Postgres
-  value: |-
-    mkdir -p $volume/backups && pg_dumpall --clean -Upostgres > $volume/backups/all.sql
-- name: POSTGRES_DETECT_CMD
-  description: Command to detect Postgres database
-  value: "[[ -f $volume/PG_VERSION ]]"
-- name: POSTGRES_POST_CMD
-  description: Command run after backup
-  value: ""
-- name: POSTGRES_BACKUP_DIR
-  description: Directory that contains database dump, relative to volume root
-  value: "backups"
-- name: LDAP_PRE_CMD
-  description: command to prepare backup on OpenLdap
-  value: |-
-    mkdir -p $volume/backups && slapcat > $volume/backups/all.ldif
-- name: LDAP_DETECT_CMD
-  description: Command to detect OpenLdap database
-  value: "[[ -f $volume/DB_CONFIG ]]"
-- name: LDAP_POST_CMD
-  description: Command run after backup
-  value: ""
-- name: LDAP_BACKUP_DIR
-  description: Directory that contains database dump, relative to volume root
-  value: "backups"
+  - name: NAMESPACE
+    description: namespace
+    required: true
+  - name: APP_NAME
+    description: Name used for most bivac objects. This name should be unique across project.
+    value: bivac
+    required: true
+  - name: KUBERNETES_ALL_NAMESPACES
+    value: "true"
+    description: Backup volumes of all namespaces (bool)
+  - name: KUBERNETES_NAMESPACE
+    description: Namespace where you want to run Bivac
+  - name: RESTIC_FORGET_ARGS
+    description: retention policy for restic in restic syntax (https://restic.readthedocs.io/en/latest/060_forget.html#removing-snapshots-according-to-a-policy)
+    value: "--keep-daily 15 --keep-weekly 5 --keep-hourly 48 --keep-monthly 13 --keep-last 50 --prune"
+  - name: RESTIC_PASSWORD
+    from: '[\w]{64}'
+    generate: expression
+    description: password used by restic to encrypt backups. Note that you will need this value to access your backups - if you don't provide one, it will be randomly generated, please securely store a copy of this key off-site!
+    required: true
+  - name: BIVAC_TARGET_URL
+    description: URL of the bucket where backups are to be stored, in the form s3://s3.amazonaws.com/bucketname/subdir
+    required: true
+  - name: AWS_ACCESS_KEY_ID
+    required: true
+  - name: AWS_SECRET_ACCESS_KEY
+    required: true
+  - name: BIVAC_SERVER_PSK
+    from: '[\w]{64}'
+    generate: expression
+  - name: BIVAC_RETRY_COUNT
+    description: Retry to backup the volume if something goes wrong with Bivac.
+    value: "0"
+  - name: BIVAC_VOLUMES_WHITELIST
+    description: Only backup whitelisted volumes (comma-separated list of PVC names)
+  - name: BIVAC_VOLUMES_BLACKLIST
+    description: Do not backup blacklisted volumes (comma-separated list of PVC names)
+  - name: BIVAC_MANAGER_IMAGE
+    value: camptocamp/bivac:2.0.0
+    description: image used for bivac manager
+    # value: camptocamp/bivac:2.1-dev
+  - name: BIVAC_AGENT_IMAGE
+    value: camptocamp/bivac:2.0.0
+    # value: camptocamp/bivac:2.1-dev
+    description: Agent's Docker image
+  - name: BIVAC_VERBOSE
+    description: Enable verbose output (bool)
+    value: "true"

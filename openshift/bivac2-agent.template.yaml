@@ -1,0 +1,33 @@
+# yamllint disable rule:line-length
+---
+apiVersion: v1
+kind: Template
+labels:
+  app: bivac
+metadata:
+  name: bivac
+  annotations:
+    description: "required serviceaccount and permissions for bivcac-agent. Needs to be instantiated in all namespaces in which PVCs should be backup-ed."
+    tags: "backup,bivac,agent,restic"
+objects:
+  - kind: ClusterRoleBinding
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: bivac-${NAMESPACE}
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: bivac
+    subjects:
+      - kind: ServiceAccount
+        name: bivac
+        namespace: ${NAMESPACE}
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: bivac
+      namespace: ${NAMESPACE}
+parameters:
+  - name: NAMESPACE
+    description: namespace in which to add the serviceaccount
+    required: true
