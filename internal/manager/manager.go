@@ -202,7 +202,7 @@ func GetOrchestrator(name string, orchs Orchestrators) (o orchestrators.Orchestr
 // BackupVolume does a backup of a volume
 func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 	for _, v := range m.Volumes {
-		if v.ID == volumeID {
+		if v.ID == volumeID || strings.Split(v.ID, ":")[0] == volumeID {
 			log.WithFields(log.Fields{
 				"volume":   v.Name,
 				"hostname": v.Hostname,
@@ -225,7 +225,7 @@ func (m *Manager) RestoreVolume(
 	snapshotName string,
 ) (err error) {
 	for _, v := range m.Volumes {
-		if v.ID == volumeID {
+		if v.ID == volumeID || strings.Split(v.ID, ":")[0] == volumeID {
 			log.WithFields(log.Fields{
 				"volume":   v.Name,
 				"hostname": v.Hostname,
