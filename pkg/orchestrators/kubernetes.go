@@ -362,6 +362,7 @@ func (o *KubernetesOrchestrator) IsNodeAvailable(hostID string) (ok bool, err er
 
 // RetrieveOrphanAgents returns the list of orphan Bivac agents
 func (o *KubernetesOrchestrator) RetrieveOrphanAgents() (containers map[string]string, err error) {
+	containers = make(map[string]string)
 	pods, err := o.client.CoreV1().Pods(o.config.Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to get pods: %s", err)
