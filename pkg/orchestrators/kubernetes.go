@@ -80,6 +80,7 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 				Name:      pvc.Name,
 				Namespace: namespace,
 				Logs:      make(map[string]string),
+				Labels:    pvc.Labels,
 			}
 
 			containers, _ := o.GetContainersMountingVolume(v)
@@ -114,6 +115,16 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 		})
 	}
 
+	// An additional volume may not be a Persistent Volume (but a ConfigMap for example)
+	// Nice feature but the function should be improved
+	/*
+		additionalVolumes, err := o.getAdditionalVolumes()
+		if err != nil {
+			err = fmt.Errorf("failed to retrieve additional volumes: %s", err)
+			return
+		}
+	*/
+
 	o.setNamespace(v.Namespace)
 	pvc, err := o.client.CoreV1().PersistentVolumeClaims(o.config.Namespace).Get(v.Name, metav1.GetOptions{})
 	if err != nil {
@@ -147,6 +158,26 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 
 	kvms = append(kvms, kvm)
 
+	/*
+		for _, additionalVolume := range additionalVolumes {
+			kvs = append(kvs, apiv1.Volume{
+				Name: additionalVolume.Name,
+				VolumeSource: apiv1.VolumeSource{
+					PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+						ClaimName: additionalVolume.Name,
+						ReadOnly:  additionalVolume.ReadOnly,
+					},
+				},
+			})
+
+			kvms = append(kvms, apiv1.VolumeMount{
+				Name:      additionalVolume.Name,
+				ReadOnly:  additionalVolume.ReadOnly,
+				MountPath: additionalVolume.Mountpoint,
+			})
+		}
+	*/
+
 	pod, err := o.client.CoreV1().Pods(o.config.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "bivac-agent-",
@@ -179,7 +210,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	agentName := pod.ObjectMeta.Name
 	defer o.DeletePod(agentName)
 
-	timeout := time.After(60 * time.Second)
+	timeout := time.After(60 * 5 * time.Second)
 	terminated := false
 	for !terminated {
 		pod, err := o.client.CoreV1().Pods(o.config.Namespace).Get(agentName, metav1.GetOptions{})
@@ -215,20 +246,11 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	defer readCloser.Close()
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(readCloser)
-	output = buf.String()
 
-	// Get current namespace
-	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		clientcmd.NewDefaultClientConfigLoadingRules(),
-		&clientcmd.ConfigOverrides{},
-	)
-	namespace, _, err := kubeconfig.Namespace()
-	if err != nil {
-		err = fmt.Errorf("failed to get namespace: %s", err)
-		return
+	logs := strings.Split(buf.String(), "\n")
+	if len(logs) > 1 {
+		output = logs[len(logs)-2]
 	}
-	o.setNamespace(namespace)
-
 	return
 }
 
@@ -338,6 +360,81 @@ func (o *KubernetesOrchestrator) IsNodeAvailable(hostID string) (ok bool, err er
 	return
 }
 
+// RetrieveOrphanAgents returns the list of orphan Bivac agents
+func (o *KubernetesOrchestrator) RetrieveOrphanAgents() (containers map[string]string, err error) {
+	pods, err := o.client.CoreV1().Pods(o.config.Namespace).List(metav1.ListOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to get pods: %s", err)
+		return
+	}
+
+	for _, pod := range pods.Items {
+		if !strings.HasPrefix(pod.Name, "bivac-agent-") {
+			continue
+		}
+		for _, volume := range pod.Spec.Volumes {
+			if volume.PersistentVolumeClaim != nil {
+				containers[volume.Name] = pod.Name
+			}
+		}
+	}
+
+	return
+}
+
+// AttachOrphanAgent connects to a running agent and wait for the end of the backup proccess
+func (o *KubernetesOrchestrator) AttachOrphanAgent(containerID string) (success bool, output string, err error) {
+	_, err = o.client.CoreV1().Pods(o.config.Namespace).Get(containerID, metav1.GetOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to get pod: %s", err)
+		return false, "", err
+	}
+	defer o.DeletePod(containerID)
+
+	timeout := time.After(60 * time.Second)
+	terminated := false
+	for !terminated {
+		pod, err := o.client.CoreV1().Pods(o.config.Namespace).Get(containerID, metav1.GetOptions{})
+		if err != nil {
+			err = fmt.Errorf("failed to get pod: %s", err)
+			return false, "", err
+		}
+
+		if pod.Status.Phase == apiv1.PodSucceeded || pod.Status.Phase == apiv1.PodFailed {
+			if len(pod.Status.ContainerStatuses) == 0 {
+				return false, "", fmt.Errorf("no container found")
+			}
+			success = true
+			terminated = true
+		} else if pod.Status.Phase != apiv1.PodRunning {
+			select {
+			case <-timeout:
+				err = fmt.Errorf("failed to start agent: timeout")
+				return false, "", err
+			default:
+				continue
+			}
+		}
+	}
+
+	req := o.client.CoreV1().Pods(o.config.Namespace).GetLogs(containerID, &apiv1.PodLogOptions{})
+
+	readCloser, err := req.Stream()
+	if err != nil {
+		err = fmt.Errorf("failed to read logs: %s", err)
+		return
+	}
+	defer readCloser.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(readCloser)
+	logs := strings.Split(buf.String(), "\n")
+	if len(logs) > 1 {
+		output = logs[len(logs)-2]
+	}
+
+	return
+}
+
 func (o *KubernetesOrchestrator) setNamespace(namespace string) {
 	o.config.Namespace = namespace
 }
@@ -345,6 +442,11 @@ func (o *KubernetesOrchestrator) setNamespace(namespace string) {
 func (o *KubernetesOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || utf8.RuneCountInString(vol.Name) == 0 {
 		return true, "unnamed", ""
+	}
+
+	// Check labels
+	if ignored, ok := vol.Labels["bivac.ignore"]; ok && ignored == "true" {
+		return true, "ignored", "volume config"
 	}
 
 	if strings.Contains(vol.Name, "/") {
@@ -409,6 +511,42 @@ func (o *KubernetesOrchestrator) getNamespaces() (namespaces []string, err error
 		}
 	} else {
 		namespaces = append(namespaces, o.config.Namespace)
+	}
+	return
+}
+
+func (o *KubernetesOrchestrator) getAdditionalVolumes() (mounts []*volume.Volume, err error) {
+	mounts = []*volume.Volume{}
+
+	managerHostname, err := os.Hostname()
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve manager's hostname: %s", err)
+		return
+	}
+
+	// get the namespace
+	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{},
+	)
+	namespace, _, err := kubeconfig.Namespace()
+	if err != nil {
+		err = fmt.Errorf("failed to get namespace: %v", err)
+		return
+	}
+
+	managerPod, err := o.client.CoreV1().Pods(namespace).Get(managerHostname, metav1.GetOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve manager's pod: %s", err)
+		return
+	}
+
+	for _, v := range managerPod.Spec.Containers[0].VolumeMounts {
+		mounts = append(mounts, &volume.Volume{
+			Name:       v.Name,
+			ReadOnly:   v.ReadOnly,
+			Mountpoint: v.MountPath,
+		})
 	}
 	return
 }
