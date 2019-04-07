@@ -42,12 +42,12 @@ require (
 	github.com/spf13/viper v1.3.1
 	github.com/stretchr/testify v1.3.0
 	github.com/tatsushid/go-prettytable v0.0.0-20141013043238-ed2d14c29939
-	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a // indirect
+	golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5 // indirect
 	golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3 // indirect
-	golang.org/x/net v0.0.0-20190313220215-9f648a60d977
+	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
 	golang.org/x/oauth2 v0.0.0-20190130055435-99b60b757ec1 // indirect
-	golang.org/x/sys v0.0.0-20190316082340-a2f829d7f35f // indirect
-	golang.org/x/tools v0.0.0-20190315214010-f0bfdbff1f9c // indirect
+	golang.org/x/sys v0.0.0-20190405154228-4b34438f7a67 // indirect
+	golang.org/x/tools v0.0.0-20190407030857-0fdf0c73855b // indirect
 	gopkg.in/jarcoal/httpmock.v1 v1.0.0-20181117152235-275e9df93516
 	k8s.io/api v0.0.0-20190126160303-ccdd560a045f
 	k8s.io/apimachinery v0.0.0-20190126155707-0e6dcdd1b5ce
