@@ -313,7 +313,7 @@ func (o *DockerOrchestrator) RetrieveOrphanAgents() (containers map[string]strin
 }
 
 // AttachOrphanAgent connects to a running agent and wait for the end of the backup proccess
-func (o *DockerOrchestrator) AttachOrphanAgent(containerID string) (success bool, output string, err error) {
+func (o *DockerOrchestrator) AttachOrphanAgent(containerID, namespace string) (success bool, output string, err error) {
 	container, err := o.client.ContainerInspect(context.Background(), containerID)
 	if err != nil {
 		err = fmt.Errorf("failed to inspect container: %s", err)

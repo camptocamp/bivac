@@ -14,5 +14,5 @@ type Orchestrator interface {
 	ContainerExec(mountedVolumes *volume.MountedVolume, command []string) (stdout string, err error)
 	IsNodeAvailable(hostID string) (ok bool, err error)
 	RetrieveOrphanAgents() (containers map[string]string, err error)
-	AttachOrphanAgent(containerID string) (success bool, output string, err error)
+	AttachOrphanAgent(containerID, namespace string) (success bool, output string, err error)
 }

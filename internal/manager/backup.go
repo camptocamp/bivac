@@ -113,7 +113,7 @@ func (m *Manager) attachOrphanAgent(containerID string, v *volume.Volume) {
 		useLogReceiver = true
 	}
 
-	_, output, err := m.Orchestrator.AttachOrphanAgent(containerID)
+	_, output, err := m.Orchestrator.AttachOrphanAgent(containerID, v.Namespace)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"volume":   v.Name,

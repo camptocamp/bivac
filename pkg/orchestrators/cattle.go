@@ -401,7 +401,7 @@ func (o *CattleOrchestrator) RetrieveOrphanAgents() (containers map[string]strin
 }
 
 // AttachOrphanAgent connects to a running agent and wait for the end of the backup proccess
-func (o *CattleOrchestrator) AttachOrphanAgent(containerID string) (success bool, output string, err error) {
+func (o *CattleOrchestrator) AttachOrphanAgent(containerID, namespace string) (success bool, output string, err error) {
 	container, err := o.client.Container.ById(containerID)
 	if err != nil {
 		err = fmt.Errorf("failed to retrieve the container from ID: %s", err)
