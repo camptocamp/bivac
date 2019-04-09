@@ -22,11 +22,12 @@ var (
 	dbPath           string
 	resticForgetArgs string
 
-	providersFile string
-	targetURL     string
-	retryCount    int
-	logServer     string
-	agentImage    string
+	agentImage          string
+	logServer           string
+	providersFile       string
+	retryCount          int
+	targetURL           string
+	whitelistAnnotation bool
 )
 var envs = make(map[string]string)
 
@@ -39,8 +40,9 @@ var managerCmd = &cobra.Command{
 		blacklistVolumes, _ := cmd.Flags().GetString("blacklist")
 
 		volumesFilters := volume.Filters{
-			Whitelist: strings.Split(whitelistVolumes, ","),
-			Blacklist: strings.Split(blacklistVolumes, ","),
+			Blacklist:           strings.Split(blacklistVolumes, ","),
+			Whitelist:           strings.Split(whitelistVolumes, ","),
+			WhitelistAnnotation: whitelistAnnotation,
 		}
 
 		o, err := manager.GetOrchestrator(orchestrator, Orchestrators)
@@ -102,6 +104,9 @@ func init() {
 
 	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "camptocamp/bivac:2.0.0", "Agent's Docker image.")
 	envs["BIVAC_AGENT_IMAGE"] = "agent.image"
+
+	managerCmd.Flags().BoolVarP(&whitelistAnnotation, "whitelist.annotations", "", false, "Require pvc whitelist annotation")
+	envs["BIVAC_WHITELIST_ANNOTATION"] = "whitelist.annotations"
 
 	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	bivacCmd.RootCmd.AddCommand(managerCmd)
