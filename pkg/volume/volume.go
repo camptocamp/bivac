@@ -23,9 +23,11 @@ type Volume struct {
 	SubPath    string
 	RepoName   string
 
-	LastBackupDate   string
-	LastBackupStatus string
-	Logs             map[string]string
+	BackingUp           bool
+	LastBackupDate      string
+	LastBackupStatus    string
+	LastBackupStartDate string
+	Logs                map[string]string
 
 	Metrics *Metrics `json:"-"`
 

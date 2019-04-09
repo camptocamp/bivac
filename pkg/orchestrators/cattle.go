@@ -18,7 +18,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/camptocamp/bivac/pkg/volume"
-	//"github.com/rancher/go-rancher-metadata/metadata"
+	"github.com/rancher/go-rancher-metadata/metadata"
 	"github.com/rancher/go-rancher/v2"
 	"golang.org/x/net/websocket"
 )
@@ -146,6 +146,13 @@ func (o *CattleOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 		splitted := strings.Split(env, "=")
 		environment[splitted[0]] = splitted[1]
 	}
+
+	additionalVolumes, err := o.getAdditionalVolumes()
+	if err != nil {
+		err = fmt.Errorf("failed to get additional volumes: %s", err)
+		return
+	}
+
 	container, err := o.client.Container.Create(&client.Container{
 		Name:            createAgentName(),
 		RequestedHostId: v.HostBind,
@@ -159,9 +166,7 @@ func (o *CattleOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 		Labels: map[string]interface{}{
 			"io.rancher.container.pull_image": "always",
 		},
-		DataVolumes: []string{
-			v.Name + ":" + v.Mountpoint,
-		},
+		DataVolumes: append([]string{v.Name + ":" + v.Mountpoint}, additionalVolumes...),
 	})
 	if err != nil {
 		err = fmt.Errorf("failed to create an agent container: %s", err)
@@ -245,8 +250,9 @@ func (o *CattleOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 	io.Copy(&data, ws)
 
 	re := regexp.MustCompile(`(?m)[0-9]{2,} [ZT\-\:\.0-9]+ (.*)`)
-	for _, line := range re.FindAllStringSubmatch(data.String(), -1) {
-		output = strings.Join([]string{output, line[1]}, "\n")
+	logs := re.FindAllStringSubmatch(data.String(), -1)
+	if len(logs) > 0 {
+		output = logs[len(logs)-1][1]
 	}
 	return
 }
@@ -369,6 +375,125 @@ func DetectCattle() bool {
 	return true
 }
 
+// RetrieveOrphanAgents returns the list of orphan Bivac agents
+func (o *CattleOrchestrator) RetrieveOrphanAgents() (containers map[string]string, err error) {
+	containers = make(map[string]string)
+
+	cs, err := o.client.Container.List(&client.ListOpts{
+		Filters: map[string]interface{}{
+			"limit":       -2,
+			"all":         true,
+			"name_prefix": "bivac-agent",
+		},
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to list containers: %s", err)
+		return
+	}
+
+	for _, c := range cs.Data {
+		for _, mount := range c.Mounts {
+			if mount.VolumeName == "/var/lib/rancher/etc" {
+				continue
+			}
+			containers[mount.VolumeId] = c.Id
+		}
+	}
+	return
+}
+
+// AttachOrphanAgent connects to a running agent and wait for the end of the backup proccess
+func (o *CattleOrchestrator) AttachOrphanAgent(containerID, namespace string) (success bool, output string, err error) {
+	container, err := o.client.Container.ById(containerID)
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve the container from ID: %s", err)
+		return false, "", err
+	}
+	defer o.RemoveContainer(container)
+
+	stopped := false
+	terminated := false
+	timeout := time.After(60 * time.Second)
+	for !terminated {
+		container, err := o.client.Container.ById(container.Id)
+		if err != nil {
+			err = fmt.Errorf("failed to inspect agent: %s", err)
+			return false, "", err
+		}
+
+		// This workaround is awful but it's the only way to know if the container failed.
+		if container.State == "stopped" {
+			if container.StartCount == 1 {
+				if stopped == false {
+					stopped = true
+					time.Sleep(5 * time.Second)
+				} else {
+					terminated = true
+					success = true
+				}
+			} else {
+				success = false
+				terminated = true
+			}
+		} else if container.State == "starting" {
+			select {
+			case <-timeout:
+				err = fmt.Errorf("failed to start agent: timeout")
+				return false, "", err
+			default:
+				continue
+			}
+		} else if container.State == "error" {
+			terminated = true
+			success = false
+		}
+		time.Sleep(1 * time.Second)
+	}
+
+	container, err = o.client.Container.ById(container.Id)
+	if err != nil {
+		err = fmt.Errorf("failed to inspect the agent before retrieving the logs: %s", err)
+		return false, "", err
+	}
+
+	var hostAccess *client.HostAccess
+	logsParams := `{"follow":false,"lines":9999,"since":"","timestamps":true}`
+	err = o.rawAPICall("POST", container.Links["self"]+"/?action=logs", logsParams, &hostAccess)
+	if err != nil {
+		err = fmt.Errorf("failed to read response from rancher: %s", err)
+		return
+	}
+
+	origin := o.config.URL
+
+	u, err := url.Parse(hostAccess.Url)
+	if err != nil {
+		err = fmt.Errorf("failed to parse rancher server url: %s", err)
+		return
+	}
+
+	q := u.Query()
+	q.Set("token", hostAccess.Token)
+	u.RawQuery = q.Encode()
+
+	ws, err := websocket.Dial(u.String(), "", origin)
+	if err != nil {
+		err = fmt.Errorf("failed to open websocket with rancher server: %s", err)
+		return
+	}
+	defer ws.Close()
+
+	var data bytes.Buffer
+	io.Copy(&data, ws)
+
+	re := regexp.MustCompile(`(?m)[0-9]{2,} [ZT\-\:\.0-9]+ (.*)`)
+	logs := re.FindAllStringSubmatch(data.String(), -1)
+	if len(logs) > 0 {
+		output = logs[len(logs)-1][1]
+	}
+	return
+}
+
 func (o *CattleOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || utf8.RuneCountInString(vol.Name) == 0 {
 		return true, "unnamed", ""
@@ -422,5 +547,49 @@ func (o *CattleOrchestrator) rawAPICall(method, endpoint string, data string, ob
 		err = fmt.Errorf("failed to unmarshal: %s", err)
 		return
 	}
+	return
+}
+
+func (o *CattleOrchestrator) getAdditionalVolumes() (mounts []string, err error) {
+	mounts = []string{}
+
+	metadataClient, err := metadata.NewClientAndWait("http://rancher-metadata/latest/")
+	if err != nil {
+		// We assume Bivac is running outside the orchestrator
+		err = nil
+		return
+	}
+
+	selfContainer, err := metadataClient.GetSelfContainer()
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve container: %s", err)
+		return
+	}
+
+	containers, err := o.client.Container.List(&client.ListOpts{
+		Filters: map[string]interface{}{
+			"limit": -2,
+			"all":   true,
+		},
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to list containers: %s", err)
+		return
+	}
+
+	var managerContainer *client.Container
+	for _, container := range containers.Data {
+		if container.Name == selfContainer.Name {
+			managerContainer = &container
+			break
+		}
+	}
+
+	if managerContainer == nil {
+		err = fmt.Errorf("failed to get manager container: %s", err)
+		return
+	}
+
+	mounts = managerContainer.DataVolumes
 	return
 }

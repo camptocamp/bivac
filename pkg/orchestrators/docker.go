@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"sort"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/docker/docker/api/types"
@@ -100,6 +102,12 @@ func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 		return
 	}
 
+	additionalVolumes, err := o.getAdditionalVolumes()
+	if err != nil {
+		err = fmt.Errorf("failed to get additional volumes: %s", err)
+		return
+	}
+
 	mounts := []mount.Mount{
 		mount.Mount{
 			Type:     "volume",
@@ -109,9 +117,12 @@ func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 		},
 	}
 
+	mounts = append(mounts, additionalVolumes...)
+
 	container, err := o.client.ContainerCreate(
 		context.Background(),
 		&containertypes.Config{
+			Hostname:     createAgentName(),
 			Cmd:          cmd,
 			Env:          envs,
 			Image:        image,
@@ -171,7 +182,10 @@ func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 		err = fmt.Errorf("failed to read logs from response: %s", err)
 		return
 	}
-	output = stdout.String()
+	logs := strings.Split(stdout.String(), "\n")
+	if len(logs) > 1 {
+		output = logs[len(logs)-2]
+	}
 	success = true
 	return
 }
@@ -278,9 +292,93 @@ func (o *DockerOrchestrator) IsNodeAvailable(hostID string) (ok bool, err error)
 	return
 }
 
+// RetrieveOrphanAgents returns the list of orphan Bivac agents
+func (o *DockerOrchestrator) RetrieveOrphanAgents() (containers map[string]string, err error) {
+	c, err := o.client.ContainerList(context.Background(), types.ContainerListOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to list containers: %s", err)
+		return
+	}
+
+	for _, container := range c {
+		if !strings.HasPrefix(container.ID, "bivac-agent-") {
+			continue
+		}
+
+		for _, mount := range container.Mounts {
+			if mount.Type == "volume" {
+				containers[mount.Name] = container.ID
+			}
+		}
+	}
+	return
+}
+
+// AttachOrphanAgent connects to a running agent and wait for the end of the backup proccess
+func (o *DockerOrchestrator) AttachOrphanAgent(containerID, namespace string) (success bool, output string, err error) {
+	container, err := o.client.ContainerInspect(context.Background(), containerID)
+	if err != nil {
+		err = fmt.Errorf("failed to inspect container: %s", err)
+		return
+	}
+
+	defer o.RemoveContainer(container.ID)
+
+	err = o.client.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to start container: %s", err)
+		return
+	}
+
+	var exited bool
+
+	for !exited {
+		var cont types.ContainerJSON
+		cont, err = o.client.ContainerInspect(context.Background(), container.ID)
+		if err != nil {
+			err = fmt.Errorf("failed to inspect container: %s", err)
+			return
+		}
+
+		if cont.State.Status == "exited" {
+			exited = true
+		}
+	}
+
+	body, err := o.client.ContainerLogs(context.Background(), container.ID, types.ContainerLogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+		Details:    true,
+		Follow:     true,
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve logs: %s", err)
+		return
+	}
+
+	defer body.Close()
+	stdout := new(bytes.Buffer)
+	_, err = stdcopy.StdCopy(stdout, ioutil.Discard, body)
+	if err != nil {
+		err = fmt.Errorf("failed to read logs from response: %s", err)
+		return
+	}
+	logs := strings.Split(stdout.String(), "\n")
+	if len(logs) > 1 {
+		output = logs[len(logs)-2]
+	}
+	success = true
+	return
+}
+
 func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters volume.Filters) (bool, string, string) {
 	if utf8.RuneCountInString(vol.Name) == 64 || vol.Name == "lost+found" {
 		return true, "unnamed", ""
+	}
+
+	// Check labels
+	if ignored, ok := vol.Labels["bivac.ignore"]; ok && ignored == "true" {
+		return true, "ignored", "volume config"
 	}
 
 	// Use whitelist if defined
@@ -298,4 +396,36 @@ func (o *DockerOrchestrator) blacklistedVolume(vol *volume.Volume, volumeFilters
 		return true, "blacklisted", "blacklist config"
 	}
 	return false, "", ""
+}
+
+func (o *DockerOrchestrator) getAdditionalVolumes() (mounts []mount.Mount, err error) {
+	mounts = []mount.Mount{}
+
+	managerHostname, err := os.Hostname()
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve hostname: %s", err)
+		return
+	}
+
+	managerContainer, err := o.client.ContainerInspect(context.Background(), managerHostname)
+	if err != nil {
+		if strings.Contains(err.Error(), "No such container") {
+			// We assume Bivac is running outside the orchestrator
+			err = nil
+		} else {
+			err = fmt.Errorf("failed to inspect container: %s", err)
+		}
+		return
+	}
+
+	for _, v := range managerContainer.Mounts {
+		mounts = append(mounts, mount.Mount{
+			Type:     v.Type,
+			Source:   v.Source,
+			Target:   v.Destination,
+			ReadOnly: !v.RW,
+		})
+	}
+
+	return
 }

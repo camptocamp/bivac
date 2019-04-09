@@ -3,6 +3,7 @@ package engine
 import (
 	"encoding/json"
 	"io/ioutil"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -54,14 +55,24 @@ func (r *Engine) Backup(backupPath, hostname string, force bool) string {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
 
-	err = r.forget()
+	// A backup lock may remains. A retry loop with sleeps is probably the best solution to avoid lock errors.
+	for i := 0; i < 3; i++ {
+		err = r.forget()
+		if err == nil {
+			break
+		}
+		time.Sleep(60 * time.Second)
+	}
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
 
-	err = r.retrieveBackupsStats()
-	if err != nil {
-		return utils.ReturnFormattedOutput(r.Output)
+	for i := 0; i < 3; i++ {
+		err = r.retrieveBackupsStats()
+		if err == nil {
+			break
+		}
+		time.Sleep(10 * time.Second)
 	}
 
 	return utils.ReturnFormattedOutput(r.Output)
@@ -85,7 +96,13 @@ func (r *Engine) Restore(
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
-	err = r.retrieveBackupsStats()
+	for i := 0; i < 3; i++ {
+		err = r.retrieveBackupsStats()
+		if err == nil {
+			break
+		}
+		time.Sleep(10 * time.Second)
+	}
 	if err != nil {
 		return utils.ReturnFormattedOutput(r.Output)
 	}
@@ -119,6 +136,7 @@ func (r *Engine) initializeRepository() (err error) {
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
+	fmt.Printf("init: %s\n", output)
 	err = nil
 	return
 }
@@ -133,6 +151,7 @@ func (r *Engine) backupVolume(hostname, backupPath string) (err error) {
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
+	fmt.Printf("backup: %s\n", output)
 	err = nil
 	return
 }
@@ -150,6 +169,7 @@ func (r *Engine) forget() (err error) {
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
+	fmt.Printf("forget: %s\n", output)
 	err = nil
 	return
 }
@@ -297,6 +317,7 @@ func (r *Engine) retrieveBackupsStats() (err error) {
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
+	fmt.Printf("snapshots: %s\n", output)
 
 	return
 }
@@ -311,6 +332,7 @@ func (r *Engine) unlockRepository() (err error) {
 		Stdout:   string(output),
 		ExitCode: rc,
 	}
+	fmt.Printf("unlock: %s\n", output)
 	err = nil
 	return
 }

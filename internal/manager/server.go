@@ -8,6 +8,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/camptocamp/bivac/internal/utils"
@@ -22,6 +23,8 @@ type Server struct {
 // StartServer starts the API server
 func (m *Manager) StartServer() (err error) {
 	router := mux.NewRouter().StrictSlash(true)
+
+	setupMetrics(m.BuildInfo)
 
 	router.Handle("/volumes", m.handleAPIRequest(http.HandlerFunc(m.getVolumes)))
 	router.Handle("/ping", m.handleAPIRequest(http.HandlerFunc(m.ping)))
@@ -180,4 +183,14 @@ func (m *Manager) ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"type":"pong"}`))
 	return
+}
+
+func setupMetrics(buildInfo utils.BuildInfo) {
+	buildInfoMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: "bivac",
+		Name:      "build_info",
+		Help:      "Bivac build informations",
+	}, []string{"version", "commit_sha", "build_date", "golang_version"})
+	buildInfoMetric.WithLabelValues(buildInfo.Version, buildInfo.CommitSha1, buildInfo.Date, buildInfo.Runtime).Set(1)
+	prometheus.MustRegister(buildInfoMetric)
 }

@@ -76,6 +76,7 @@ func TestDockerGetVolumesSuccess(t *testing.T) {
 			HostBind:   fakeHostname,
 			Hostname:   fakeHostname,
 			Logs:       make(map[string]string),
+			BackingUp:  false,
 		},
 	}
 
@@ -105,6 +106,13 @@ func TestDockerGetVolumesBlacklisted(t *testing.T) {
 				Name:       "bar",
 				Mountpoint: "/bar",
 			},
+			&types.Volume{
+				Name:       "toto",
+				Mountpoint: "/toto",
+				Labels: map[string]string{
+					"bivac.ignore": "true",
+				},
+			},
 		},
 	}
 
@@ -119,6 +127,13 @@ func TestDockerGetVolumesBlacklisted(t *testing.T) {
 	mockDocker.EXPECT().VolumeInspect(context.Background(), "bar").Return(types.Volume{
 		Name:       "bar",
 		Mountpoint: "/bar",
+	}, nil).Times(1)
+	mockDocker.EXPECT().VolumeInspect(context.Background(), "toto").Return(types.Volume{
+		Name:       "toto",
+		Mountpoint: "/toto",
+		Labels: map[string]string{
+			"bivac.ignore": "true",
+		},
 	}, nil).Times(1)
 
 	expectedVolumes := []*volume.Volume{
@@ -195,6 +210,9 @@ func TestDockerDeployAgentSuccess(t *testing.T) {
 
 	// PullImage passthrough
 	mockDocker.EXPECT().ImageInspectWithRaw(context.Background(), fakeImage).Return(types.ImageInspect{}, make([]byte, 0), nil).Times(1)
+	mockDocker.EXPECT().ContainerInspect(context.Background(), gomock.Any()).Return(types.ContainerJSON{
+		Mounts: []types.MountPoint{},
+	}, nil).Times(1)
 	mockDocker.EXPECT().ContainerCreate(context.Background(), gomock.Any(), containerHostConfig, nil, "").Return(containertypes.ContainerCreateCreatedBody{ID: "alpha"}, nil).Times(1)
 	mockDocker.EXPECT().ContainerRemove(context.Background(), "alpha", types.ContainerRemoveOptions{
 		Force:         true,
@@ -334,6 +352,22 @@ func TestDockerBlacklistedVolume(t *testing.T) {
 				true,
 				"blacklisted",
 				"blacklist config",
+			},
+		},
+		{
+			name:                   "volume config ignore",
+			configVolumesBlacklist: []string{},
+			givenVolume: &volume.Volume{
+				Name: "toto",
+				Labels: map[string]string{
+					"bivac.ignore": "true",
+				},
+			},
+			givenFilters: volume.Filters{},
+			expected: []interface{}{
+				true,
+				"ignored",
+				"volume config",
 			},
 		},
 	}
