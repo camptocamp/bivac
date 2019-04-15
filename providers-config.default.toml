@@ -25,7 +25,7 @@
 	pre_cmd = """
 	if [ -z '$MONGO_INITDB_ROOT_USERNAME' ]; then \
 	  mongodump -o $volume/backups; else \
-	  mongodump -o $volume/backups --user=$MONGO_INITDB_ROOT_USERNAME --password=$MONGO_INITDB_ROOT_PASSWORD; \
+	  mongodump -o $volume/backups --username=$MONGO_INITDB_ROOT_USERNAME --password=$MONGO_INITDB_ROOT_PASSWORD; \
 	fi"""
 	post_cmd = "rm -rf $volume/backups"
 	detect_cmd = "[[ -f $volume/mongod.lock ]]"
