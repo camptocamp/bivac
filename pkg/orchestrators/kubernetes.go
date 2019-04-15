@@ -87,6 +87,10 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 				v.HostBind = containers[0].HostID
 				v.Hostname = containers[0].HostID
 				v.Mountpoint = containers[0].Path
+			} else {
+				v.HostBind = "unbound"
+				v.Hostname = "unbound"
+				v.Mountpoint = "/data"
 			}
 
 			if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
@@ -175,6 +179,10 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 			})
 		}
 	*/
+
+	if node == "unbound" {
+		node = ""
+	}
 
 	pod, err := o.client.CoreV1().Pods(v.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
