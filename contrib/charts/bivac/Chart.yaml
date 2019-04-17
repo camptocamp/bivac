@@ -5,16 +5,12 @@ version: 0.0.1
 appVersion: latest
 description: 'backup interface for volumes attached to containers'
 keywords:
-  - bivac
   - backup
-  - docker
+  - bivac
+  - restic
   - volume
   - kubernetes
-  - persist
-  - restore
-  - dedup
-  - deduplication
-  - restic
+  - openshift
 sources:
   - https://github.com/camptocamp/bivac
 maintainers:
