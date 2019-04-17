@@ -31,8 +31,8 @@ spec:
               containerPort: 8182
           env:
 {{-   with .Values.env }}
-{{      toYaml . | indent 10 }}
-{{-   end }}
+{{      toYaml . | indent 12 }}
+{{-   end -}}
             - name: BIVAC_LOG_SERVER
               value: "http://{{ .Release.Name }}.{{ .Release.Namespace }}.svc:{{ .Values.service.port }}"
           livenessProbe:
