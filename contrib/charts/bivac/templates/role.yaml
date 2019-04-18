@@ -58,7 +58,6 @@ kind: ServiceAccount
 metadata:
   name: {{ .Release.Name }}
   labels:
-  labels:
     app: {{ template "bivac.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     release: {{ .Release.Name }}
