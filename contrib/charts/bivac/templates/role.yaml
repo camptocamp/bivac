@@ -55,6 +55,10 @@ rules:
 ---
 apiVersion: v1
 kind: ServiceAccount
+{{ if .Values.image.pullSecret -}}
+imagePullSecrets:
+  - name: {{ .Values.image.pullSecret }}
+{{- end }}
 metadata:
   name: {{ .Release.Name }}
   labels:

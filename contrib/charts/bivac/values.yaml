@@ -2,6 +2,8 @@ image:
   repository: camptocamp/bivac
   tag: 2.1-dev
   pullPolicy: Always
+  # Optional docker pull secret
+  #pullSecret:
 
 env:
   - name: BIVAC_ORCHESTRATOR
