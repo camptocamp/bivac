@@ -319,7 +319,7 @@ func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVol
 	req := o.client.Core().RESTClient().Post().
 		Resource("pods").
 		Name(mountedVolumes.PodID).
-		Namespace(o.config.Namespace).
+		Namespace(mountedVolumes.Volume.Namespace).
 		SubResource("exec").
 		Param("container", mountedVolumes.ContainerID)
 	req.VersionedParams(&apiv1.PodExecOptions{
