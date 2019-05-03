@@ -29,6 +29,7 @@ var (
 	agentImage       string
 	whitelistVolumes string
 	blacklistVolumes string
+	whitelistAnnotation bool
 )
 var envs = make(map[string]string)
 
@@ -37,8 +38,9 @@ var managerCmd = &cobra.Command{
 	Short: "Start Bivac backup manager",
 	Run: func(cmd *cobra.Command, args []string) {
 		volumesFilters := volume.Filters{
-			Whitelist: strings.Split(whitelistVolumes, ","),
-			Blacklist: strings.Split(blacklistVolumes, ","),
+			Blacklist:           strings.Split(blacklistVolumes, ","),
+			Whitelist:           strings.Split(whitelistVolumes, ","),
+			WhitelistAnnotation: whitelistAnnotation,
 		}
 
 		o, err := manager.GetOrchestrator(orchestrator, Orchestrators)
@@ -47,7 +49,7 @@ var managerCmd = &cobra.Command{
 			return
 		}
 
-		err = manager.Start(bivacCmd.Version, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount)
+		err = manager.Start(bivacCmd.BuildInfo, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return
@@ -83,7 +85,7 @@ func init() {
 	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.AgentServiceAccount, "kubernetes.agent-service-account", "", "", "Specify service account for agents.")
 	envs["KUBERNETES_AGENT_SERVICE_ACCOUNT"] = "kubernetes.agent-service-account"
 
-	managerCmd.Flags().StringVarP(&resticForgetArgs, "restic.forget.args", "", "--keep-daily 15 --prune", "Restic forget arguments.")
+	managerCmd.Flags().StringVarP(&resticForgetArgs, "restic.forget.args", "", "--group-by host --keep-daily 15 --prune", "Restic forget arguments.")
 	envs["RESTIC_FORGET_ARGS"] = "restic.forget.args"
 
 	managerCmd.Flags().StringVarP(&providersFile, "providers.config", "", "/providers-config.default.toml", "Configuration file for providers.")
@@ -106,6 +108,9 @@ func init() {
 
 	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "", "Blacklist volumes.")
 	envs["BIVAC_BLACKLIST"] = "blacklist"
+
+  managerCmd.Flags().BoolVarP(&whitelistAnnotation, "whitelist.annotations", "", false, "Require pvc whitelist annotation")
+	envs["BIVAC_WHITELIST_ANNOTATION"] = "whitelist.annotations"
 
 	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	bivacCmd.RootCmd.AddCommand(managerCmd)

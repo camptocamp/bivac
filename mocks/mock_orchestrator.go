@@ -136,3 +136,34 @@ func (mr *MockOrchestratorMockRecorder) IsNodeAvailable(hostID interface{}) *gom
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsNodeAvailable", reflect.TypeOf((*MockOrchestrator)(nil).IsNodeAvailable), hostID)
 }
+
+// RetrieveOrphanAgents mocks base method
+func (m *MockOrchestrator) RetrieveOrphanAgents() (map[string]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RetrieveOrphanAgents")
+	ret0, _ := ret[0].(map[string]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RetrieveOrphanAgents indicates an expected call of RetrieveOrphanAgents
+func (mr *MockOrchestratorMockRecorder) RetrieveOrphanAgents() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RetrieveOrphanAgents", reflect.TypeOf((*MockOrchestrator)(nil).RetrieveOrphanAgents))
+}
+
+// AttachOrphanAgent mocks base method
+func (m *MockOrchestrator) AttachOrphanAgent(containerID, namespace string) (bool, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AttachOrphanAgent", containerID, namespace)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// AttachOrphanAgent indicates an expected call of AttachOrphanAgent
+func (mr *MockOrchestratorMockRecorder) AttachOrphanAgent(containerID, namespace interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachOrphanAgent", reflect.TypeOf((*MockOrchestrator)(nil).AttachOrphanAgent), containerID, namespace)
+}
