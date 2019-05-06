@@ -1,0 +1,46 @@
+image:
+  repository: camptocamp/bivac
+  tag: 2.1-dev
+  pullPolicy: Always
+  # Optional docker pull secret
+  #pullSecret:
+
+env:
+  - name: BIVAC_ORCHESTRATOR
+    value: kubernetes
+  - name: KUBERNETES_ALL_NAMESPACES
+    value: 'true'
+  - name: AWS_ACCESS_KEY_ID
+    value: 'XXXXXXXXXXXXXXXXXXXX'
+  - name: RESTIC_FORGET_ARGS
+    value: 'XXXXXXXXXXXXXX'
+  - name: BIVAC_TARGET_URL
+    value: 'XXXXXXXXXXXXXXXXXXX'
+  - name: AWS_SECRET_ACCESS_KEY
+    value: 'XXXXXXXXXXXXXXXXXXX'
+  - name: RESTIC_PASSWORD
+    value: 'XXXXXXXXXXX'
+  - name: BIVAC_SERVER_PSK
+    value: 'XXXXXXXXXXXXXXXXXXX'
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
