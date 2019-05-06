@@ -1,3 +1,7 @@
+# [2.0.1](https://github.com/camptocamp/bivac/releases/tag/2.0.1) (2019-05-06)
+
+This minor release contains many bug fixes and improvements in order to stabilize the release 2.0.
+
 # [2.0.0](https://github.com/camptocamp/bivac/releases/tag/2.0.0) (2019-02-14)
 
 The software has been almost entirely rewritten.
