@@ -22,13 +22,13 @@ var (
 	dbPath           string
 	resticForgetArgs string
 
-	providersFile    string
-	targetURL        string
-	retryCount       int
-	logServer        string
-	agentImage       string
-	whitelistVolumes string
-	blacklistVolumes string
+	providersFile       string
+	targetURL           string
+	retryCount          int
+	logServer           string
+	agentImage          string
+	whitelistVolumes    string
+	blacklistVolumes    string
 	whitelistAnnotation bool
 )
 var envs = make(map[string]string)
@@ -109,7 +109,7 @@ func init() {
 	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "", "Blacklist volumes.")
 	envs["BIVAC_BLACKLIST"] = "blacklist"
 
-  managerCmd.Flags().BoolVarP(&whitelistAnnotation, "whitelist.annotations", "", false, "Require pvc whitelist annotation")
+	managerCmd.Flags().BoolVarP(&whitelistAnnotation, "whitelist.annotations", "", false, "Require pvc whitelist annotation")
 	envs["BIVAC_WHITELIST_ANNOTATION"] = "whitelist.annotations"
 
 	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
