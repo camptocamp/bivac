@@ -295,6 +295,7 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 
 	mapVolClaim := make(map[string]string)
 	containerMap := make(map[string]*volume.MountedVolume)
+	subpathMap := make(map[string]bool)
 
 	for _, pod := range pods.Items {
 		for _, volume := range pod.Spec.Volumes {
@@ -309,21 +310,40 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 					if c == v.Name {
 						clonedV := &volume.Volume{}
 						copier.Copy(&clonedV, &v)
-						mv := &volume.MountedVolume{
-							PodID:       pod.Name,
-							ContainerID: container.Name,
-							HostID:      pod.Spec.NodeName,
-							Volume:      clonedV,
-							Path:        volumeMount.MountPath,
+						splitVolumeID := strings.Split(clonedV.ID, ":")
+						if len(splitVolumeID) > 1 {
+							clonedV.SubPath = "/" + splitVolumeID[1]
+						} else if len(clonedV.SubPath) <= 0 && len(volumeMount.SubPath) > 0 {
+							clonedV.ID = v.ID + ":" + volumeMount.SubPath
+							clonedV.SubPath = "/" + volumeMount.SubPath
 						}
-						containerMap[mv.ContainerID+mv.Volume.ID] = mv
+						if len(clonedV.SubPath) > 0 {
+							subpathMap[splitVolumeID[0]] = true
+							clonedV.RepoName = v.Name + strings.ReplaceAll(clonedV.SubPath, "/", "_")
+						}
+						if ("/" + volumeMount.SubPath) == clonedV.SubPath {
+							mv := &volume.MountedVolume{
+								PodID:       pod.Name,
+								ContainerID: container.Name,
+								HostID:      pod.Spec.NodeName,
+								Volume:      clonedV,
+								Path:        volumeMount.MountPath,
+							}
+							containerMap[mv.ContainerID+mv.Volume.ID] = mv
+						}
 					}
 				}
 			}
 		}
 	}
 	for _, container := range containerMap {
-		containers = append(containers, container)
+		if _, ok := subpathMap[strings.Split(container.Volume.ID, ":")[0]]; ok {
+			if _, ok := containerMap[strings.Split(container.ContainerID+container.Volume.ID, ":")[0]]; !ok {
+				containers = append(containers, container)
+			}
+		} else {
+			containers = append(containers, container)
+		}
 	}
 	return
 }
