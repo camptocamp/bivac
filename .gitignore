@@ -4,3 +4,4 @@ hugo/public
 coverage
 ./bivac
 *~
+/bivac
