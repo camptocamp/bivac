@@ -74,15 +74,13 @@ func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 		}
 
 		v := &volume.Volume{
+			ID:         voll.Name,
+			Name:       voll.Name,
+			Mountpoint: voll.Mountpoint,
 			HostBind:   info.Name,
 			Hostname:   info.Name,
-			ID:         voll.Name,
 			Labels:     voll.Labels,
 			Logs:       make(map[string]string),
-			Mountpoint: voll.Mountpoint,
-			Name:       voll.Name,
-			RepoName:   voll.Name,
-			SubPath:    "",
 		}
 
 		if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {

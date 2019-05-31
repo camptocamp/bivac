@@ -20,8 +20,6 @@ type Volume struct {
 	HostBind   string
 	Hostname   string
 	Namespace  string
-	SubPath    string
-	RepoName   string
 
 	BackingUp           bool
 	LastBackupDate      string
