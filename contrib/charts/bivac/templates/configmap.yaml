@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ template "bivac.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  providers-config.toml: |
+    [providers]
+      [providers.mysql]
+      pre_cmd = """
+      mkdir -p $volume/backups && \
+      echo $(if [ -z '$MYSQL_ROOT_PASSWORD' ]; then \
+        mysqldump --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD; else \
+        mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD; \
+      fi) > $volume/backups/all.sql"""
+      detect_cmd = "[[ -d $volume/mysql ]]"
+      post_cmd = "rm -rf $volume/backups"
+      backup_dir = "backups"
+
+      [providers.postgresql]
+      pre_cmd = "mkdir -p $volume/backups && pg_dumpall --clean -Upostgres > $volume/backups/all.sql"
+      post_cmd = "rm -rf $volume/backups"
+      detect_cmd = "[[ -f $volume/PG_VERSION ]]"
+      backup_dir = "backups"
+
+      [providers.openldap]
+      pre_cmd = "mkdir -p $volume/backups && slapcat > $volume/backups/all.ldif"
+      detect_cmd = "[[ -f $volume/DB_CONFIG ]]"
+      backup_dir = "backups"
+
+      [providers.mongo]
+      pre_cmd = """
+      if [ -z '$MONGO_INITDB_ROOT_USERNAME' ]; then \
+        mongodump -o $volume/backups; else \
+        mongodump -o $volume/backups --username=$MONGO_INITDB_ROOT_USERNAME --password=$MONGO_INITDB_ROOT_PASSWORD; \
+      fi"""
+      post_cmd = "rm -rf $volume/backups"
+      detect_cmd = "[[ -f $volume/mongod.lock ]]"
+      backup_dir = "backups"
