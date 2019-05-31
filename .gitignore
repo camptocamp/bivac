@@ -4,3 +4,5 @@ hugo/public
 coverage
 ./bivac
 *~
+/vendor
+/bivac
