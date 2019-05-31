@@ -3,33 +3,30 @@
 	pre_cmd = """
 	mkdir -p $volume/backups && \
 	echo $(if [ -z '$MYSQL_ROOT_PASSWORD' ]; then \
-		mysqldump --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD; else \
-		mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD; \
+	  mysqldump --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD; else \
+	  mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD; \
 	fi) > $volume/backups/all.sql"""
-	restore_post_cmd = """
-	echo $(if [ -z '$MYSQL_ROOT_PASSWORD' ]; then \
-		mysql --user=$MYSQL_USER --password=$MYSQL_PASSWORD -p; else \
-		mysql --password=$MYSQL_ROOT_PASSWORD -p; \
-	fi) < $volume/backups/all.sql && rm -rf $volume/backups"""
-	backup_dir = "backups"
 	detect_cmd = "[[ -d $volume/mysql ]]"
 	post_cmd = "rm -rf $volume/backups"
+	backup_dir = "backups"
 
 	[providers.postgresql]
-	backup_dir = "backups"
-	detect_cmd = "[[ -f $volume/PG_VERSION ]]"
-	post_cmd = "rm -rf $volume/backups"
 	pre_cmd = "mkdir -p $volume/backups && pg_dumpall --clean -Upostgres > $volume/backups/all.sql"
-	restore_post_cmd = "psql -U postgres -f $volume/backups/all.sql && rm -rf $volume/backups"
+	post_cmd = "rm -rf $volume/backups"
+	detect_cmd = "[[ -f $volume/PG_VERSION ]]"
+	backup_dir = "backups"
 
 	[providers.openldap]
 	pre_cmd = "mkdir -p $volume/backups && slapcat > $volume/backups/all.ldif"
 	detect_cmd = "[[ -f $volume/DB_CONFIG ]]"
 	backup_dir = "backups"
-
+	
 	[providers.mongo]
-	backup_dir = "backups"
-	detect_cmd = "[[ -f $volume/mongod.lock ]]"
+	pre_cmd = """
+	if [ -z '$MONGO_INITDB_ROOT_USERNAME' ]; then \
+	  mongodump -o $volume/backups; else \
+	  mongodump -o $volume/backups --username=$MONGO_INITDB_ROOT_USERNAME --password=$MONGO_INITDB_ROOT_PASSWORD; \
+	fi"""
 	post_cmd = "rm -rf $volume/backups"
-	pre_cmd = "mongodump -o $volume/backups"
-	restore_post_cmd = "mongorestore --dir $volume/backups && rm -rf $volume/backups"
+	detect_cmd = "[[ -f $volume/mongod.lock ]]"
+	backup_dir = "backups"

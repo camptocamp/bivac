@@ -23,9 +23,11 @@ type Volume struct {
 	SubPath    string
 	RepoName   string
 
-	LastBackupDate   string
-	LastBackupStatus string
-	Logs             map[string]string
+	BackingUp           bool
+	LastBackupDate      string
+	LastBackupStatus    string
+	LastBackupStartDate string
+	Logs                map[string]string
 
 	Metrics *Metrics `json:"-"`
 
@@ -34,8 +36,9 @@ type Volume struct {
 
 // Filters contains the volumes filters
 type Filters struct {
-	Whitelist []string
-	Blacklist []string
+	Blacklist           []string
+	Whitelist           []string
+	WhitelistAnnotation bool
 }
 
 // Metrics are used to fill the Prometheus endpoint

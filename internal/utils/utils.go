@@ -12,7 +12,13 @@ import (
 	"time"
 )
 
-var seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
+// BuildInfo contains Bivac build informations
+type BuildInfo struct {
+	Version    string
+	Date       string
+	CommitSha1 string
+	Runtime    string
+}
 
 // OutputFormat stores output of Restic commands
 type OutputFormat struct {
