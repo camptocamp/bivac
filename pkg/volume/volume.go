@@ -36,8 +36,9 @@ type Volume struct {
 
 // Filters contains the volumes filters
 type Filters struct {
-	Whitelist []string
-	Blacklist []string
+	Blacklist           []string
+	Whitelist           []string
+	WhitelistAnnotation bool
 }
 
 // Metrics are used to fill the Prometheus endpoint

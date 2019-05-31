@@ -1,0 +1,68 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ template "bivac.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Name }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Release.Name }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ template "bivac.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
+  - apiGroups: ['']
+    resources:
+      - pods
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+  - apiGroups: ['']
+    resources:
+      - namespaces
+      - nodes
+      - persistentvolumeclaims
+      - serviceaccounts
+    verbs:
+      - get
+      - list
+  - apiGroups: ['']
+    resources:
+      - pods/exec
+      - pods/log
+    verbs:
+      - create
+      - get
+      - list
+      - post
+---
+apiVersion: v1
+kind: ServiceAccount
+{{ if .Values.image.pullSecret -}}
+imagePullSecrets:
+  - name: {{ .Values.image.pullSecret }}
+{{- end }}
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ template "bivac.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}

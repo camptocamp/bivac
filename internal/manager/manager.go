@@ -104,7 +104,7 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 			default:
 				continue
 			}
-			if ok, _ := m.Orchestrator.IsNodeAvailable(v.HostBind); !ok {
+			if ok, _ := m.Orchestrator.IsNodeAvailable(v.HostBind); !ok && v.HostBind != "unbound" {
 				log.WithFields(log.Fields{
 					"node": v.HostBind,
 				}).Warning("Node unavailable.")

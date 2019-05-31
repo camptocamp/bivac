@@ -75,12 +75,23 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 		}
 
 		for _, pvc := range pvcs.Items {
+			if backupString, ok := pvc.Annotations["bivac.backup"]; ok {
+				if volumeFilters.WhitelistAnnotation {
+					if strings.ToLower(backupString) != "true" {
+						continue
+					}
+				} else {
+					if strings.ToLower(backupString) == "false" {
+						continue
+					}
+				}
+			}
 			v := &volume.Volume{
 				ID:        string(pvc.UID),
-				Labels:    pvc.Labels,
-				Logs:      make(map[string]string),
 				Name:      pvc.Name,
 				Namespace: namespace,
+				Labels:    pvc.Labels,
+				Logs:      make(map[string]string),
 				RepoName:  pvc.Name,
 				SubPath:   "",
 			}
@@ -184,6 +195,10 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 			})
 		}
 	*/
+
+	if node == "unbound" {
+		node = ""
+	}
 
 	pod, err := o.client.CoreV1().Pods(v.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -346,7 +361,7 @@ func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVol
 	req := o.client.Core().RESTClient().Post().
 		Resource("pods").
 		Name(mountedVolumes.PodID).
-		Namespace(o.config.Namespace).
+		Namespace(mountedVolumes.Volume.Namespace).
 		SubResource("exec").
 		Param("container", mountedVolumes.ContainerID)
 	req.VersionedParams(&apiv1.PodExecOptions{

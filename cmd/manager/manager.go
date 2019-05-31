@@ -22,11 +22,14 @@ var (
 	dbPath           string
 	resticForgetArgs string
 
-	providersFile string
-	targetURL     string
-	retryCount    int
-	logServer     string
-	agentImage    string
+	providersFile       string
+	targetURL           string
+	retryCount          int
+	logServer           string
+	agentImage          string
+	whitelistVolumes    string
+	blacklistVolumes    string
+	whitelistAnnotation bool
 )
 var envs = make(map[string]string)
 
@@ -34,13 +37,10 @@ var managerCmd = &cobra.Command{
 	Use:   "manager",
 	Short: "Start Bivac backup manager",
 	Run: func(cmd *cobra.Command, args []string) {
-		// Global variables
-		whitelistVolumes, _ := cmd.Flags().GetString("whitelist")
-		blacklistVolumes, _ := cmd.Flags().GetString("blacklist")
-
 		volumesFilters := volume.Filters{
-			Whitelist: strings.Split(whitelistVolumes, ","),
-			Blacklist: strings.Split(blacklistVolumes, ","),
+			Blacklist:           strings.Split(blacklistVolumes, ","),
+			Whitelist:           strings.Split(whitelistVolumes, ","),
+			WhitelistAnnotation: whitelistAnnotation,
 		}
 
 		o, err := manager.GetOrchestrator(orchestrator, Orchestrators)
@@ -100,8 +100,17 @@ func init() {
 	managerCmd.Flags().StringVarP(&logServer, "log.server", "", "", "Manager's API address that will receive logs from agents.")
 	envs["BIVAC_LOG_SERVER"] = "log.server"
 
-	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "camptocamp/bivac:2.0.0", "Agent's Docker image.")
+	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "camptocamp/bivac:2.0", "Agent's Docker image.")
 	envs["BIVAC_AGENT_IMAGE"] = "agent.image"
+
+	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "", "Whitelist volumes.")
+	envs["BIVAC_WHITELIST"] = "whitelist"
+
+	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "", "Blacklist volumes.")
+	envs["BIVAC_BLACKLIST"] = "blacklist"
+
+	managerCmd.Flags().BoolVarP(&whitelistAnnotation, "whitelist.annotations", "", false, "Require pvc whitelist annotation")
+	envs["BIVAC_WHITELIST_ANNOTATION"] = "whitelist.annotations"
 
 	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	bivacCmd.RootCmd.AddCommand(managerCmd)
