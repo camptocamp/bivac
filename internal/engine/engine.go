@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"fmt"
 	"os"
 	"os/exec"
@@ -77,6 +78,37 @@ func (r *Engine) Backup(backupPath, hostname string, force bool) string {
 	return utils.ReturnFormattedOutput(r.Output)
 }
 
+// Restore performs the restore of the passed volume
+func (r *Engine) Restore(
+	backupPath,
+	hostname string,
+	force bool,
+	snapshotName string,
+) string {
+	var err error
+	if force {
+		err = r.unlockRepository()
+		if err != nil {
+			return utils.ReturnFormattedOutput(r.Output)
+		}
+	}
+	err = r.restoreVolume(hostname, backupPath, snapshotName)
+	if err != nil {
+		return utils.ReturnFormattedOutput(r.Output)
+	}
+	for i := 0; i < 3; i++ {
+		err = r.retrieveBackupsStats()
+		if err == nil {
+			break
+		}
+		time.Sleep(10 * time.Second)
+	}
+	if err != nil {
+		return utils.ReturnFormattedOutput(r.Output)
+	}
+	return utils.ReturnFormattedOutput(r.Output)
+}
+
 func (r *Engine) initializeRepository() (err error) {
 	rc := 0
 
@@ -140,6 +172,139 @@ func (r *Engine) forget() (err error) {
 	fmt.Printf("forget: %s\n", output)
 	err = nil
 	return
+}
+
+func (r *Engine) restoreVolume(
+	hostname,
+	backupPath string,
+	snapshotName string,
+) (err error) {
+	rc := 0
+	origionalBackupPath := r.getOrigionalBackupPath(
+		hostname,
+		backupPath,
+		snapshotName,
+	)
+	workingPath, err := utils.GetRandomFilePath(backupPath)
+	workingPath = strings.ReplaceAll(workingPath, "//", "/")
+	if err != nil {
+		rc = utils.HandleExitCode(err)
+	}
+	err = os.MkdirAll(workingPath, 0700)
+	if err != nil {
+		rc = utils.HandleExitCode(err)
+	}
+	output, err := exec.Command(
+		"restic",
+		append(
+			r.DefaultArgs,
+			[]string{
+				"restore",
+				snapshotName,
+				"--target",
+				workingPath,
+			}...,
+		)...,
+	).CombinedOutput()
+	restoreDumpPath := workingPath + origionalBackupPath
+	files, err := ioutil.ReadDir(restoreDumpPath)
+	if err != nil {
+		rc = utils.HandleExitCode(err)
+	}
+	collisionName := ""
+	for _, f := range files {
+		fileName := f.Name()
+		restoreSubPath := strings.ReplaceAll(backupPath+"/"+fileName, "//", "/")
+		if restoreSubPath == workingPath {
+			collisionName, err = utils.GetRandomFileName(workingPath)
+			if err != nil {
+				rc = utils.HandleExitCode(err)
+			}
+			restoreSubPath = strings.ReplaceAll(workingPath+"/"+collisionName, "//", "/")
+		}
+		err = utils.MergePaths(
+			strings.ReplaceAll(restoreDumpPath+"/"+fileName, "//", "/"),
+			restoreSubPath,
+		)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+		err = os.RemoveAll(
+			strings.ReplaceAll(restoreDumpPath+"/"+fileName, "//", "/"),
+		)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+	}
+	if len(collisionName) > 0 {
+		tmpWorkingPath, err := utils.GetRandomFilePath(backupPath)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+		err = os.Rename(
+			workingPath,
+			tmpWorkingPath,
+		)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+		err = os.Rename(
+			strings.ReplaceAll(tmpWorkingPath+"/"+collisionName, "//", "/"),
+			workingPath,
+		)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+		err = os.RemoveAll(tmpWorkingPath)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+	} else {
+		err = os.RemoveAll(workingPath)
+		if err != nil {
+			rc = utils.HandleExitCode(err)
+		}
+	}
+	r.Output["restore"] = utils.OutputFormat{
+		Stdout:   string(output),
+		ExitCode: rc,
+	}
+	err = nil
+	return
+}
+
+func (r *Engine) getOrigionalBackupPath(
+	hostname,
+	backupPath string,
+	snapshotName string,
+) string {
+	output, err := exec.Command(
+		"restic",
+		append(
+			r.DefaultArgs,
+			[]string{"ls", snapshotName}...,
+		)...,
+	).CombinedOutput()
+	if err != nil {
+		return err.Error()
+	}
+	type Header struct {
+		Paths []string `json:"paths"`
+	}
+	headerJSON := []byte("{\"paths\": [\"\"]")
+	jsons := strings.Split(string(output), "\n")
+	for i := 0; i < len(jsons); i++ {
+		if strings.Index(jsons[i], "\",\"paths\":[\"") > -1 {
+			headerJSON = []byte(jsons[i])
+			break
+		}
+	}
+	var header Header
+	err = json.Unmarshal(headerJSON, &header)
+	if err != nil {
+		return ""
+	}
+	return header.Paths[0]
 }
 
 func (r *Engine) retrieveBackupsStats() (err error) {
