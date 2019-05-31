@@ -10,7 +10,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/camptocamp/bivac/pkg/volume"
-	"github.com/jinzhu/copier"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -92,6 +91,8 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 				Namespace: namespace,
 				Logs:      make(map[string]string),
 				Labels:    pvc.Labels,
+				RepoName:  pvc.Name,
+				SubPath:   "",
 			}
 
 			containers, _ := o.GetContainersMountingVolume(v)
@@ -105,20 +106,10 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 				v.Mountpoint = "/data"
 			}
 
-			for i := 0; i < len(containers); i++ {
-				container := containers[i]
-				if _, ok := containerMap[container.Volume.ID]; !ok {
-					v = containers[i].Volume
-					v.HostBind = containers[i].HostID
-					v.Hostname = containers[i].HostID
-					v.Mountpoint = containers[i].Path
-					if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
-						continue
-					}
-					volumes = append(volumes, v)
-				}
-				containerMap[container.Volume.ID] = true
+			if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
+				continue
 			}
+			volumes = append(volumes, v)
 		}
 	}
 	return
@@ -300,8 +291,6 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 	}
 
 	mapVolClaim := make(map[string]string)
-	containerMap := make(map[string]*volume.MountedVolume)
-	subpathMap := make(map[string]bool)
 
 	for _, pod := range pods.Items {
 		for _, volume := range pod.Spec.Volumes {
@@ -314,46 +303,17 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 			for _, volumeMount := range container.VolumeMounts {
 				if c, ok := mapVolClaim[volumeMount.Name]; ok {
 					if c == v.Name {
-						clonedV := &volume.Volume{}
-						copier.Copy(&clonedV, &v)
-						splitVolumeID := strings.Split(clonedV.ID, ":")
-						subPath := ""
-						if len(splitVolumeID) > 1 {
-							subPath = splitVolumeID[1]
-						} else {
-							if len(volumeMount.SubPath) > 0 {
-								subPath = volumeMount.SubPath
-								clonedV.ID = v.ID + ":" + volumeMount.SubPath
-							}
+						mv := &volume.MountedVolume{
+							PodID:       pod.Name,
+							ContainerID: container.Name,
+							HostID:      pod.Spec.NodeName,
+							Volume:      v,
+							Path:        volumeMount.MountPath,
 						}
-						fullSubPath := ""
-						if len(subPath) > 0 {
-							subpathMap[splitVolumeID[0]] = true
-							fullSubPath = "/" + subPath
-						}
-						if volumeMount.SubPath == subPath {
-							mv := &volume.MountedVolume{
-								PodID:       pod.Name,
-								ContainerID: container.Name,
-								HostID:      pod.Spec.NodeName,
-								Volume:      clonedV,
-								Path:        volumeMount.MountPath,
-							}
-							mv.Volume.SubPath = fullSubPath
-							containerMap[mv.ContainerID+mv.Volume.ID] = mv
-						}
+						containers = append(containers, mv)
 					}
 				}
 			}
-		}
-	}
-	for _, container := range containerMap {
-		if _, ok := subpathMap[strings.Split(container.Volume.ID, ":")[0]]; ok {
-			if _, ok := containerMap[strings.Split(container.ContainerID+container.Volume.ID, ":")[0]]; !ok {
-				containers = append(containers, container)
-			}
-		} else {
-			containers = append(containers, container)
 		}
 	}
 	return

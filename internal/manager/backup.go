@@ -51,7 +51,7 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		"-p",
 		v.Mountpoint + v.SubPath + "/" + v.BackupDir,
 		"-r",
-		m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
+		m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.RepoName,
 		"--host",
 		m.Orchestrator.GetPath(v),
 	}

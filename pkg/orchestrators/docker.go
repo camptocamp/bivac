@@ -81,6 +81,7 @@ func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 			Hostname:   info.Name,
 			Labels:     voll.Labels,
 			Logs:       make(map[string]string),
+			RepoName:   voll.Name,
 			SubPath:    "",
 		}
 
