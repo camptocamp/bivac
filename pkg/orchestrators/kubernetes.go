@@ -102,10 +102,10 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 			for i := 0; i < len(containers); i++ {
 				container := containers[i]
 				if _, ok := containerMap[container.Volume.ID]; !ok {
-					v = containers[i].Volume
-					v.HostBind = containers[i].HostID
-					v.Hostname = containers[i].HostID
-					v.Mountpoint = containers[i].Path
+					v = container.Volume
+					v.HostBind = container.HostID
+					v.Hostname = container.HostID
+					v.Mountpoint = container.Path
 					if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
 						continue
 					}
