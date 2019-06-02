@@ -1,0 +1,70 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ template "bivac.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ template "bivac.name" . }}
+        release: {{ .Release.Name }}
+      annotations:
+        alpha.image.policy.openshift.io/resolve-names: '*'
+        prometheus.io/port: '8182'
+        prometheus.io/scrape: 'true'
+    spec:
+      serviceAccountName: {{ .Release.Name }}
+      containers:
+        - name: manager
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - bivac
+            - manager
+          ports:
+            - name: api
+              containerPort: 8182
+          env:
+{{-   with .Values.env }}
+{{      toYaml . | indent 12 }}
+{{-   end -}}
+            - name: BIVAC_LOG_SERVER
+              value: "http://{{ .Release.Name }}.{{ .Release.Namespace }}.svc:{{ .Values.service.port }}"
+          livenessProbe:
+            tcpSocket:
+              port: api
+            initialDelaySeconds: 120
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            tcpSocket:
+              port: api
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 6
+          volumeMounts:
+            - name: bivac-providers-conf
+              mountPath: /etc/bivac
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+        - name: bivac-providers-conf
+          configMap:
+            name: {{ .Release.Name }}

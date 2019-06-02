@@ -2,11 +2,11 @@ package manager
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
 
+	"github.com/camptocamp/bivac/internal/utils"
 	"github.com/camptocamp/bivac/pkg/orchestrators"
 	"github.com/camptocamp/bivac/pkg/volume"
 )
@@ -27,14 +27,14 @@ type Manager struct {
 	TargetURL    string
 	RetryCount   int
 	LogServer    string
-	Version      string
+	BuildInfo    utils.BuildInfo
 	AgentImage   string
 
-	backupSlots chan map[string][]*volume.Volume
+	backupSlots chan *volume.Volume
 }
 
 // Start starts a Bivac manager which handle backups management
-func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount int, refreshTime int) (err error) {
+	func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount int, refreshTime int) (err error) {
 	p, err := LoadProviders(providersFile)
 	if err != nil {
 		err = fmt.Errorf("failed to read providers file: %s", err)
@@ -48,15 +48,20 @@ func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters
 		TargetURL:    targetURL,
 		RetryCount:   retryCount,
 		LogServer:    logServer,
-		Version:      version,
+		BuildInfo:    buildInfo,
 		AgentImage:   agentImage,
 
-		backupSlots: make(chan map[string][]*volume.Volume),
+		backupSlots: make(chan *volume.Volume, 100),
+	}
+
+	// Catch orphan agents
+	orphanAgents, err := m.Orchestrator.RetrieveOrphanAgents()
+	if err != nil {
+		log.Errorf("failed to retrieve orphan agents: %s", err)
 	}
 
 	// Manage volumes
 	go func(m *Manager, volumeFilters volume.Filters) {
-		var bs map[string][]*volume.Volume
 
 		log.Debugf("Starting volume manager...")
 
@@ -66,28 +71,18 @@ func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters
 				log.Errorf("failed to retrieve volumes: %s", err)
 			}
 
-			bs = make(map[string][]*volume.Volume)
 			for _, v := range m.Volumes {
+				if val, ok := orphanAgents[v.ID]; ok {
+					v.BackingUp = true
+					go m.attachOrphanAgent(val, v)
+					delete(orphanAgents, val)
+				}
+
 				if !isBackupNeeded(v) {
 					continue
 				}
-				bs[v.HostBind] = append(bs[v.HostBind], v)
-			}
 
-			for node := range bs {
-				if ok, _ := m.Orchestrator.IsNodeAvailable(node); !ok {
-					log.WithFields(log.Fields{
-						"node": node,
-					}).Warning("Node unavailable.")
-					delete(bs, node)
-				}
-			}
-
-			if len(bs) > 0 {
-				select {
-				case m.backupSlots <- bs:
-				default:
-				}
+				m.backupSlots <- v
 			}
 
 			time.Sleep(time.Duration(refreshTime) * time.Minute)
@@ -96,45 +91,73 @@ func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters
 
 	// Manage backups
 	go func(m *Manager) {
-		var wg sync.WaitGroup
+		slots := make(map[string](chan bool))
 
-		log.Debugf("Starting backup manager...")
+		log.Infof("Starting backup manager...")
+
 		for {
-			bs := <-m.backupSlots
-
-			for _, volumes := range bs {
-				wg.Add(len(volumes))
-				go func(volumes []*volume.Volume) {
-					instanceSem := make(chan bool, 2)
-					for _, v := range volumes {
-						instanceSem <- true
-						go func(v *volume.Volume) {
-							log.WithFields(log.Fields{
-								"volume":   v.Name,
-								"hostname": v.Hostname,
-							}).Debugf("Backing up volume.")
-							defer func() { <-instanceSem; wg.Done() }()
-
-							err = nil
-							for i := 0; i <= m.RetryCount; i++ {
-								err = backupVolume(m, v, false)
-								if err != nil {
-									log.WithFields(log.Fields{
-										"volume":   v.Name,
-										"hostname": v.Hostname,
-										"try":      i + 1,
-									}).Errorf("failed to backup volume: %s", err)
-
-									time.Sleep(2 * time.Second)
-								} else {
-									break
-								}
-							}
-						}(v)
-					}
-				}(volumes)
+			v := <-m.backupSlots
+			if _, ok := slots[v.HostBind]; !ok {
+				slots[v.HostBind] = make(chan bool, 2)
 			}
-			wg.Wait()
+			select {
+			case slots[v.HostBind] <- true:
+			default:
+				continue
+			}
+			if ok, _ := m.Orchestrator.IsNodeAvailable(v.HostBind); !ok && v.HostBind != "unbound" {
+				log.WithFields(log.Fields{
+					"node": v.HostBind,
+				}).Warning("Node unavailable.")
+				<-slots[v.HostBind]
+				continue
+			}
+
+			go func(v *volume.Volume) {
+				var timedout bool
+				tearDown := make(chan bool)
+
+				log.WithFields(log.Fields{
+					"volume":   v.Name,
+					"hostname": v.Hostname,
+				}).Debugf("Backing up volume.")
+				defer func() {
+					if !timedout {
+						tearDown <- true
+						<-slots[v.HostBind]
+					}
+				}()
+
+				// Workaround which avoid a stucked backup to block the whole backup process
+				// If the backup process takes more than one hour,
+				// the backup slot is released.
+				go func() {
+					timeout := time.After(1 * time.Hour)
+					select {
+					case <-tearDown:
+						return
+					case <-timeout:
+						timedout = true
+						<-slots[v.HostBind]
+					}
+				}()
+
+				err = nil
+				for i := 0; i <= m.RetryCount; i++ {
+					err = backupVolume(m, v, false)
+					if err != nil {
+						log.WithFields(log.Fields{
+							"volume":   v.Name,
+							"hostname": v.Hostname,
+							"try":      i + 1,
+						}).Errorf("failed to backup volume: %s", err)
+
+						time.Sleep(2 * time.Second)
+					} else {
+						break
+					}
+				}
+			}(v)
 		}
 	}(m)
 
@@ -145,11 +168,22 @@ func Start(version string, o orchestrators.Orchestrator, s Server, volumeFilters
 }
 
 func isBackupNeeded(v *volume.Volume) bool {
+	if v.BackingUp {
+		return false
+	}
+
 	if v.LastBackupDate == "" {
 		return true
 	}
 
-	lbd, err := time.Parse("2006-01-02 15:04:05", v.LastBackupDate)
+	var dateRef string
+	if v.LastBackupStartDate == "" {
+		dateRef = v.LastBackupDate
+	} else {
+		dateRef = v.LastBackupStartDate
+	}
+
+	lbd, err := time.Parse("2006-01-02 15:04:05", dateRef)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"volume":   v.Name,
@@ -159,6 +193,10 @@ func isBackupNeeded(v *volume.Volume) bool {
 	}
 
 	if lbd.Add(time.Hour * 23).Before(time.Now()) {
+		return true
+	}
+
+	if lbd.Add(time.Hour).Before(time.Now()) && v.LastBackupStatus == "Failed" {
 		return true
 	}
 	return false
@@ -207,7 +245,6 @@ func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 				"volume":   v.Name,
 				"hostname": v.Hostname,
 			}).Debug("Backup manually requested.")
-
 			err = backupVolume(m, v, force)
 			if err != nil {
 				err = fmt.Errorf("failed to backup volume: %s", err)
@@ -221,10 +258,13 @@ func (m *Manager) BackupVolume(volumeID string, force bool) (err error) {
 // GetInformations returns informations regarding the Bivac manager
 func (m *Manager) GetInformations() (informations map[string]string) {
 	informations = map[string]string{
-		"version":       m.Version,
-		"orchestrator":  m.Orchestrator.GetName(),
-		"address":       m.Server.Address,
-		"volumes_count": fmt.Sprintf("%d", len(m.Volumes)),
+		"version":        m.BuildInfo.Version,
+		"build_date":     m.BuildInfo.Date,
+		"build_commit":   m.BuildInfo.CommitSha1,
+		"golang_version": m.BuildInfo.Runtime,
+		"orchestrator":   m.Orchestrator.GetName(),
+		"address":        m.Server.Address,
+		"volumes_count":  fmt.Sprintf("%d", len(m.Volumes)),
 	}
 	return
 }

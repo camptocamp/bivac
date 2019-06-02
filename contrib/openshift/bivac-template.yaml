@@ -1,0 +1,238 @@
+# yamllint disable rule:line-length
+---
+apiVersion: v1
+kind: Template
+labels:
+  app: ${APP_NAME}
+metadata:
+  name: ${APP_NAME}
+  annotations:
+    description: "Bivac lets you backup all your containers volumes on Amazon S3 using Restic."
+    tags: "backup,bivac,restic"
+objects:
+  - kind: Namespace
+    apiVersion: v1
+    metadata:
+      annotations:
+        openshift.io/description: Bivac Backup Manager
+      name: ${NAMESPACE}
+    spec:
+      finalizers:
+        - openshift.io/origin
+        - kubernetes
+  - kind: ClusterRole
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: bivac
+    rules:
+      - apiGroups:
+          - ""
+        resources:
+          - pods
+        verbs:
+          - create
+          - delete
+          - get
+          - list
+      - apiGroups:
+          - ""
+        resources:
+          - persistentvolumeclaims
+          - persistentvolumes
+          - namespaces
+          - nodes
+        verbs:
+          - get
+          - list
+      - apiGroups:
+          - ""
+        resources:
+          - pods/log
+          - pods/exec
+        verbs:
+          - get
+          - post
+          - create
+  - kind: ClusterRoleBinding
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: ${APP_NAME}
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: bivac
+    subjects:
+      - kind: ServiceAccount
+        name: bivac
+        namespace: ${NAMESPACE}
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: bivac
+      namespace: ${NAMESPACE}
+    secrets:
+      - name: bivac
+  - kind: DeploymentConfig
+    apiVersion: apps.openshift.io/v1
+    metadata:
+      labels:
+        app: ${APP_NAME}
+      name: ${APP_NAME}
+      namespace: ${NAMESPACE}
+    spec:
+      replicas: 1
+      selector:
+        app: ${APP_NAME}
+        deploymentconfig: ${APP_NAME}
+      strategy:
+        activeDeadlineSeconds: 21600
+        resources: {}
+        rollingParams:
+          intervalSeconds: 1
+          maxSurge: 25%
+          maxUnavailable: 25%
+          timeoutSeconds: 600
+          updatePeriodSeconds: 1
+        type: Rolling
+      template:
+        metadata:
+          labels:
+            app: ${APP_NAME}
+            deploymentconfig: ${APP_NAME}
+        spec:
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: {}
+          serviceAccount: bivac
+          serviceAccountName: bivac
+          terminationGracePeriodSeconds: 30
+          containers:
+            - image: ${BIVAC_MANAGER_IMAGE}
+              args:
+                - manager
+              imagePullPolicy: IfNotPresent
+              name: bivac
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              env:
+                - name: BIVAC_ORCHESTRATOR
+                  value: kubernetes
+                - name: RESTIC_FORGET_ARGS
+                  value: ${RESTIC_FORGET_ARGS}
+                - name: KUBERNETES_AGENT_SERVICE_ACCOUNT
+                  value: bivac
+                - name: BIVAC_TARGET_URL
+                  value: ${BIVAC_TARGET_URL}
+                - name: BIVAC_RETRY_COUNT
+                  value: ${BIVAC_RETRY_COUNT}
+                - name: KUBERNETES_NAMESPACE
+                  value: ${KUBERNETES_NAMESPACE}
+                - name: KUBERNETES_ALL_NAMESPACES
+                  value: ${KUBERNETES_ALL_NAMESPACES}
+                - name: BIVAC_VOLUMES_WHITELIST
+                  value: ${BIVAC_VOLUMES_WHITELIST}
+                - name: BIVAC_VOLUMES_BLACKLIST
+                  value: ${BIVAC_VOLUMES_BLACKLIST}
+                - name: BIVAC_AGENT_IMAGE
+                  value: ${BIVAC_AGENT_IMAGE}
+                - name: BIVAC_VERBOSE
+                  value: ${BIVAC_VERBOSE}
+              envFrom:
+                - secretRef:
+                    name: ${APP_NAME}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: ${APP_NAME}
+      namespace: ${NAMESPACE}
+    stringData:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      BIVAC_SERVER_PSK: ${BIVAC_SERVER_PSK}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD}
+  - kind: Service
+    apiVersion: v1
+    metadata:
+      labels:
+        app: ${APP_NAME}
+      name: ${APP_NAME}
+      namespace: ${NAMESPACE}
+    spec:
+      ports:
+        - name: 8182-tcp
+          port: 8182
+          protocol: TCP
+          targetPort: 8182
+      selector:
+        deploymentconfig: ${APP_NAME}
+      sessionAffinity: None
+      type: ClusterIP
+  - kind: Route
+    apiVersion: route.openshift.io/v1
+    metadata:
+      labels:
+        app: ${APP_NAME}
+      name: ${APP_NAME}
+      namespace: ${NAMESPACE}
+    spec:
+      port:
+        targetPort: 8182-tcp
+      tls:
+        insecureEdgeTerminationPolicy: Redirect
+        termination: edge
+      to:
+        kind: Service
+        name: ${APP_NAME}
+        weight: 100
+      wildcardPolicy: None
+parameters:
+  - name: NAMESPACE
+    description: namespace
+    required: true
+  - name: APP_NAME
+    description: Name used for most bivac objects. This name should be unique across project.
+    value: bivac
+    required: true
+  - name: KUBERNETES_ALL_NAMESPACES
+    value: "true"
+    description: Backup volumes of all namespaces (bool)
+  - name: KUBERNETES_NAMESPACE
+    description: Namespace where you want to run Bivac
+  - name: RESTIC_FORGET_ARGS
+    description: retention policy for restic in restic syntax (https://restic.readthedocs.io/en/latest/060_forget.html#removing-snapshots-according-to-a-policy)
+    value: "--keep-daily 15 --keep-weekly 5 --keep-hourly 48 --keep-monthly 13 --keep-last 50 --prune"
+  - name: RESTIC_PASSWORD
+    from: '[\w]{64}'
+    generate: expression
+    description: password used by restic to encrypt backups. Note that you will need this value to access your backups - if you don't provide one, it will be randomly generated, please securely store a copy of this key off-site!
+    required: true
+  - name: BIVAC_TARGET_URL
+    description: URL of the bucket where backups are to be stored, in the form s3://s3.amazonaws.com/bucketname/subdir
+    required: true
+  - name: AWS_ACCESS_KEY_ID
+    required: true
+  - name: AWS_SECRET_ACCESS_KEY
+    required: true
+  - name: BIVAC_SERVER_PSK
+    from: '[\w]{64}'
+    generate: expression
+  - name: BIVAC_RETRY_COUNT
+    description: Retry to backup the volume if something goes wrong with Bivac.
+    value: "0"
+  - name: BIVAC_VOLUMES_WHITELIST
+    description: Only backup whitelisted volumes (comma-separated list of PVC names)
+  - name: BIVAC_VOLUMES_BLACKLIST
+    description: Do not backup blacklisted volumes (comma-separated list of PVC names)
+  - name: BIVAC_MANAGER_IMAGE
+    value: camptocamp/bivac:2.0
+    description: image used for bivac manager
+    # value: camptocamp/bivac:2.1-dev
+  - name: BIVAC_AGENT_IMAGE
+    value: camptocamp/bivac:2.0
+    # value: camptocamp/bivac:2.1-dev
+    description: Agent's Docker image
+  - name: BIVAC_VERBOSE
+    description: Enable verbose output (bool)
+    value: "true"
