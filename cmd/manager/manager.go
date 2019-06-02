@@ -114,7 +114,7 @@ func init() {
 	envs["BIVAC_WHITELIST_ANNOTATION"] = "whitelist.annotations"
 
 	managerCmd.Flags().IntVarP(&parallelCount, "parallel.count", "", 2, "The count of agents to run in parallel")
-	envs["VOLBACK_PARALLEL_COUNT"] = "parallel.count"
+	envs["BIVAC_PARALLEL_COUNT"] = "parallel.count"
 
 	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	bivacCmd.RootCmd.AddCommand(managerCmd)
