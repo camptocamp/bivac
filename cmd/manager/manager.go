@@ -30,6 +30,7 @@ var (
 	whitelistVolumes    string
 	blacklistVolumes    string
 	whitelistAnnotation bool
+	parallelCount       int
 )
 var envs = make(map[string]string)
 
@@ -49,7 +50,7 @@ var managerCmd = &cobra.Command{
 			return
 		}
 
-		err = manager.Start(bivacCmd.BuildInfo, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount)
+		err = manager.Start(bivacCmd.BuildInfo, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount, parallelCount)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return
@@ -111,6 +112,9 @@ func init() {
 
 	managerCmd.Flags().BoolVarP(&whitelistAnnotation, "whitelist.annotations", "", false, "Require pvc whitelist annotation")
 	envs["BIVAC_WHITELIST_ANNOTATION"] = "whitelist.annotations"
+
+	managerCmd.Flags().IntVarP(&parallelCount, "parallel.count", "", 2, "The count of agents to run in parallel")
+	envs["BIVAC_PARALLEL_COUNT"] = "parallel.count"
 
 	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	bivacCmd.RootCmd.AddCommand(managerCmd)
