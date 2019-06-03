@@ -106,9 +106,11 @@ func init() {
 
 	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "", "Whitelist volumes.")
 	envs["BIVAC_WHITELIST"] = "whitelist"
+	envs["BIVAC_VOLULMES_WHITELIST"] = "whitelist"
 
 	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "", "Blacklist volumes.")
 	envs["BIVAC_BLACKLIST"] = "blacklist"
+	envs["BIVAC_VOLUMES_BLACKLIST"] = "blacklist"
 
 	managerCmd.Flags().BoolVarP(&whitelistAnnotation, "whitelist.annotations", "", false, "Require pvc whitelist annotation")
 	envs["BIVAC_WHITELIST_ANNOTATION"] = "whitelist.annotations"
