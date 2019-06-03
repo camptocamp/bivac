@@ -131,10 +131,10 @@ objects:
                   value: ${KUBERNETES_NAMESPACE}
                 - name: KUBERNETES_ALL_NAMESPACES
                   value: ${KUBERNETES_ALL_NAMESPACES}
-                - name: BIVAC_VOLUMES_WHITELIST
-                  value: ${BIVAC_VOLUMES_WHITELIST}
-                - name: BIVAC_VOLUMES_BLACKLIST
-                  value: ${BIVAC_VOLUMES_BLACKLIST}
+                - name: BIVAC_WHITELIST
+                  value: ${BIVAC_WHITELIST}
+                - name: BIVAC_BLACKLIST
+                  value: ${BIVAC_BLACKLIST}
                 - name: BIVAC_AGENT_IMAGE
                   value: ${BIVAC_AGENT_IMAGE}
                 - name: BIVAC_VERBOSE
@@ -221,9 +221,9 @@ parameters:
   - name: BIVAC_RETRY_COUNT
     description: Retry to backup the volume if something goes wrong with Bivac.
     value: "0"
-  - name: BIVAC_VOLUMES_WHITELIST
+  - name: BIVAC_WHITELIST
     description: Only backup whitelisted volumes (comma-separated list of PVC names)
-  - name: BIVAC_VOLUMES_BLACKLIST
+  - name: BIVAC_BLACKLIST
     description: Do not backup blacklisted volumes (comma-separated list of PVC names)
   - name: BIVAC_MANAGER_IMAGE
     value: camptocamp/bivac:2.0
