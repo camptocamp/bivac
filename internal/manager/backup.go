@@ -49,9 +49,9 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 		"agent",
 		"backup",
 		"-p",
-		v.Mountpoint + "/" + v.BackupDir,
+		v.Mountpoint + v.SubPath + "/" + v.BackupDir,
 		"-r",
-		m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
+		m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.RepoName,
 		"--host",
 		m.Orchestrator.GetPath(v),
 	}
@@ -202,7 +202,7 @@ func (m *Manager) RunResticCommand(v *volume.Volume, cmd []string) (output strin
 		DefaultArgs: []string{
 			"--no-cache",
 			"-r",
-			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.Name,
+			m.TargetURL + "/" + m.Orchestrator.GetPath(v) + "/" + v.RepoName,
 		},
 		Output: make(map[string]utils.OutputFormat),
 	}

@@ -91,6 +91,8 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 				Namespace: namespace,
 				Logs:      make(map[string]string),
 				Labels:    pvc.Labels,
+				RepoName:  pvc.Name,
+				SubPath:   "",
 			}
 
 			containers, _ := o.GetContainersMountingVolume(v)
