@@ -92,7 +92,7 @@ func Restore(
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set(
 			"Authorization",
-			"Bearer "+os.Getenv("VOLBACK_SERVER_PSK"),
+			"Bearer "+os.Getenv("BIVAC_SERVER_PSK"),
 		)
 		client := &http.Client{}
 		resp, err := client.Do(req)
