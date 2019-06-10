@@ -4,3 +4,6 @@ hugo/public
 coverage
 *~
 /bivac
+*.log
+*.box
+.vagrant/
