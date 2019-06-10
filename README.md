@@ -49,9 +49,9 @@ Flags:
   -r, --target.url string                         The target URL to push the backups to. [BIVAC_TARGET_URL]
 
 Global Flags:
-  -b, --blacklist string   Do not backup blacklisted volumes. [BIVAC_VOLUMES_BLACKLIST]
+  -b, --blacklist string   Do not backup blacklisted volumes. [BIVAC_BLACKLIST]
   -v, --verbose            Enable verbose output [BIVAC_VERBOSE]
-  -w, --whitelist string   Only backup whitelisted volumes. [BIVAC_VOLUMES_WHITELIST]
+  -w, --whitelist string   Only backup whitelisted volumes. [BIVAC_WHITELIST]
 ```
 
 ## Examples

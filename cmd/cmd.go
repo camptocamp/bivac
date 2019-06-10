@@ -41,8 +41,10 @@ func init() {
 	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output")
 	localEnvs["BIVAC_VERBOSE"] = "verbose"
 	RootCmd.PersistentFlags().StringVarP(&whitelist, "whitelist", "w", "", "Only backup whitelisted volumes.")
+	localEnvs["BIVAC_WHITELIST"] = "whitelist"
 	localEnvs["BIVAC_VOLUMES_WHITELIST"] = "whitelist"
 	RootCmd.PersistentFlags().StringVarP(&blacklist, "blacklist", "b", "", "Do not backup blacklisted volumes.")
+	localEnvs["BIVAC_BLACKLIST"] = "blacklist"
 	localEnvs["BIVAC_VOLUMES_BLACKLIST"] = "blacklist"
 
 	SetValuesFromEnv(localEnvs, RootCmd.PersistentFlags())

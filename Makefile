@@ -24,7 +24,7 @@ vet: main.go
 	go vet $<
 
 clean:
-	rm -f bivac
+	git clean -fXd -e \!vendor -e \!vendor/**/* && rm -f ./bivac
 
 test:
 	go test -cover -coverprofile=coverage -v ./...
