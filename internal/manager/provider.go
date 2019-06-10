@@ -16,11 +16,13 @@ type Providers struct {
 
 // Provider stores data for one provider
 type Provider struct {
-	Name         string `toml:"-"`
-	PreCmd       string `toml:"pre_cmd"`
-	PostCmd      string `toml:"post_cmd"`
-	DetectionCmd string `toml:"detect_cmd"`
-	BackupDir    string `toml:"backup_dir"`
+	Name           string `toml:"-"`
+	PreCmd         string `toml:"pre_cmd"`
+	PostCmd        string `toml:"post_cmd"`
+	DetectionCmd   string `toml:"detect_cmd"`
+	BackupDir      string `toml:"backup_dir"`
+	RestorePostCmd string `toml:"restore_post_cmd"`
+	RestorePreCmd  string `toml:"restore_pre_cmd"`
 }
 
 type configToml struct {
@@ -39,11 +41,13 @@ func LoadProviders(path string) (providers Providers, err error) {
 
 	for key, value := range c.Providers {
 		provider := Provider{
-			Name:         key,
-			PreCmd:       value.PreCmd,
-			PostCmd:      value.PostCmd,
-			DetectionCmd: value.DetectionCmd,
-			BackupDir:    value.BackupDir,
+			Name:           key,
+			PreCmd:         value.PreCmd,
+			PostCmd:        value.PostCmd,
+			DetectionCmd:   value.DetectionCmd,
+			BackupDir:      value.BackupDir,
+			RestorePostCmd: value.RestorePostCmd,
+			RestorePreCmd:  value.RestorePreCmd,
 		}
 		providers.Providers[key] = provider
 	}

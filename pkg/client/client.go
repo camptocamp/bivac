@@ -57,6 +57,33 @@ func (c *Client) BackupVolume(volumeName string, force bool) (err error) {
 	return
 }
 
+// RestoreVolume requests a restore of a volume
+func (c *Client) RestoreVolume(
+	volumeName string,
+	force bool,
+	snapshotName string,
+) (err error) {
+	err = c.newRequest(
+		nil,
+		"POST",
+		fmt.Sprintf(
+			"/restore/%s/%s?force=%s",
+			volumeName,
+			snapshotName,
+			strconv.FormatBool(force),
+		),
+		"",
+	)
+	if err != nil {
+		err = fmt.Errorf(
+			"failed to connect to the remote Bivac instance: %s",
+			err,
+		)
+		return
+	}
+	return
+}
+
 // RunRawCommand runs a custom Restic command on a volume's repository and returns the output
 func (c *Client) RunRawCommand(volumeID string, cmd []string) (output string, err error) {
 	var response map[string]interface{}

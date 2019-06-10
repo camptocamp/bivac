@@ -10,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/camptocamp/bivac/pkg/volume"
+	"github.com/jinzhu/copier"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -96,20 +97,22 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 			}
 
 			containers, _ := o.GetContainersMountingVolume(v)
-			if len(containers) > 0 {
-				v.HostBind = containers[0].HostID
-				v.Hostname = containers[0].HostID
-				v.Mountpoint = containers[0].Path
-			} else {
-				v.HostBind = "unbound"
-				v.Hostname = "unbound"
-				v.Mountpoint = "/data"
-			}
+			containerMap := make(map[string]bool)
 
-			if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
-				continue
+			for i := 0; i < len(containers); i++ {
+				container := containers[i]
+				if _, ok := containerMap[container.Volume.ID]; !ok {
+					v = container.Volume
+					v.HostBind = container.HostID
+					v.Hostname = container.HostID
+					v.Mountpoint = container.Path
+					if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
+						continue
+					}
+					volumes = append(volumes, v)
+				}
+				containerMap[container.Volume.ID] = true
 			}
-			volumes = append(volumes, v)
 		}
 	}
 	return
@@ -291,6 +294,7 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 	}
 
 	mapVolClaim := make(map[string]string)
+	containerMap := make(map[string]*volume.MountedVolume)
 
 	for _, pod := range pods.Items {
 		for _, volume := range pod.Spec.Volumes {
@@ -303,18 +307,23 @@ func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (
 			for _, volumeMount := range container.VolumeMounts {
 				if c, ok := mapVolClaim[volumeMount.Name]; ok {
 					if c == v.Name {
+						clonedV := &volume.Volume{}
+						copier.Copy(&clonedV, &v)
 						mv := &volume.MountedVolume{
 							PodID:       pod.Name,
 							ContainerID: container.Name,
 							HostID:      pod.Spec.NodeName,
-							Volume:      v,
+							Volume:      clonedV,
 							Path:        volumeMount.MountPath,
 						}
-						containers = append(containers, mv)
+						containerMap[mv.ContainerID+mv.Volume.ID] = mv
 					}
 				}
 			}
 		}
+	}
+	for _, container := range containerMap {
+		containers = append(containers, container)
 	}
 	return
 }
