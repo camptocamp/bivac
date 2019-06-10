@@ -4,6 +4,7 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "bivac-docker"
   config.vm.box_url = "file://bivac-docker.box"
+  config.vm.hostname = "testing"
 
   config.ssh.insert_key = false
 end
