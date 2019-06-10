@@ -56,7 +56,7 @@ if [[ $dump != $canary ]]; then
 fi
 
 # Cleanup canary volume
-rm -rf /var/lib/docker/volumes/canary/_data/*
+sudo rm -rf /var/lib/docker/volumes/canary/_data/*
 
 # Restore canary volume
 docker exec -it testing bivac restore canary
