@@ -25,6 +25,7 @@ docker run -d --hostname=testing --name testing --rm -v /var/run/docker.sock:/va
   -e RESTIC_PASSWORD=toto \
   -e BIVAC_SERVER_PSK=toto \
   -e BIVAC_REFRESH_RATE=10s \
+  -e BIVAC_AGENT_IMAGE=$1 \
   -p 8182:8182 \
   $1 manager
 
