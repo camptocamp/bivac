@@ -4,6 +4,9 @@ addons:
   hostname: testing
   hosts:
     - testing
+  apt:
+    packages:
+      - net-tools
 services: docker
 go_import_path: github.com/camptocamp/bivac
 go:
@@ -13,25 +16,26 @@ install:
   - go get github.com/mattn/goveralls
   - go get golang.org/x/tools/cmd/cover
 script:
-  - build-binary
-  - build-docker-image
-  - coverage
+  #- build-binary
+  #- build-docker-image
+  #- coverage
   - integration-tests
 jobs:
   include:
-    - stage: build-binary
-      script: make
-    - stage: build-docker-image
-      script: docker build .
-    - stage: coverage
-      if: repo = camptocamp/bivac
-      script:
-        - make test
-        - "$HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=coverage"
+    #- stage: build-binary
+    #  script: make
+    #- stage: build-docker-image
+    #  script: docker build .
+    #- stage: coverage
+    #  if: repo = camptocamp/bivac
+    #  script:
+    #    - make test
+    #    - "$HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=coverage"
     - stage: integration-tests
       script:
-        - docker build -t bivac-testing .
-        - docker run --restart=always -d -p 9000:9000 -e MINIO_ACCESS_KEY=OBQZY3DV6VOEZ9PG6NIM -e MINIO_SECRET_KEY=7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty --name minio -v /root/minio:/data minio/minio server /data
-        - sleep 10
-        - docker run -it --rm -e MC_HOST_minio=http://OBQZY3DV6VOEZ9PG6NIM:7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty@172.17.0.2:9000 minio/mc mb minio/bivac-testing
-        - run-parts -v test/integration/docker/tests -a bivac-testing -a debug
+        - ifconfig
+        #- docker build -t bivac-testing .
+        #- docker run --restart=always -d -p 9000:9000 -e MINIO_ACCESS_KEY=OBQZY3DV6VOEZ9PG6NIM -e MINIO_SECRET_KEY=7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty --name minio -v /root/minio:/data minio/minio server /data
+        #- sleep 10
+        #- docker run -it --rm -e MC_HOST_minio=http://OBQZY3DV6VOEZ9PG6NIM:7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty@172.17.0.2:9000 minio/mc mb minio/bivac-testing
+        #- run-parts -v test/integration/docker/tests -a bivac-testing -a debug
