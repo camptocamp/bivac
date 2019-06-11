@@ -7,6 +7,7 @@ addons:
   apt:
     packages:
       - net-tools
+      - iproute2
 services: docker
 go_import_path: github.com/camptocamp/bivac
 go:
@@ -33,9 +34,27 @@ jobs:
     #    - "$HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=coverage"
     - stage: integration-tests
       script:
-        - ifconfig
-        #- docker build -t bivac-testing .
-        #- docker run --restart=always -d -p 9000:9000 -e MINIO_ACCESS_KEY=OBQZY3DV6VOEZ9PG6NIM -e MINIO_SECRET_KEY=7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty --name minio -v /root/minio:/data minio/minio server /data
-        #- sleep 10
-        #- docker run -it --rm -e MC_HOST_minio=http://OBQZY3DV6VOEZ9PG6NIM:7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty@172.17.0.2:9000 minio/mc mb minio/bivac-testing
-        #- run-parts -v test/integration/docker/tests -a bivac-testing -a debug
+        - docker build -t bivac-testing .
+          #- echo "#### Docker Orchestrator ####"
+         #- docker run --restart=always -d -p 9000:9000 -e MINIO_ACCESS_KEY=OBQZY3DV6VOEZ9PG6NIM -e MINIO_SECRET_KEY=7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty --name minio -v /root/minio:/data minio/minio server /data
+         #- sleep 10
+         #- docker run -it --rm -e MC_HOST_minio=http://OBQZY3DV6VOEZ9PG6NIM:7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty@172.17.0.2:9000 minio/mc mb minio/bivac-testing
+         #- run-parts -v test/integration/docker/tests -a bivac-testing -a debug
+        - echo "#### Cattle Orchestrator ####"
+        - export INTERNAL_IP=$(ip -o -4 addr show dev `ls /sys/class/net | grep -E "^eth|^en" | head -n 1` | cut -d' ' -f7 | cut -d'/' -f1)
+        - docker run -d --restart=unless-stopped -p 8080:8080 rancher/server:stable
+        - sleep 60
+        - curl 'http://localhost:8080/v2-beta/setting' -H 'Accept: application/json' -H 'content-type: application/json' --data '{"type":"setting","name":"telemetry.opt","value":"in"}'
+        - sleep 1
+        - curl 'http://localhost:8080/v2-beta/settings/api.host' -X PUT -H 'Accept: application/json' -H 'content-type: application/json' --data '{"id":"api.host","type":"activeSetting","baseType":"setting","name":"api.host","activeValue":null,"inDb":false,"source":null,"value":"http://'${INTERNAL_IP}':8080"}'
+        - sleep 1
+        - curl 'http://localhost:8080/v2-beta/projects/1a5/registrationtoken' --data '{"type":"registrationToken"}'
+        - sleep 1
+        - command=$(curl -s 'http://localhost:8080/v2-beta/projects/1a5/registrationtokens?state=active&limit=-1&sort=name'  -H 'Accept: application/json'  -H 'content-type: application/json' | jq -r ".data[0].command")
+        - $command
+        - wget https://releases.rancher.com/cli/v0.6.12/rancher-linux-amd64-v0.6.12.tar.gz
+        - tar zxvf rancher-linux-amd64-v0.6.12.tar.gz
+        - sudo cp ./rancher-v0.6.12/rancher /bin/rancher
+        - sudo chmod +x /bin/rancher
+        - rm -rf ./rancher-v0.6.12
+        - rm rancher-linux-amd64-v0.6.12.tar.gz

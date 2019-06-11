@@ -15,6 +15,21 @@ docker() {
   (cd docker && VAGRANT_VAGRANTFILE=Vagrantfile.runner vagrant destroy -f)
 }
 
+cattle() {
+  if [ "$build" = true ]; then
+    echo "[*] Cattle: Building environment..."
+    (cd cattle && ./build.sh)
+  else
+    echo "[*] Cattle: Build skipped."
+  fi
+
+  echo "[*] Cattle: Running tests..."
+
+  (cd cattle && VAGRANT_VAGRANTFILE=Vagrantfile.runner vagrant up)
+  (cd cattle && VAGRANT_VAGRANTFILE=Vagrantfile.runner vagrant ssh -c "run-parts -v /vagrant/tests -a $1 -a $2")
+  (cd cattle && VAGRANT_VAGRANTFILE=Vagrantfile.runner vagrant destroy -f)
+}
+
 usage() { echo "Usage: $0 [-i <docker image>] [-o <orchestrator>] [-l <log level>] [-b]" 1>&2; exit 1; }
 
 log_level=error
@@ -48,7 +63,11 @@ case "$orchestrator" in
   docker)
     docker $image $log_level
     ;;
+  cattle)
+    cattle $image $log_level
+    ;;
   *)
     docker $image $log_level
+    cattle $image $log_level
     ;;
 esac

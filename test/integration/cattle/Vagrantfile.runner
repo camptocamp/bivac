@@ -1,0 +1,15 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "bivac-cattle"
+  config.vm.box_url = "file://bivac-cattle.box"
+  config.vm.hostname = "testing"
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 4096
+    v.cpus = 2
+  end
+
+  config.ssh.insert_key = false
+end
