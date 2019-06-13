@@ -20,7 +20,7 @@ var envs = make(map[string]string)
 
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "Retrive Bivac informations",
+	Short: "Retrieve Bivac informations",
 	Run: func(cmd *cobra.Command, args []string) {
 		c, err := client.NewClient(remoteAddress, psk)
 		if err != nil {
