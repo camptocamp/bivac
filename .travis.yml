@@ -4,10 +4,20 @@ addons:
   hostname: testing
   hosts:
     - testing
+  apt:
+    packages:
+      - net-tools
+      - iproute2
 services: docker
 go_import_path: github.com/camptocamp/bivac
 go:
   - "1.12"
+before_install:
+  - export INTERNAL_IP=$(ip -o -4 addr show dev `ls /sys/class/net | grep -E "^eth|^en" | head -n 1` | cut -d' ' -f7 | cut -d'/' -f1)
+  - export CATTLE_HOSTNAME=testing
+  - sudo sed -i "s/\DOCKER_OPTS=\"/DOCKER_OPTS=\"--insecure-registry=${INTERNAL_IP}:5000 /g" /etc/default/docker
+  - sudo cat /etc/default/docker
+  - sudo service docker restart
 install:
   - go get github.com/bradfitz/goimports
   - go get github.com/mattn/goveralls
@@ -16,7 +26,8 @@ script:
   - build-binary
   - build-docker-image
   - coverage
-  - integration-tests
+  - integration-tests/docker
+  - integration-tests/cattle
 jobs:
   include:
     - stage: build-binary
@@ -28,10 +39,16 @@ jobs:
       script:
         - make test
         - "$HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=coverage"
-    - stage: integration-tests
+    - stage: integration-tests/docker
       script:
-        - docker build -t bivac-testing .
-        - docker run --restart=always -d -p 9000:9000 -e MINIO_ACCESS_KEY=OBQZY3DV6VOEZ9PG6NIM -e MINIO_SECRET_KEY=7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty --name minio -v /root/minio:/data minio/minio server /data
-        - sleep 10
-        - docker run -it --rm -e MC_HOST_minio=http://OBQZY3DV6VOEZ9PG6NIM:7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty@172.17.0.2:9000 minio/mc mb minio/bivac-testing
-        - run-parts -v test/integration/docker/tests -a bivac-testing -a debug
+        - ./test/integration/docker/prepare.sh
+        - docker build -t $INTERNAL_IP:5000/bivac-testing .
+        - docker push $INTERNAL_IP:5000/bivac-testing
+        - run-parts -v test/integration/docker/tests -a $INTERNAL_IP:5000/bivac-testing -a debug
+    - stage: integration-tests/cattle
+      script:
+        - sudo sed -i 's/localhost/testing localhost/g' /etc/hosts
+        - ./test/integration/cattle/prepare.sh
+        - docker build -t $INTERNAL_IP:5000/bivac-testing .
+        - docker push $INTERNAL_IP:5000/bivac-testing
+        - run-parts -v test/integration/cattle/tests -a $INTERNAL_IP:5000/bivac-testing -a debug

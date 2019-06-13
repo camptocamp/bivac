@@ -2,8 +2,8 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "bivac-docker"
-  config.vm.box_url = "file://bivac-docker.box"
+  config.vm.box = "bivac-cattle"
+  config.vm.box_url = "file://bivac-cattle.box"
   config.vm.hostname = "testing"
 
   config.vm.provider "virtualbox" do |v|

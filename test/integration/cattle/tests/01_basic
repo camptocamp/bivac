@@ -1,0 +1,195 @@
+#!/bin/bash
+
+# Prepare environment
+echo "[*] Retrieving internal IP..."
+export INTERNAL_IP=$(ip -o -4 addr show dev `ls /sys/class/net | grep -E "^eth|^en" | head -n 1` | cut -d' ' -f7 | cut -d'/' -f1)
+
+test_valid=true
+canary=8ft8HJ3teCg8S1WeH5bwhNBZEtBJNs
+export AWS_ACCESS_KEY_ID=OBQZY3DV6VOEZ9PG6NIM
+export AWS_SECRET_ACCESS_KEY=7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty
+
+export RANCHER_URL=http://${INTERNAL_IP}:8080/v2-beta
+
+echo "[*] Starting Rancher..."
+while true; do
+  rancher stacks -s > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    sleep 10
+    continue
+  fi
+
+  sh -c "rancher stacks -s | grep -v unhealthy" > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    sleep 10
+    continue
+  fi
+
+  break
+done
+
+echo "[*] Starting services..."
+cat <<EOF > /tmp/services-docker-compose.yml
+---
+version: '2'
+services:
+  canary:
+    image: busybox
+    volumes:
+      - canary:/data
+    command: ["sh", "-c", "echo $canary > /data/canary; mkdir -p /data/foo/bar; echo $canary > /data/foo/bar/canary;ls -la /data;echo $canary > /data/canary"]
+    labels:
+      io.rancher.container.start_once: true
+
+  postgresql:
+    image: postgres:latest
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  mysql:
+    image: mysql
+    volumes:
+      - mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: foo
+      MYSQL_USER: foo
+      MYSQL_PASSWORD: bar
+      MYSQL_ROOT_PASSWORD: root
+EOF
+
+services_stack=$(rancher stack create --start -f /tmp/services-docker-compose.yml services)
+while [[ $(rancher inspect $services_stack| jq -r ".healthState") != "healthy" ]]; do
+  sleep 10
+done
+
+echo "[*] Starting Bivac..."
+cat <<EOF > /tmp/bivac-docker-compose.yml
+---
+version: '2'
+services:
+  bivac:
+    image: $1
+    environment:
+      BIVAC_WHITELIST: "canary,mysql,postgres"
+      BIVAC_TARGET_URL: s3:http://${INTERNAL_IP}:9000/bivac-testing
+      BIVAC_LOG_LEVEL: $2
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      RESTIC_PASSWORD: toto
+      BIVAC_SERVER_PSK: toto
+      BIVAC_REFRESH_RATE: 10s
+      BIVAC_AGENT_IMAGE: $1
+      BIVAC_LOG_SERVER: http://${INTERNAL_IP}:8182
+    command: manager
+    ports:
+      - "8182:8182"
+    labels:
+      io.rancher.container.agent.role: environmentAdmin
+      io.rancher.container.create_agent: 'true'
+EOF
+
+bivac_stack=$(rancher stack create --start -s -f /tmp/bivac-docker-compose.yml bivac)
+
+echo "[*] Waiting for backups..."
+
+canary_waiting=true
+mysql_waiting=true
+postgres_waiting=true
+
+while $canary_waiting || $mysql_waiting || $postgres_waiting; do
+  canary_volume=$(curl -s -H "Authorization: Bearer toto" http://${INTERNAL_IP}:8182/volumes | jq -r '.[] | select(.Name | contains("canary"))')
+  if [ "$(echo $canary_volume | jq -r '.LastBackupStatus')" = "Success" ]; then
+    canary_waiting=false
+  elif [ "$(echo $canary_volume | jq -r '.LastBackupStatus')" = "Failed" ]; then
+    echo $canary_volume | jq -r '.Logs'
+    canary_waiting=false
+  elif [ "$(echo $canary_volume | jq -r '.LastBackupStatus')" = "Unknown" ]; then
+    echo "Volume already backed up, the remote repository may not have been cleaned up."
+    canary_waiting=false
+    test_valid=false
+  fi
+  mysql_volume=$(curl -s -H "Authorization: Bearer toto" http://${INTERNAL_IP}:8182/volumes | jq -r '.[] | select(.Name | contains("mysql"))')
+  if [ "$(echo $mysql_volume | jq -r '.LastBackupStatus')" = "Success" ]; then
+    mysql_waiting=false
+  elif [ "$(echo $mysql_volume | jq -r '.LastBackupStatus')" = "Failed" ]; then
+    echo $mysql_volume | jq -r '.Logs'
+    mysql_waiting=false
+  elif [ "$(echo $mysql_volume | jq -r '.LastBackupStatus')" = "Unknown" ]; then
+    echo "Volume already backed up, the remote repository may not have been cleaned up."
+    mysql_waiting=false
+    test_valid=false
+  fi
+  postgres_volume=$(curl -s -H "Authorization: Bearer toto" http://${INTERNAL_IP}:8182/volumes | jq -r '.[] | select(.Name | contains("postgres"))')
+  if [ "$(echo $postgres_volume | jq -r '.LastBackupStatus')" = "Success" ]; then
+    postgres_waiting=false
+  elif [ "$(echo $postgres_volume | jq -r '.LastBackupStatus')" = "Failed" ]; then
+    echo $postgres_volume | jq -r '.Logs'
+    postgres_waiting=false
+  elif [ "$(echo $postgres_volume | jq -r '.LastBackupStatus')" = "Unknown" ]; then
+    echo "Volume already backed up, the remote repository may not have been cleaned up."
+    postgres_waiting=false
+    test_valid=false
+  fi
+
+  sleep 10
+done
+
+rancher logs bivac/bivac
+
+# Canaries
+dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/testing/canary dump latest /data/canary)
+dump=${dump%$'\r'}
+if [[ "$dump" != "$canary" ]]; then
+  echo -e "\e[31m[-] Basic : Cattle + Restic (canary short)\e[39m"
+  echo $dump
+  docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/testing/canary ls latest
+  test_valid=false
+fi
+
+dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/testing/canary dump latest /data/foo/bar/canary)
+dump=${dump%$'\r'}
+if [[ "$dump" != "$canary" ]]; then
+  echo -e "\e[31m[-] Basic : Cattle + Restic (canary long)\e[39m"
+  echo $dump
+  docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/testing/canary ls latest
+  test_valid=false
+fi
+
+# MySQL
+dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/testing/mysql dump latest /var/lib/mysql/backups/all.sql)
+dump=${dump%$'\r'}
+if [[ $dump != *"Dump completed"* ]]; then
+  echo -e "\e[31m[-] Basic : Cattle + Restic (mysql)\e[39m"
+  echo $dump
+  docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/testing/mysql ls latest
+  test_valid=false
+fi
+
+# PostgreSQL
+dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/testing/postgres dump latest /var/lib/postgresql/data/backups/all.sql)
+dump=${dump%$'\r'}
+if [[ $dump != *"dump complete"* ]]; then
+  echo -e "\e[31m[-] Basic : Cattle + Restic (postgresql)\e[39m"
+  echo $dump
+  docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/testing/postgres ls latest
+  test_valid=false
+fi
+
+# Clean up environment
+echo "[*] Cleaning up environment..."
+rancher rm $services_stack
+rancher rm $bivac_stack
+rm /tmp/bivac-docker-compose.yml
+rm /tmp/services-docker-compose.yml
+docker pull minio/mc
+docker run --rm -e MC_HOST_minio=http://OBQZY3DV6VOEZ9PG6NIM:7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty@${INTERNAL_IP}:9000 minio/mc rb --force minio/bivac-testing
+docker run --rm -e MC_HOST_minio=http://OBQZY3DV6VOEZ9PG6NIM:7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty@${INTERNAL_IP}:9000 minio/mc mb minio/bivac-testing
+
+
+if [ "$test_valid" = true ]; then
+  echo -e "\e[32m[+] Basic : Cattle + Restic\e[39m"
+else
+  echo -e "\e[31m[+] Basic : Cattle + Restic\e[39m"
+  exit 1
+fi
+

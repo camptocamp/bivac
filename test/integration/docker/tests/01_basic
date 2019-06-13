@@ -1,24 +1,29 @@
 #!/bin/bash
 
 # Prepare environment
+echo "[*] Retrieving internal IP..."
+export INTERNAL_IP=$(ip -o -4 addr show dev `ls /sys/class/net | grep -E "^eth|^en" | head -n 1` | cut -d' ' -f7 | cut -d'/' -f1)
 
 test_valid=true
 canary=8ft8HJ3teCg8S1WeH5bwhNBZEtBJNs
 export AWS_ACCESS_KEY_ID=OBQZY3DV6VOEZ9PG6NIM
 export AWS_SECRET_ACCESS_KEY=7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty
 
+echo "[*] Creating test volumes..."
 docker volume create canary
 echo $canary | sudo tee /var/lib/docker/volumes/canary/_data/canary
 sudo mkdir -p /var/lib/docker/volumes/canary/_data/foo/bar
 echo $canary | sudo tee /var/lib/docker/volumes/canary/_data/foo/bar/canary
 
-docker run -d --name mysql --rm -v mysql:/var/lib/mysql -e MYSQL_DATABASE=foo -e MYSQL_USER=foo -e MYSQL_PASSWORD=bar -e MYSQL_ROOT_PASSWORD=root mysql:latest
-docker run -d --name postgres --rm -v postgres:/var/lib/postgresql/data postgres:latest
+echo "[*] Starting test services..."
+docker run -d --name mysql -v mysql:/var/lib/mysql -e MYSQL_DATABASE=foo -e MYSQL_USER=foo -e MYSQL_PASSWORD=bar -e MYSQL_ROOT_PASSWORD=root mysql:5.6
+docker run -d --name postgres -v postgres:/var/lib/postgresql/data postgres:latest
 sleep 10
 
 # Start Bivac
+echo "[*] Starting Bivac..."
 docker run -d --hostname=testing --name testing --rm -v /var/run/docker.sock:/var/run/docker.sock:ro \
-  -e BIVAC_TARGET_URL=s3:http://172.17.0.2:9000/bivac-testing/docker \
+  -e BIVAC_TARGET_URL=s3:http://${INTERNAL_IP}:9000/bivac-testing/docker \
   -e BIVAC_LOG_LEVEL=$2 \
   -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
   -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
@@ -31,83 +36,103 @@ docker run -d --hostname=testing --name testing --rm -v /var/run/docker.sock:/va
 
 sleep 10
 
+echo "[*] Waiting for backups..."
 canary_waiting=true
 mysql_waiting=true
 postgres_waiting=true
-
 while $canary_waiting || $mysql_waiting || $postgres_waiting; do
+
+  docker logs testing
+
   canary_volume=$(curl -s -H "Authorization: Bearer toto" http://127.0.0.1:8182/volumes | jq -r '.[] | select(.ID | contains("canary"))')
   if [ "$(echo $canary_volume | jq -r '.LastBackupStatus')" = "Success" ]; then
     canary_waiting=false
-  elif [ "$(echo $canary_volume | jq -r '.LastBackupStatus')" = "Error" ]; then
+  elif [ "$(echo $canary_volume | jq -r '.LastBackupStatus')" = "Failed" ]; then
     echo $(echo $canary_volume | jq -r '.Logs')
     canary_waiting=false
+  elif [ "$(echo $canary_volume | jq -r '.LastBackupStatus')" = "Unknown" ]; then
+    echo "Volume already backed up, the remote repository may not have been cleaned up."
+    canary_waiting=false
+    test_valid=false
   fi
   mysql_volume=$(curl -s -H "Authorization: Bearer toto" http://127.0.0.1:8182/volumes | jq -r '.[] | select(.ID | contains("mysql"))')
   if [ "$(echo $mysql_volume | jq -r '.LastBackupStatus')" = "Success" ]; then
     mysql_waiting=false
-  elif [ "$(echo $mysql_volume | jq -r '.LastBackupStatus')" = "Error" ]; then
+  elif [ "$(echo $mysql_volume | jq -r '.LastBackupStatus')" = "Failed" ]; then
     echo $(echo $mysql_volume | jq -r '.Logs')
     mysql_waiting=false
+  elif [ "$(echo $mysql_volume | jq -r '.LastBackupStatus')" = "Unknown" ]; then
+    echo "Volume already backed up, the remote repository may not have been cleaned up."
+    mysql_waiting=false
+    test_valid=false
   fi
   postgres_volume=$(curl -s -H "Authorization: Bearer toto" http://127.0.0.1:8182/volumes | jq -r '.[] | select(.ID | contains("postgres"))')
   if [ "$(echo $postgres_volume | jq -r '.LastBackupStatus')" = "Success" ]; then
     postgres_waiting=false
-  elif [ "$(echo $postgres_volume | jq -r '.LastBackupStatus')" = "Error" ]; then
+  elif [ "$(echo $postgres_volume | jq -r '.LastBackupStatus')" = "Failed" ]; then
     echo $(echo $postgres_volume | jq -r '.Logs')
     postgres_waiting=false
+  elif [ "$(echo $postgres_volume | jq -r '.LastBackupStatus')" = "Unknown" ]; then
+    echo "Volume already backed up, the remote repository may not have been cleaned up."
+    postgres_waiting=false
+    test_valid=false
   fi
 
   sleep 10
 done
 
+echo "[*] Checking backups..."
 # Canaries
-dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://172.17.0.2:9000/bivac-testing/docker/testing/canary dump latest /var/lib/docker/volumes/canary/_data/canary)
+dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/docker/testing/canary dump latest /var/lib/docker/volumes/canary/_data/canary)
 dump=${dump%$'\r'}
 if [[ $dump != $canary ]]; then
   echo "Canary backup failed."
-  docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://172.17.0.2:9000/bivac-testing/docker/testing/canary ls latest
+  docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/docker/testing/canary ls latest
   test_valid=false
 fi
-dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://172.17.0.2:9000/bivac-testing/docker/testing/canary dump latest /var/lib/docker/volumes/canary/_data/foo/bar/canary)
+dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/docker/testing/canary dump latest /var/lib/docker/volumes/canary/_data/foo/bar/canary)
 dump=${dump%$'\r'}
 if [[ $dump != $canary ]]; then
   echo "Canary backup failed."
-  docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://172.17.0.2:9000/bivac-testing/docker/testing/canary ls latest
+  docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/docker/testing/canary ls latest
   test_valid=false
 fi
 
 # MySQL
-dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://172.17.0.2:9000/bivac-testing/docker/testing/mysql dump latest /var/lib/docker/volumes/mysql/_data/backups/all.sql)
+dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/docker/testing/mysql dump latest /var/lib/docker/volumes/mysql/_data/backups/all.sql)
 dump=${dump%$'\r'}
 if [[ $dump != *"Dump completed"* ]]; then
   echo "Mysql backup failed."
-  docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://172.17.0.2:9000/bivac-testing/docker/testing/mysql ls latest
+  docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/docker/testing/mysql ls latest
   test_valid=false
 fi
 
 # PostgreSQL
-dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://172.17.0.2:9000/bivac-testing/docker/testing/postgres dump latest /var/lib/docker/volumes/postgres/_data/backups/all.sql)
+dump=$(docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/docker/testing/postgres dump latest /var/lib/docker/volumes/postgres/_data/backups/all.sql)
 dump=${dump%$'\r'}
 if [[ $dump != *"dump complete"* ]]; then
   echo "Postgresql backup failed."
-  docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://172.17.0.2:9000/bivac-testing/docker/testing/postgres ls latest
+  docker run -it --rm -e RESTIC_PASSWORD=toto -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY restic/restic:latest -q -r s3:http://${INTERNAL_IP}:9000/bivac-testing/docker/testing/postgres ls latest
   test_valid=false
 fi
 
+# Clean up environment
+echo "[*] Cleaning up environment..."
+docker kill testing
+docker volume rm canary
+docker kill mysql
+docker rm mysql
+docker kill postgres
+docker rm postgres
+docker volume rm mysql
+docker volume rm postgres
+docker pull minio/mc
+docker run --rm -e MC_HOST_minio=http://OBQZY3DV6VOEZ9PG6NIM:7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty@${INTERNAL_IP}:9000 minio/mc rb --force minio/bivac-testing
+docker run --rm -e MC_HOST_minio=http://OBQZY3DV6VOEZ9PG6NIM:7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty@${INTERNAL_IP}:9000 minio/mc mb minio/bivac-testing
 
 if [ "$test_valid" = true ]; then
   echo -e "\e[32m[+] Basic : standard data dir + mysql + postgresql\e[39m"
 else
   echo -e "\e[31m[-] Basic : standard data dir + mysql + postgresql\e[39m"
+  exit 1
 fi
-
-# Clean up environment
-docker kill testing
-docker volume rm canary
-docker kill mysql
-docker kill postgres
-docker volume rm mysql
-docker volume rm postgres
-docker run --rm -e MC_HOST_minio=http://OBQZY3DV6VOEZ9PG6NIM:7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty@172.17.0.2:9000 minio/mc rb --force minio/bivac-testing
-docker run --rm -e MC_HOST_minio=http://OBQZY3DV6VOEZ9PG6NIM:7e88XeX0j3YdB6b1o0zU2GhG0dX6tFMy3Haty@172.17.0.2:9000 minio/mc mb minio/bivac-testing
