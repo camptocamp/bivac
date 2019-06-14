@@ -1,3 +1,16 @@
+# [2.1.0](https://github.com/camptocamp/bivac/releases/tag/2.1.0) (2019-06-14)
+
+NEW FEATURES:
+
+- `core`: Add command `restore` to restore a volume from a backup.
+- `kubernetes`: Add support of subpaths and handle them as separate volumes.
+
+IMPROVEMENTS:
+
+- `core`: Add the parameter `--parallel.count` to customize the number of agents able to run at the same time on the same node.
+- `core`: Add the parameter `--refresh.rate` to customize the refresh rate of the volume list.
+- `tests`: Add integration tests for Docker and Cattle.
+
 # [2.0.1](https://github.com/camptocamp/bivac/releases/tag/2.0.1) (2019-05-06)
 
 This minor release contains many bug fixes and improvements in order to stabilize the release 2.0.

@@ -226,12 +226,10 @@ parameters:
   - name: BIVAC_BLACKLIST
     description: Do not backup blacklisted volumes (comma-separated list of PVC names)
   - name: BIVAC_MANAGER_IMAGE
-    value: camptocamp/bivac:2.0
+    value: camptocamp/bivac:2.1
     description: image used for bivac manager
-    # value: camptocamp/bivac:2.1-dev
   - name: BIVAC_AGENT_IMAGE
-    value: camptocamp/bivac:2.0
-    # value: camptocamp/bivac:2.1-dev
+    value: camptocamp/bivac:2.1
     description: Agent's Docker image
   - name: BIVAC_VERBOSE
     description: Enable verbose output (bool)

@@ -1,6 +1,6 @@
 image:
   repository: camptocamp/bivac
-  tag: 2.1-dev
+  tag: 2.1
   pullPolicy: Always
   # Optional docker pull secret
   #pullSecret:
