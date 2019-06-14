@@ -6,11 +6,14 @@ BUILD_DATE = $(shell date +%Y-%m-%d)
 all: lint vet test bivac
 
 bivac: main.go $(DEPS)
-	GO111MODULE=on CGO_ENABLED=0 GOOS=linux \
+	GO111MODULE=on CGO_ENABLED=0 GOARCH=$(GOARCH) GOOS=$(GOOS) \
 	  go build -mod=vendor -a \
 		  -ldflags="-s -X main.version=$(VERSION) -X main.buildDate=$(BUILD_DATE) -X main.commitSha1=$(COMMIT_SHA1)" \
 	    -installsuffix cgo -o $@ $<
-	strip $@
+	@if [ "${GOOS}" = "linux" ]; then strip $@; fi
+
+build-release: clean
+	GO_VERSION=1.12 ./scripts/build-release.sh
 
 lint:
 	@go get -u -v golang.org/x/lint/golint
