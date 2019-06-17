@@ -47,6 +47,7 @@ type Metrics struct {
 	LastBackupDate   prometheus.Gauge
 	LastBackupStatus prometheus.Gauge
 	OldestBackupDate prometheus.Gauge
+	BackupCount      prometheus.Gauge
 }
 
 // MountedVolume stores mounted volumes inside a container
@@ -92,6 +93,16 @@ func (v *Volume) SetupMetrics() {
 			"hostname":    v.Hostname,
 		},
 	})
+	v.Metrics.BackupCount = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "bivac_backupCount",
+		Help: "Backups count, should match --keep-* option",
+		ConstLabels: map[string]string{
+			"volume_id":   v.ID,
+			"volume_name": v.Name,
+			"hostbind":    v.HostBind,
+			"hostname":    v.Hostname,
+		},
+	})
 
 	return
 }
@@ -101,5 +112,6 @@ func (v *Volume) CleanupMetrics() {
 	prometheus.Unregister(v.Metrics.LastBackupDate)
 	prometheus.Unregister(v.Metrics.LastBackupStatus)
 	prometheus.Unregister(v.Metrics.OldestBackupDate)
+	prometheus.Unregister(v.Metrics.BackupCount)
 	return
 }
