@@ -173,7 +173,6 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 	}
 
 	v.LastBackupDate = time.Now().Format("2006-01-02 15:04:05")
-	v.Metrics.LastBackupDate.SetToCurrentTime()
 	return
 }
 
@@ -191,6 +190,8 @@ func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
 
 	if len(snapshots) > 0 {
 		v.Metrics.OldestBackupDate.Set(float64(snapshots[0].Time.Unix()))
+		v.Metrics.LastBackupDate.Set(float64(snapshots[len(snapshots)-1].Time.Unix()))
+		v.Metrics.BackupCount.Set(float64(len(snapshots)))
 	}
 
 	return
