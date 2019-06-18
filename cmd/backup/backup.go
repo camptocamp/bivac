@@ -21,7 +21,7 @@ var (
 var envs = make(map[string]string)
 
 var backupCmd = &cobra.Command{
-	Use:   "backup [VOLUME_NAME]",
+	Use:   "backup [VOLUME_ID]",
 	Short: "Backup volumes",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

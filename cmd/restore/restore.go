@@ -19,7 +19,7 @@ var (
 var envs = make(map[string]string)
 
 var restoreCmd = &cobra.Command{
-	Use:   "restore [VOLUME_NAME]",
+	Use:   "restore [VOLUME_ID]",
 	Short: "Restore volumes",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
