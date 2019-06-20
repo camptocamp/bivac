@@ -107,7 +107,7 @@ func init() {
 
 	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "", "Whitelist volumes.")
 	envs["BIVAC_WHITELIST"] = "whitelist"
-	envs["BIVAC_VOLULMES_WHITELIST"] = "whitelist"
+	envs["BIVAC_VOLUMES_WHITELIST"] = "whitelist"
 
 	managerCmd.Flags().StringVarP(&blacklistVolumes, "blacklist", "", "", "Blacklist volumes.")
 	envs["BIVAC_BLACKLIST"] = "blacklist"
