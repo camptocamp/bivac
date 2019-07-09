@@ -197,7 +197,8 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	*/
 
 	// get manager pod's annotations and copy them to the agent pod
-	var namespace string = os.Getenv("KUBERNETES_NAMESPACE")
+
+	var namespace = o.config.Namespace
 
 	managerHostname, err := os.Hostname()
 	if err != nil {
