@@ -196,10 +196,12 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 		}
 	*/
 
+	if node == "unbound" {
+		node = ""
+	}
+
 	// get manager pod's annotations and copy them to the agent pod
-
 	var namespace = o.config.Namespace
-
 	managerHostname, err := os.Hostname()
 	if err != nil {
 		err = fmt.Errorf("failed to retrieve manager's hostname: %s", err)
@@ -211,22 +213,13 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 		return
 	}
 
-	bivacAgentAnnotations := make(map[string]string)
-	for k, v := range managerPod.ObjectMeta.Annotations {
-		bivacAgentAnnotations[k] = v
-	}
-
-	if node == "unbound" {
-		node = ""
-	}
-
 	pod, err := o.client.CoreV1().Pods(v.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "bivac-agent-",
 			Labels: map[string]string{
 				"generatedFromPod": os.Getenv("HOSTNAME"),
 			},
-			Annotations: bivacAgentAnnotations,
+			Annotations: managerPod.ObjectMeta.Annotations,
 		},
 		Spec: apiv1.PodSpec{
 			NodeName:           node,
