@@ -77,6 +77,8 @@ objects:
     metadata:
       labels:
         app: ${APP_NAME}
+      annotations:
+        template.alpha.openshift.io/wait-for-ready: "true"
       name: ${APP_NAME}
       namespace: ${NAMESPACE}
     spec:
@@ -99,6 +101,7 @@ objects:
           labels:
             app: ${APP_NAME}
             deploymentconfig: ${APP_NAME}
+          annotations: ${BIVAC_ANNOTATIONS}
         spec:
           dnsPolicy: ClusterFirst
           restartPolicy: Always
@@ -113,7 +116,10 @@ objects:
                 - manager
               imagePullPolicy: IfNotPresent
               name: bivac
-              resources: {}
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 200Mi
               terminationMessagePath: /dev/termination-log
               terminationMessagePolicy: File
               env:
@@ -234,3 +240,6 @@ parameters:
   - name: BIVAC_VERBOSE
     description: Enable verbose output (bool)
     value: "true"
+  - name: BIVAC_ANNOTATIONS
+    description: set of annotations for bivac manager, which will be inherited to bivac-agent
+    required: false

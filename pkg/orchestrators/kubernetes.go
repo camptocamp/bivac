@@ -200,12 +200,26 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 		node = ""
 	}
 
+	// get manager pod's annotations and copy them to the agent pod
+	var namespace = o.config.Namespace
+	managerHostname, err := os.Hostname()
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve manager's hostname: %s", err)
+		return
+	}
+	managerPod, err := o.client.CoreV1().Pods(namespace).Get(managerHostname, metav1.GetOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to retrieve manager's pod: %s", err)
+		return
+	}
+
 	pod, err := o.client.CoreV1().Pods(v.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "bivac-agent-",
 			Labels: map[string]string{
 				"generatedFromPod": os.Getenv("HOSTNAME"),
 			},
+			Annotations: managerPod.ObjectMeta.Annotations,
 		},
 		Spec: apiv1.PodSpec{
 			NodeName:           node,
