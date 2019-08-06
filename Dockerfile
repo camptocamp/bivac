@@ -1,4 +1,8 @@
 FROM golang:1.12 as builder
+ARG GOARCH
+ARG GOOS
+ENV GOARCH=$GOARCH \
+	GOOS=$GOOS
 WORKDIR /go/src/github.com/camptocamp/bivac
 COPY . .
 RUN make bivac
