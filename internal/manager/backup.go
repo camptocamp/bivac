@@ -1,10 +1,12 @@
 package manager
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -76,14 +78,19 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	}
 
 	if !useLogReceiver {
-		var agentOutput utils.MsgFormat
-		err = json.Unmarshal([]byte(output), &agentOutput)
+		decodedOutput, err := base64.StdEncoding.DecodeString(strings.TrimSpace(output))
 		if err != nil {
-			log.WithFields(log.Fields{
-				"volume":   v.Name,
-				"hostname": v.Hostname,
-			}).Warningf("failed to unmarshal agent output: %s -> `%s`", err, output)
+			log.Errorf("failed to decode agent output of `%s` : %s -> `%s`", v.Name, err, output)
 		} else {
+			var agentOutput utils.MsgFormat
+			err = json.Unmarshal(decodedOutput, &agentOutput)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"volume":   v.Name,
+					"hostname": v.Hostname,
+				}).Warningf("failed to unmarshal agent output: %s -> `%s`", err, output)
+			}
+
 			m.updateBackupLogs(v, agentOutput)
 		}
 	}
@@ -123,14 +130,19 @@ func (m *Manager) attachOrphanAgent(containerID string, v *volume.Volume) {
 	}
 
 	if !useLogReceiver {
-		var agentOutput utils.MsgFormat
-		err = json.Unmarshal([]byte(output), &agentOutput)
+		decodedOutput, err := base64.StdEncoding.DecodeString(strings.TrimSpace(output))
 		if err != nil {
-			log.WithFields(log.Fields{
-				"volume":   v.Name,
-				"hostname": v.Hostname,
-			}).Warningf("failed to unmarshal agent output: %s -> `%s`", err, output)
+			log.Errorf("failed to decode agent output of `%s` : %s -> `%s`", v.Name, err, output)
 		} else {
+			var agentOutput utils.MsgFormat
+			err = json.Unmarshal(decodedOutput, &agentOutput)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"volume":   v.Name,
+					"hostname": v.Hostname,
+				}).Warningf("failed to unmarshal agent output: %s -> `%s`", err, output)
+			}
+
 			m.updateBackupLogs(v, agentOutput)
 		}
 	}
@@ -157,7 +169,8 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 			if stepKey != "testInit" && stepValue.(map[string]interface{})["rc"].(float64) > 0.0 {
 				success = false
 			}
-			v.Logs[stepKey] = fmt.Sprintf("[%d] %s", int(stepValue.(map[string]interface{})["rc"].(float64)), stepValue.(map[string]interface{})["stdout"].(string))
+			stdout, _ := base64.StdEncoding.DecodeString(stepValue.(map[string]interface{})["stdout"].(string))
+			v.Logs[stepKey] = fmt.Sprintf("[%d] %s", int(stepValue.(map[string]interface{})["rc"].(float64)), stdout)
 		}
 		if success {
 			v.LastBackupStatus = "Success"

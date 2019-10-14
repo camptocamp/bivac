@@ -2,6 +2,7 @@ package agent
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -55,7 +56,8 @@ func Backup(targetURL, backupPath, hostname string, force bool, logReceiver stri
 		}
 		return
 	}
-	fmt.Println(output)
+
+	fmt.Println(base64.StdEncoding.EncodeToString([]byte(output)))
 	return
 }
 

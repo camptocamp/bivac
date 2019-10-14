@@ -1,9 +1,10 @@
 package engine
 
 import (
+	"encoding/base64"
 	"encoding/json"
-	"io/ioutil"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -121,7 +122,7 @@ func (r *Engine) initializeRepository() (err error) {
 		return
 	}
 	r.Output["testInit"] = utils.OutputFormat{
-		Stdout:   string(output),
+		Stdout:   base64.StdEncoding.EncodeToString(output),
 		ExitCode: rc,
 	}
 	err = nil
@@ -133,7 +134,7 @@ func (r *Engine) initializeRepository() (err error) {
 		rc = utils.HandleExitCode(err)
 	}
 	r.Output["init"] = utils.OutputFormat{
-		Stdout:   string(output),
+		Stdout:   base64.StdEncoding.EncodeToString(output),
 		ExitCode: rc,
 	}
 	fmt.Printf("init: %s\n", output)
@@ -148,7 +149,7 @@ func (r *Engine) backupVolume(hostname, backupPath string) (err error) {
 		rc = utils.HandleExitCode(err)
 	}
 	r.Output["backup"] = utils.OutputFormat{
-		Stdout:   string(output),
+		Stdout:   base64.StdEncoding.EncodeToString(output),
 		ExitCode: rc,
 	}
 	fmt.Printf("backup: %s\n", output)
@@ -166,7 +167,7 @@ func (r *Engine) forget() (err error) {
 		rc = utils.HandleExitCode(err)
 	}
 	r.Output["forget"] = utils.OutputFormat{
-		Stdout:   string(output),
+		Stdout:   base64.StdEncoding.EncodeToString(output),
 		ExitCode: rc,
 	}
 	fmt.Printf("forget: %s\n", output)
@@ -266,7 +267,7 @@ func (r *Engine) restoreVolume(
 		}
 	}
 	r.Output["restore"] = utils.OutputFormat{
-		Stdout:   string(output),
+		Stdout:   base64.StdEncoding.EncodeToString(output),
 		ExitCode: rc,
 	}
 	err = nil
@@ -314,7 +315,7 @@ func (r *Engine) retrieveBackupsStats() (err error) {
 		rc = utils.HandleExitCode(err)
 	}
 	r.Output["snapshots"] = utils.OutputFormat{
-		Stdout:   string(output),
+		Stdout:   base64.StdEncoding.EncodeToString(output),
 		ExitCode: rc,
 	}
 	fmt.Printf("snapshots: %s\n", output)
@@ -329,7 +330,7 @@ func (r *Engine) unlockRepository() (err error) {
 		rc = utils.HandleExitCode(err)
 	}
 	r.Output["unlock"] = utils.OutputFormat{
-		Stdout:   string(output),
+		Stdout:   base64.StdEncoding.EncodeToString(output),
 		ExitCode: rc,
 	}
 	fmt.Printf("unlock: %s\n", output)
@@ -375,7 +376,7 @@ func (r *Engine) RawCommand(cmd []string) (err error) {
 		rc = utils.HandleExitCode(err)
 	}
 	r.Output["raw"] = utils.OutputFormat{
-		Stdout:   string(output),
+		Stdout:   base64.StdEncoding.EncodeToString(output),
 		ExitCode: rc,
 	}
 	return

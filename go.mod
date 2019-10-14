@@ -49,13 +49,13 @@ require (
 	github.com/stretchr/testify v1.3.0
 	github.com/tatsushid/go-prettytable v0.0.0-20141013043238-ed2d14c29939
 	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5 // indirect
-	golang.org/x/lint v0.0.0-20190409202823-959b441ac422 // indirect
-	golang.org/x/net v0.0.0-20190607181551-461777fb6f67
+	golang.org/x/lint v0.0.0-20190930215403-16217165b5de // indirect
+	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 	golang.org/x/oauth2 v0.0.0-20190130055435-99b60b757ec1 // indirect
 	golang.org/x/sys v0.0.0-20190610081024-1e42afee0f76 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20181108054448-85acf8d2951c // indirect
-	golang.org/x/tools v0.0.0-20190608022120-eacb66d2a7c3 // indirect
+	golang.org/x/tools v0.0.0-20191012152004-8de300cfc20a // indirect
 	google.golang.org/genproto v0.0.0-20190201180003-4b09977fb922 // indirect
 	google.golang.org/grpc v1.17.0 // indirect
 	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
@@ -72,3 +72,5 @@ require (
 )
 
 replace github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190217132422-c093c1e08b60
+
+go 1.13

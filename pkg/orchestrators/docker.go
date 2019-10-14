@@ -365,7 +365,7 @@ func (o *DockerOrchestrator) AttachOrphanAgent(containerID, namespace string) (s
 	}
 	logs := strings.Split(stdout.String(), "\n")
 	if len(logs) > 1 {
-		output = logs[len(logs)-2]
+		output = logs[len(logs)]
 	}
 	success = true
 	return
