@@ -1,0 +1,8 @@
+groups:
+  - name: example
+    rules:
+      - alert: BackupError
+        expr: bivac_backupExitCode{} > 0
+
+      - alert: BackupOutdated
+        expr: time() - bivac_lastBackup{} > 49 * 3600

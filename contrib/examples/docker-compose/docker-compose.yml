@@ -1,0 +1,54 @@
+version: '3'
+services:
+  bivac:
+    image: camptocamp/bivac:2.1
+    command: "manager -v"
+    ports:
+      - "8182:8182"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    environment:
+      BIVAC_AGENT_IMAGE: camptocamp/bivac:2.1
+      BIVAC_SERVER_PSK: super-secret-psk
+      RESTIC_PASSWORD: not-so-good-password
+      BIVAC_TARGET_URL: s3:my-bucket
+      AWS_ACCESS_KEY_ID: XXXXX
+      AWS_SECRET_ACCESS_KEY: XXXXX
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+
+  alertmanager:
+    image: prom/alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/:/etc/alertmanager/
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+
+  grafana:
+    image: grafana/grafana
+    user: "104"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+
+volumes:
+  prometheus_data:
+  grafana_data:
