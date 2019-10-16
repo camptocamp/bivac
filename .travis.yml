@@ -43,12 +43,12 @@ jobs:
       script:
         - ./test/integration/docker/prepare.sh
         - docker build -t $INTERNAL_IP:5000/bivac-testing .
-        - docker push $INTERNAL_IP:5000/bivac-testing
+        - docker push --insecure-registry $INTERNAL_IP:5000/bivac-testing
         - run-parts -v test/integration/docker/tests -a $INTERNAL_IP:5000/bivac-testing -a debug
     - stage: integration-tests/cattle
       script:
         - sudo sed -i 's/localhost/testing localhost/g' /etc/hosts
         - ./test/integration/cattle/prepare.sh
         - docker build -t $INTERNAL_IP:5000/bivac-testing .
-        - docker push $INTERNAL_IP:5000/bivac-testing
+        - docker push --insecure-registry $INTERNAL_IP:5000/bivac-testing
         - run-parts -v test/integration/cattle/tests -a $INTERNAL_IP:5000/bivac-testing -a debug
