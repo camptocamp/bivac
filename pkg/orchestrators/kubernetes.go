@@ -75,6 +75,7 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 		}
 
 		for _, pvc := range pvcs.Items {
+
 			if backupString, ok := pvc.Annotations["bivac.backup"]; ok {
 				if volumeFilters.WhitelistAnnotation {
 					if strings.ToLower(backupString) != "true" {
@@ -99,19 +100,24 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 			containers, _ := o.GetContainersMountingVolume(v)
 			containerMap := make(map[string]bool)
 
-			for i := 0; i < len(containers); i++ {
-				container := containers[i]
-				if _, ok := containerMap[container.Volume.ID]; !ok {
-					v = container.Volume
-					v.HostBind = container.HostID
-					v.Hostname = container.HostID
-					v.Mountpoint = container.Path
-					if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
-						continue
+			if len(containers) > 0 {
+				for i := 0; i < len(containers); i++ {
+					container := containers[i]
+					if _, ok := containerMap[container.Volume.ID]; !ok {
+						v = container.Volume
+						v.HostBind = container.HostID
+						v.Hostname = container.HostID
+						v.Mountpoint = container.Path
+						if b, _, _ := o.blacklistedVolume(v, volumeFilters); b {
+							continue
+						}
+						volumes = append(volumes, v)
 					}
-					volumes = append(volumes, v)
+					containerMap[container.Volume.ID] = true
 				}
-				containerMap[container.Volume.ID] = true
+			} else {
+				v.Mountpoint = "/mnt"
+				volumes = append(volumes, v)
 			}
 		}
 	}

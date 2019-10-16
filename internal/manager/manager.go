@@ -111,7 +111,7 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 			default:
 				continue
 			}
-			if ok, _ := m.Orchestrator.IsNodeAvailable(v.HostBind); !ok && v.HostBind != "unbound" {
+			if ok, _ := m.Orchestrator.IsNodeAvailable(v.HostBind); !ok && v.HostBind != "unbound" && m.Orchestrator.GetName() == "cattle" {
 				log.WithFields(log.Fields{
 					"node": v.HostBind,
 				}).Warning("Node unavailable.")
