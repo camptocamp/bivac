@@ -1,12 +1,14 @@
 package manager
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/camptocamp/bivac/internal/utils"
 	"github.com/camptocamp/bivac/pkg/volume"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -65,15 +67,20 @@ func restoreVolume(
 		return
 	}
 	if !useLogReceiver {
-		var agentOutput utils.MsgFormat
-		err = json.Unmarshal([]byte(output), &agentOutput)
+		decodedOutput, err := base64.StdEncoding.DecodeString(strings.Replace(output, " ", "", -1))
 		if err != nil {
-			log.WithFields(log.Fields{
-				"volume":   v.Name,
-				"hostname": v.Hostname,
-			}).Warningf("failed to unmarshal agent output: %s -> `%s`", err, output)
+			log.Errorf("failed to decode agent output of `%s` : %s -> `%s`", v.Name, err, strings.Replace(output, " ", "", -1))
 		} else {
-			m.updateRestoreLogs(v, agentOutput)
+			var agentOutput utils.MsgFormat
+			err = json.Unmarshal(decodedOutput, &agentOutput)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"volume":   v.Name,
+					"hostname": v.Hostname,
+				}).Warningf("failed to unmarshal agent output: %s -> `%s`", err, strings.TrimSpace(output))
+			}
+
+			m.updateBackupLogs(v, agentOutput)
 		}
 	} else {
 		if output != "" {
