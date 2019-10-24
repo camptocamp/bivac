@@ -1,3 +1,13 @@
+# [2.2.0](https://github.com/camptocamp/bivac/releases/tag/2.2.0) (2019-10-24)
+
+IMPROVEMENTS:
+
+- `metrics`: Add a metric that contains the count of snapshots for every volume.
+- `kubernetes`: Duplicate the annotations from the manager to the agents.
+- `docker`: Avoid unmarshalling error when reading logs by using encoded and sanitized output.
+
+Various minor bugs have also been fixed.
+
 # [2.1.0](https://github.com/camptocamp/bivac/releases/tag/2.1.0) (2019-06-14)
 
 NEW FEATURES:

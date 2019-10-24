@@ -102,7 +102,7 @@ func init() {
 	managerCmd.Flags().StringVarP(&logServer, "log.server", "", "", "Manager's API address that will receive logs from agents.")
 	envs["BIVAC_LOG_SERVER"] = "log.server"
 
-	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "camptocamp/bivac:2.1", "Agent's Docker image.")
+	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "camptocamp/bivac:2.2", "Agent's Docker image.")
 	envs["BIVAC_AGENT_IMAGE"] = "agent.image"
 
 	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "", "Whitelist volumes.")
