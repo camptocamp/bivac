@@ -34,7 +34,7 @@ type Manager struct {
 }
 
 // Start starts a Bivac manager which handle backups management
-func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount, parallelCount int, refreshRate string) (err error) {
+func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount, parallelCount int, refreshRate, backupInterval string) (err error) {
 	p, err := LoadProviders(providersFile)
 	if err != nil {
 		err = fmt.Errorf("failed to read providers file: %s", err)
@@ -44,6 +44,12 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 	refreshInterval, err := time.ParseDuration(refreshRate)
 	if err != nil {
 		err = fmt.Errorf("failed to parse refresh time: %s", err)
+		return
+	}
+
+	backupInt, err := time.ParseDuration(backupInterval)
+	if err != nil {
+		err = fmt.Errorf("failed to parse backup interval: %s", err)
 		return
 	}
 
@@ -84,7 +90,7 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 					delete(orphanAgents, val)
 				}
 
-				if !isBackupNeeded(v) {
+				if !isBackupNeeded(v, backupInt) {
 					continue
 				}
 
@@ -173,7 +179,7 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 	return
 }
 
-func isBackupNeeded(v *volume.Volume) bool {
+func isBackupNeeded(v *volume.Volume, backupInt time.Duration) bool {
 	if v.BackingUp {
 		return false
 	}
@@ -198,7 +204,7 @@ func isBackupNeeded(v *volume.Volume) bool {
 		return false
 	}
 
-	if lbd.Add(time.Hour * 23).Before(time.Now()) {
+	if lbd.Add(backupInt).Before(time.Now()) {
 		return true
 	}
 
