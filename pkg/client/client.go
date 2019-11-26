@@ -2,11 +2,13 @@ package client
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/camptocamp/bivac/pkg/volume"
 )
@@ -98,8 +100,11 @@ func (c *Client) RunRawCommand(volumeID string, cmd []string) (output string, er
 		err = fmt.Errorf("failed to connect to the remote Bivac instance: %s", err)
 		return
 	}
-
-	output = response["data"].(string)
+	decodedOutput, err := base64.StdEncoding.DecodeString(strings.Replace(response["data"].(string), " ", "", -1))
+	if err != nil {
+		err = fmt.Errorf("failed to decode output: %s -> `%s`", err, strings.Replace(output, " ", "", -1))
+	}
+	output = string(decodedOutput)
 	return
 }
 
