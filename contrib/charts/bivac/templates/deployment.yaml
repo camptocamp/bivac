@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}
@@ -7,16 +7,30 @@ metadata:
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+  {{- with .Values.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+  {{- end }}
 spec:
+  selector:
+    matchLabels:
+      app: {{ template "bivac.name" . }}
+      release: {{ .Release.Name }}
   template:
     metadata:
       labels:
         app: {{ template "bivac.name" . }}
         release: {{ .Release.Name }}
+        {{- with .Values.labels }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+      {{- with .Values.annotations }}
       annotations:
-        alpha.image.policy.openshift.io/resolve-names: '*'
-        prometheus.io/port: '8182'
-        prometheus.io/scrape: 'true'
+{{ toYaml . | indent 8 }}
+      {{- end }}
     spec:
       serviceAccountName: {{ .Release.Name }}
       containers:
@@ -30,11 +44,30 @@ spec:
             - name: api
               containerPort: 8182
           env:
-{{-   with .Values.env }}
-{{      toYaml . | indent 12 }}
-{{-   end -}}
+            - name: BIVAC_ORCHESTRATOR
+              value: {{ .Values.orchestrator }}
+            - name: KUBERNETES_ALL_NAMESPACES
+              value: "{{ .Values.watchAllNamespaces }}"
+            - name: BIVAC_TARGET_URL
+              value: {{ required "A target URL must be specified" .Values.targetURL }}
+            - name: RESTIC_PASSWORD
+              {{- if .Values.resticPassword }}
+              value: {{ .Values.resticPassword }}
+              {{- else }}
+              value: {{ randAlphaNum 15 }}
+              {{- end }}
+            - name: BIVAC_SERVER_PSK
+              {{- if .Values.serverPSK }}
+              value: {{ .Values.serverPSK }}
+              {{- else }}
+              value: {{ randAlphaNum 15 }}
+              {{- end }}
             - name: BIVAC_LOG_SERVER
               value: "http://{{ .Release.Name }}.{{ .Release.Namespace }}.svc:{{ .Values.service.port }}"
+            {{- with .Values.extraEnv }}
+{{ toYaml . | indent 12 }}
+            {{- end }}
+{{-   end -}}
           livenessProbe:
             tcpSocket:
               port: api

@@ -1,31 +1,43 @@
 image:
   repository: camptocamp/bivac
   tag: 2.2
-  pullPolicy: Always
-  # Optional docker pull secret
-  #pullSecret:
+  pullPolicy: IfNotPresent
 
-env:
-  - name: BIVAC_ORCHESTRATOR
-    value: kubernetes
-  - name: KUBERNETES_ALL_NAMESPACES
-    value: 'true'
-  - name: AWS_ACCESS_KEY_ID
-    value: 'XXXXXXXXXXXXXXXXXXXX'
-  - name: RESTIC_FORGET_ARGS
-    value: 'XXXXXXXXXXXXXX'
-  - name: BIVAC_TARGET_URL
-    value: 'XXXXXXXXXXXXXXXXXXX'
-  - name: AWS_SECRET_ACCESS_KEY
-    value: 'XXXXXXXXXXXXXXXXXXX'
-  - name: RESTIC_PASSWORD
-    value: 'XXXXXXXXXXX'
-  - name: BIVAC_SERVER_PSK
-    value: 'XXXXXXXXXXXXXXXXXXX'
+annotations:
+  foo: bar
+
+labels: {}
+
+## Orchestrator Bivac will run on
+#
+orchestrator: kubernetes
+
+## Let Bivac backup volumes from all namespaces
+#
+watchAllNamespaces: true
+
+## URL where to Restic should push the backups
+# This field is required
+#
+targetURL: ""
+
+## Password used by Restic to encrypt the backups
+# If left empty, a generated one will be used
+#
+resticPassword: ""
+
+## Pre-shared key which protect the Bivac server
+# If left empty, a generated one will be used
+#
+serverPSK: ""
+
+## Additional environment variables
+#
+extraEnv: []
 
 service:
   type: ClusterIP
-  port: 80
+  port: 8182
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

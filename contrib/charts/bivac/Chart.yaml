@@ -1,9 +1,9 @@
 name: bivac
 home: https://github.com/camptocamp/bivac
 icon: https://raw.githubusercontent.com/camptocamp/bivac/master/img/bivac_small.png
-version: 0.0.1
+version: 1.0.0
 appVersion: latest
-description: 'backup interface for volumes attached to containers'
+description: 'Backup Interface for Volumes Attached to Containers'
 keywords:
   - backup
   - bivac
