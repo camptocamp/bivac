@@ -128,7 +128,7 @@ objects:
                 - name: RESTIC_FORGET_ARGS
                   value: ${RESTIC_FORGET_ARGS}
                 - name: KUBERNETES_AGENT_SERVICE_ACCOUNT
-                  value: bivac
+                  value: default
                 - name: BIVAC_TARGET_URL
                   value: ${BIVAC_TARGET_URL}
                 - name: BIVAC_RETRY_COUNT
