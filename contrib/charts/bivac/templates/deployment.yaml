@@ -67,7 +67,6 @@ spec:
             {{- with .Values.extraEnv }}
 {{ toYaml . | indent 12 }}
             {{- end }}
-{{-   end -}}
           livenessProbe:
             tcpSocket:
               port: api
