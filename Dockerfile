@@ -1,25 +1,31 @@
-FROM golang:1.12 as builder
+ARG GO_VERSION
+FROM golang:${GO_VERSION} as builder
+
+ARG BUILD_OPTS
+
+# RClone
+RUN go get github.com/rclone/rclone
+WORKDIR /go/src/github.com/rclone/rclone
+RUN env ${BUILD_OPTS} go build
+
+# Restic
+RUN go get github.com/restic/restic
+WORKDIR /go/src/github.com/restic/restic
+RUN env ${BUILD_OPTS} make restic
+
+# Bivac
 WORKDIR /go/src/github.com/camptocamp/bivac
 COPY . .
-RUN make bivac
-
-FROM restic/restic:latest as restic
-
-FROM alpine:latest as rclone
-RUN wget https://downloads.rclone.org/rclone-current-linux-amd64.zip
-RUN unzip rclone-current-linux-amd64.zip
-RUN cp rclone-*-linux-amd64/rclone /usr/bin/
-RUN chown root:root /usr/bin/rclone
-RUN chmod 755 /usr/bin/rclone
+RUN env ${BUILD_OPTS} make bivac
 
 FROM debian
 RUN apt-get update && \
     apt-get install -y openssh-client procps && \
 	rm -rf /var/lib/apt/lists/*
 COPY --from=builder /etc/ssl /etc/ssl
-COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /bin/
+COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /bin/bivac
 COPY --from=builder /go/src/github.com/camptocamp/bivac/providers-config.default.toml /
-COPY --from=restic /usr/bin/restic /bin/restic
-COPY --from=rclone /usr/bin/rclone /bin/rclone
+COPY --from=builder /go/src/github.com/restic/restic /bin/restic
+COPY --from=builder /go/src/github.com/rclone/rclone /bin/rclone
 ENTRYPOINT ["/bin/bivac"]
 CMD [""]

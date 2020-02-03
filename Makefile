@@ -15,6 +15,10 @@ bivac: main.go $(DEPS)
 release: clean
 	GO_VERSION=1.12 ./scripts/build-release.sh
 
+docker-images: clean
+	@if [ -z "$(IMAGE_NAME)" ]; then echo "IMAGE_NAME cannot be empty."; exit 1; fi
+	GO_VERSION=1.12 IMAGE_NAME=$(IMAGE_NAME) ./scripts/build-docker-images.sh
+
 lint:
 	@go get -u -v golang.org/x/lint/golint
 	@for file in $$(go list ./... | grep -v '_workspace/' | grep -v 'vendor'); do \
