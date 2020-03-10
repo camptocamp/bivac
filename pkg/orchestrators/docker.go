@@ -23,16 +23,20 @@ import (
 // DockerConfig stores Docker configuration
 type DockerConfig struct {
 	Endpoint string
+	Network  string
 }
 
 // DockerOrchestrator implements a container orchestrator for Docker
 type DockerOrchestrator struct {
 	client docker.CommonAPIClient
+	config *DockerConfig
 }
 
 // NewDockerOrchestrator creates a Docker client
 func NewDockerOrchestrator(config *DockerConfig) (o *DockerOrchestrator, err error) {
-	o = &DockerOrchestrator{}
+	o = &DockerOrchestrator{
+		config: config,
+	}
 	o.client, err = docker.NewClient(config.Endpoint, "", nil, nil)
 	if err != nil {
 		err = fmt.Errorf("failed to create a Docker client: %s", err)
@@ -134,7 +138,8 @@ func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 			Tty:          false,
 		},
 		&containertypes.HostConfig{
-			Mounts: mounts,
+			Mounts:      mounts,
+			NetworkMode: containertypes.NetworkMode(o.config.Network),
 		}, nil, "")
 
 	if err != nil {
