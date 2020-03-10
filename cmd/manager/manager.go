@@ -71,7 +71,7 @@ func init() {
 
 	managerCmd.Flags().StringVarP(&Orchestrators.Docker.Endpoint, "docker.endpoint", "", "unix:///var/run/docker.sock", "Docker endpoint.")
 	envs["BIVAC_DOCKER_ENDPOINT"] = "docker.endpoint"
-	managerCmd.Flags().StringVarP(&Orchestrators.Docker.Network, "docker.network", "", "bridge", "Docker nwtwork.")
+	managerCmd.Flags().StringVarP(&Orchestrators.Docker.Network, "docker.network", "", "bridge", "Docker network.")
 	envs["BIVAC_DOCKER_NETWORK"] = "docker.network"
 
 	managerCmd.Flags().StringVarP(&Orchestrators.Cattle.URL, "cattle.url", "", "", "The Cattle URL.")
