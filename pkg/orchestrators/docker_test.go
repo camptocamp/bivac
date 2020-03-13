@@ -244,6 +244,9 @@ func TestDockerDeployAgentSuccess(t *testing.T) {
 	// Run test
 	o := &DockerOrchestrator{
 		client: mockDocker,
+		config: &DockerConfig{
+			Network: "",
+		},
 	}
 	success, _, err := o.DeployAgent(fakeImage, fakeCmd, fakeEnv, fakeVolume)
 
