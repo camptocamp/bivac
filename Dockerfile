@@ -25,7 +25,7 @@ RUN apt-get update && \
 COPY --from=builder /etc/ssl /etc/ssl
 COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /bin/bivac
 COPY --from=builder /go/src/github.com/camptocamp/bivac/providers-config.default.toml /
-COPY --from=builder /go/src/github.com/restic/restic /bin/restic
-COPY --from=builder /go/src/github.com/rclone/rclone /bin/rclone
+COPY --from=builder /go/src/github.com/restic/restic/restic /bin/restic
+COPY --from=builder /go/src/github.com/rclone/rclone/rclone /bin/rclone
 ENTRYPOINT ["/bin/bivac"]
 CMD [""]

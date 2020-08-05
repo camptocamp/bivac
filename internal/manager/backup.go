@@ -191,7 +191,16 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 
 func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
 	r, err := regexp.Compile(`\S{3} (.*)`)
-	stdout := r.FindStringSubmatch(v.Logs["snapshots"])[1]
+
+	matches := r.FindStringSubmatch(v.Logs["snapshots"])
+
+	log.Errorf("%+v\n", v.Logs)
+
+	stdout := ""
+
+	if len(matches) >= 1 {
+		stdout = matches[1]
+	}
 
 	var snapshots []engine.Snapshot
 

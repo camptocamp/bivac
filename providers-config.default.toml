@@ -2,10 +2,11 @@
 	[providers.mysql]
 	pre_cmd = """
 	mkdir -p $volume/backups && \
-	echo $(if [ -z '$MYSQL_ROOT_PASSWORD' ]; then \
-	  mysqldump --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD; else \
-	  mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD; \
-	fi) > $volume/backups/all.sql"""
+	if [ -z '$MYSQL_ROOT_PASSWORD' ]; then \
+	  mysqldump --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD > $volume/backups/all.sql; \
+	else \
+	  mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD > $volume/backups/all.sql; \
+	fi"""
 	detect_cmd = "[[ -d $volume/mysql ]]"
 	post_cmd = "rm -rf $volume/backups"
 	backup_dir = "backups"
