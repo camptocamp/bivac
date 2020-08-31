@@ -3,6 +3,8 @@ VERSION = $(shell git describe --always --dirty)
 COMMIT_SHA1 = $(shell git rev-parse HEAD)
 BUILD_DATE = $(shell date +%Y-%m-%d)
 
+GO_VERSION = 1.14
+
 all: lint vet test bivac
 
 bivac: main.go $(DEPS)
@@ -13,7 +15,7 @@ bivac: main.go $(DEPS)
 	@if [ "${GOOS}" = "linux" ] && [ "${GOARCH}" = "amd64" ]; then strip $@; fi
 
 release: clean
-	GO_VERSION=1.12 ./scripts/build-release.sh
+	GO_VERSION=$(GO_VERSION) ./scripts/build-release.sh
 
 docker-images: clean
 	@if [ -z "$(IMAGE_NAME)" ]; then echo "IMAGE_NAME cannot be empty."; exit 1; fi
