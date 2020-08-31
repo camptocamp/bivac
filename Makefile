@@ -19,7 +19,38 @@ release: clean
 
 docker-images: clean
 	@if [ -z "$(IMAGE_NAME)" ]; then echo "IMAGE_NAME cannot be empty."; exit 1; fi
-	GO_VERSION=1.12 IMAGE_NAME=$(IMAGE_NAME) ./scripts/build-docker-images.sh
+	export IMAGE_NAME=$(IMAGE_NAME)
+	# Linux/amd64
+	docker build --no-cache --pull -t $(IMAGE_NAME)-linux-amd64:$(IMAGE_VERSION) \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg GOOS=linux --build-arg GOARCH=amd64 .
+	docker push $(IMAGE_NAME)-linux-amd64:$(IMAGE_VERSION)
+	# Linux/386
+	docker build --no-cache --pull -t $(IMAGE_NAME)-linux-386:$(IMAGE_VERSION) \
+		--build-arg GO_VERSION=${GO_VERSION} \
+		--build-arg GOOS=linux --build-arg GOARCH=386 .
+	docker push $(IMAGE_NAME)-linux-386:$(IMAGE_VERSION)
+	# Linux/arm
+	docker build --no-cache --pull -t $(IMAGE_NAME)-linux-arm:$(IMAGE_VERSION) \
+		--build-arg GO_VERSION=${GO_VERSION} \
+		--build-arg GOOS=linux --build-arg GOARCH=arm --build-arg GOARM=7 .
+	docker push $(IMAGE_NAME)-linux-arm:$(IMAGE_VERSION)
+	# Manifest
+	docker manifest create $(IMAGE_NAME):$(IMAGE_VERSION) \
+		$(IMAGE_NAME)-linux-amd64:$(IMAGE_VERSION) \
+		$(IMAGE_NAME)-linux-386:$(IMAGE_VERSION) \
+		$(IMAGE_NAME)-linux-arm:$(IMAGE_VERSION)
+	docker manifest annotate $(IMAGE_NAME):$(IMAGE_VERSION) \
+		$(IMAGE_NAME)-linux-amd64:$(IMAGE_VERSION) --os linux --arch amd64
+	docker manifest annotate $(IMAGE_NAME):$(IMAGE_VERSION) \
+		$(IMAGE_NAME)-linux-386:$(IMAGE_VERSION) --os linux --arch 386
+	docker manifest annotate $(IMAGE_NAME):$(IMAGE_VERSION) \
+		$(IMAGE_NAME)-linux-arm:$(IMAGE_VERSION) --os linux --arch arm
+	docker manifest push --purge $(IMAGE_NAME):$(IMAGE_VERSION)
+	docker image rm \
+		$(IMAGE_NAME)-linux-amd64:$(IMAGE_VERSION) \
+		$(IMAGE_NAME)-linux-386:$(IMAGE_VERSION) \
+		$(IMAGE_NAME)-linux-arm:$(IMAGE_VERSION)
 
 lint:
 	@go get -u -v golang.org/x/lint/golint

@@ -1,17 +1,28 @@
 ARG GO_VERSION
 FROM golang:${GO_VERSION} as builder
 
-ARG BUILD_OPTS
+ARG GOOS
+ARG GOARCH
+ARG GOARM
+
+ENV GO111MODULE on
+ENV GOOS ${GOOS}
+ENV GOARCH ${GOARCH}
+ENV GOARM ${GOARM}
 
 # RClone
-RUN go get github.com/rclone/rclone
+RUN git clone https://github.com/rclone/rclone /go/src/github.com/rclone/rclone
 WORKDIR /go/src/github.com/rclone/rclone
+RUN git checkout v1.52.3
+RUN go get ./...
 RUN env ${BUILD_OPTS} go build
 
 # Restic
-RUN go get github.com/restic/restic
+RUN git clone https://github.com/restic/restic /go/src/github.com/restic/restic
 WORKDIR /go/src/github.com/restic/restic
-RUN env ${BUILD_OPTS} make restic
+RUN git checkout v0.9.6
+RUN go get ./...
+RUN GOOS= GOARCH= GOARM= go run -mod=vendor build.go || go run build.go
 
 # Bivac
 WORKDIR /go/src/github.com/camptocamp/bivac
