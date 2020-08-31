@@ -204,11 +204,11 @@ func isBackupNeeded(v *volume.Volume, backupInt time.Duration) bool {
 		return false
 	}
 
-	if lbd.Add(backupInt).Before(time.Now()) {
+	if lbd.Add(backupInt).Before(time.Now().UTC()) {
 		return true
 	}
 
-	if lbd.Add(time.Hour).Before(time.Now()) && v.LastBackupStatus == "Failed" {
+	if lbd.Add(time.Hour).Before(time.Now().UTC()) && v.LastBackupStatus == "Failed" {
 		return true
 	}
 	return false
