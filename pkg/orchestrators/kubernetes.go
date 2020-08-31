@@ -358,7 +358,7 @@ func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVol
 		return
 	}
 
-	req := o.client.Core().RESTClient().Post().
+	req := o.client.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(mountedVolumes.PodID).
 		Namespace(mountedVolumes.Volume.Namespace).

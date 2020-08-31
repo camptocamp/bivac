@@ -9,7 +9,7 @@ The following tables list the configurable parameters of the Bivac chart and the
 | Parameter | Description | Default |
 | --------- | ----------- | ------- |
 | `image.repository` | Repository for the Bivac image. | `camptocamp/bivac` |
-| `image.tag` | Tag of the Bivac image. | `2.2` |
+| `image.tag` | Tag of the Bivac image. | `2.3.0` |
 | `image.pullPolicy` | Pull policy for the Bivac image. | `IfNotPresent` |
 | `orchestrator` | Orchestrator Bivac will run on. | `kubernetes` |
 | `watchAllNamespaces` | Let Bivac backup volumes from all namespaces. | `true` |

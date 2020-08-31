@@ -1,3 +1,22 @@
+# [2.3.0](https://github.com/camptocamp/bivac/releases/tag/2.3.0) (2020-08-31)
+
+IMPROVEMENTS:
+
+- `core`: Add support of custom backup interval
+- `build`: Add support of ARM architecture
+- `build`: Improve multiarch docker image build
+- `docker`: Add support of custom network usage ([#342](https://github.com/camptocamp/bivac/pull/342))
+- `chart`: Generic improvements
+- `vendoring`: Switch from vendor directory to Go modules
+
+BUG FIXES:
+
+- `core`: Fix raw command output format
+- `chart`: Fix deployment template
+- `docker`: Fix tests
+
+Various minor bugs have also been fixed.
+
 # [2.2.0](https://github.com/camptocamp/bivac/releases/tag/2.2.0) (2019-10-24)
 
 IMPROVEMENTS:

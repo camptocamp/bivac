@@ -1,6 +1,6 @@
 image:
   repository: camptocamp/bivac
-  tag: 2.2
+  tag: 2.3.0
   pullPolicy: IfNotPresent
 
 annotations:
