@@ -7,8 +7,8 @@ all: lint vet test bivac
 
 bivac: main.go $(DEPS)
 	GO111MODULE=on CGO_ENABLED=0 GOARCH=$(GOARCH) GOOS=$(GOOS) GOARM=$(GOARM) \
-	  go build -mod=vendor -a \
-		  -ldflags="-s -X main.version=$(VERSION) -X main.buildDate=$(BUILD_DATE) -X main.commitSha1=$(COMMIT_SHA1)" \
+	  go build \
+	    -a -ldflags="-s -X main.version=$(VERSION) -X main.buildDate=$(BUILD_DATE) -X main.commitSha1=$(COMMIT_SHA1)" \
 	    -installsuffix cgo -o $@ $<
 	@if [ "${GOOS}" = "linux" ] && [ "${GOARCH}" = "amd64" ]; then strip $@; fi
 
@@ -36,7 +36,4 @@ clean:
 test:
 	go test -cover -coverprofile=coverage -v ./...
 
-vendor:
-	go mod vendor
-
-.PHONY: all vendor lint vet clean test
+.PHONY: all lint vet clean test
