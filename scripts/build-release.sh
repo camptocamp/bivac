@@ -20,6 +20,7 @@ for platform in ${PLATFORMS[@]}; do
       -e GOOS=${platform} \
       -e GOARCH=${arch} \
       golang:$GO_VERSION make bivac
+    sha256sum bivac >> release/SHA256SUM.txt
     zip release/bivac_${VERSION}_${platform}_${arch}.zip bivac
   done
 done
