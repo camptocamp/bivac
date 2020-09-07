@@ -194,8 +194,6 @@ func (m *Manager) setOldestBackupDate(v *volume.Volume) (err error) {
 
 	matches := r.FindStringSubmatch(v.Logs["snapshots"])
 
-	log.Errorf("%+v\n", v.Logs)
-
 	stdout := ""
 
 	if len(matches) >= 1 {
