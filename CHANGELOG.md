@@ -1,3 +1,9 @@
+# [2.3.1](https://github.com/camptocamp/bivac/releases/tag/2.3.1) (2020-09-01)
+
+BUG FIXES:
+
+- `core`: Fix infinite loop in log receiver
+
 # [2.3.0](https://github.com/camptocamp/bivac/releases/tag/2.3.0) (2020-08-31)
 
 IMPROVEMENTS:
