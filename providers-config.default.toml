@@ -3,9 +3,9 @@
 	pre_cmd = """
 	mkdir -p $volume/backups && \
 	if [ -z '$MYSQL_ROOT_PASSWORD' ]; then \
-	  mysqldump --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD > $volume/backups/all.sql; \
+	  mysqldump -opt --max_allowed_packet=16M --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD > $volume/backups/all.sql; \
 	else \
-	  mysqldump --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD > $volume/backups/all.sql; \
+	  mysqldump -opt --max_allowed_packet=16M --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD > $volume/backups/all.sql; \
 	fi"""
 	detect_cmd = "[[ -d $volume/mysql ]]"
 	post_cmd = "rm -rf $volume/backups"
