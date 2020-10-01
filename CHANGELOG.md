@@ -1,3 +1,14 @@
+# [2.3.2](https://github.com/camptocamp/bivac/releases/tag/2.3.2) (2020-10-01)
+
+IMPROVEMENTS:
+
+- `providers-config`: Reduce memory pressure on MySQL dumps
+- `build`: Improve release build scripts
+
+BUG FIXES:
+
+- `providers-config`: Fix bash errors
+
 # [2.3.1](https://github.com/camptocamp/bivac/releases/tag/2.3.1) (2020-09-01)
 
 BUG FIXES:
