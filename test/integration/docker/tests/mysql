@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -x
+set -e
+
+HOSTNAME=$(hostname)
+INTERNAL_IP=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+
+echo "BIVAC_TARGET_URL=s3:http://${INTERNAL_IP}:9000/testing" > .env
+
+docker-compose up -d mysql minio
+
+sleep 30
+
+docker-compose exec -T mysql mysql -prootpassword bivac < mysql_seed.sql
+
+docker-compose up -d bivac
+
+docker-compose exec -T bivac bivac backup docker_mysql_data
+
+docker-compose exec -T bivac bash -c "restic -q -r s3:http://${INTERNAL_IP}:9000/testing/${HOSTNAME}/docker_mysql_data/ dump latest /var/lib/docker/volumes/docker_mysql_data/_data/backups/all.sql > /data/mysql_dump.sql"
+
+docker-compose down -v
+
+docker-compose up -d mysql
+
+sleep 30
+
+docker-compose exec -T mysql mysql -prootpassword bivac < mysql_dump.sql
+
+docker-compose exec -T mysql mysql -prootpassword bivac -e "select * from authors"
+
+rm -f mysql_dump.sql
+rm -f .env
+
+docker-compose down -v

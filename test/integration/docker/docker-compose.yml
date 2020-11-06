@@ -1,0 +1,64 @@
+version: '3.3'
+services:
+  minio:
+    image: minio/minio
+    environment:
+      MINIO_ACCESS_KEY: the_access_key
+      MINIO_SECRET_KEY: the_secret_key
+    command: server /data/minio
+    ports:
+      - "9000:9000"
+
+  bivac:
+    image: bivac-testing
+    command: manager
+    ports:
+      - "8182:8182"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - ./:/data
+    environment:
+      BIVAC_LOG_LEVEL: debug
+      AWS_ACCESS_KEY_ID: the_access_key
+      AWS_SECRET_ACCESS_KEY: the_secret_key
+      BIVAC_TARGET_URL: ${BIVAC_TARGET_URL}
+      RESTIC_PASSWORD: foo
+      BIVAC_SERVER_PSK: foo
+      BIVAC_AGENT_IMAGE: bivac-testing
+
+  raw:
+    image: ubuntu
+    command: tail -F anything
+    volumes:
+      - raw_data:/data
+    restart: always
+
+  mysql:
+    image: mysql
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: bivac
+
+  postgres:
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: bivac
+      POSTGRES_DB: bivac
+
+  restic:
+    image: restic/restic
+    environment:
+      RESTIC_PASSWORD: foo
+      AWS_ACCESS_KEY_ID: the_access_key
+      AWS_SECRET_ACCESS_KEY: the_secret_key
+
+volumes:
+  mysql_data: {}
+  postgres_data: {}
+  raw_data: {}

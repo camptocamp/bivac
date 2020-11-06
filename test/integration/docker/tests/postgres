@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -x
+set -e
+
+HOSTNAME=$(hostname)
+INTERNAL_IP=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+
+echo "BIVAC_TARGET_URL=s3:http://${INTERNAL_IP}:9000/testing" > .env
+
+docker-compose up -d postgres minio
+
+sleep 30
+
+docker-compose exec -T postgres psql -U postgres bivac < postgres_seed.sql
+
+docker-compose up -d bivac
+
+docker-compose exec -T bivac bivac backup docker_postgres_data
+
+docker-compose run restic -q -r s3:http://${INTERNAL_IP}:9000/testing/${HOSTNAME}/docker_postgres_data/ dump latest /var/lib/docker/volumes/docker_postgres_data/_data/backups/all.sql > postgres_dump.sql
+
+docker-compose exec -T bivac bash -c "restic -q -r s3:http://${INTERNAL_IP}:9000/testing/${HOSTNAME}/docker_postgres_data/ dump latest /var/lib/docker/volumes/docker_postgres_data/_data/backups/all.sql > /data/postgres_dump.sql"
+
+docker-compose down -v
+
+docker-compose up -d postgres
+
+sleep 30
+
+docker-compose exec -T postgres psql -U postgres bivac < postgres_dump.sql
+
+docker-compose exec -T postgres psql -U postgres bivac -c "select * from users"
+
+rm -f postgres_dump.sql
+rm -f .env
+
+docker-compose down -v
