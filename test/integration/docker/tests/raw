@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -x
+set -e
+
+HOSTNAME=$(hostname)
+INTERNAL_IP=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+
+echo "BIVAC_TARGET_URL=s3:http://${INTERNAL_IP}:9000/testing" > .env
+
+docker-compose up -d raw minio
+
+docker-compose exec -T raw bash -c "echo 'foo' > /data/foo"
+docker-compose exec -T raw bash -c "mkdir -p /data/subdir && echo 'bar' > /data/subdir/bar"
+
+docker-compose up -d bivac
+
+docker-compose exec -T bivac bivac backup docker_raw_data
+
+TEST_1=$(docker-compose exec -T bivac bash -c "restic -q -r s3:http://${INTERNAL_IP}:9000/testing/${HOSTNAME}/docker_raw_data/ dump latest /var/lib/docker/volumes/docker_raw_data/_data/foo")
+TEST_2=$(docker-compose exec -T bivac bash -c "restic -q -r s3:http://${INTERNAL_IP}:9000/testing/${HOSTNAME}/docker_raw_data/ dump latest /var/lib/docker/volumes/docker_raw_data/_data/subdir/bar")
+
+if [ "${TEST_1}" != "foo" ]; then
+  echo "${TEST_1} != \"foo\"."
+  exit 1
+fi
+if [ "${TEST_2}" != "bar" ]; then
+  echo "${TEST_2} != \"bar\"."
+  exit 1
+fi
+
+docker-compose down -v
+
+rm -f .env
