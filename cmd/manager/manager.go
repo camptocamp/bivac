@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"fmt"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -8,6 +9,7 @@ import (
 
 	bivacCmd "github.com/camptocamp/bivac/cmd"
 	"github.com/camptocamp/bivac/internal/manager"
+	"github.com/camptocamp/bivac/internal/utils"
 	"github.com/camptocamp/bivac/pkg/volume"
 )
 
@@ -50,6 +52,11 @@ var managerCmd = &cobra.Command{
 		if err != nil {
 			log.Errorf("failed to retrieve orchestrator: %s", err)
 			return
+		}
+
+		if agentImage == "" {
+			managerVersion := bivacCmd.BuildInfo.Version
+			agentImage = fmt.Sprintf("camptocamp/bivac:%s", utils.ComputeDockerAgentImage(managerVersion))
 		}
 
 		err = manager.Start(bivacCmd.BuildInfo, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount, parallelCount, refreshRate, backupInterval)
@@ -105,7 +112,7 @@ func init() {
 	managerCmd.Flags().StringVarP(&logServer, "log.server", "", "", "Manager's API address that will receive logs from agents.")
 	envs["BIVAC_LOG_SERVER"] = "log.server"
 
-	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "camptocamp/bivac:2.3.0", "Agent's Docker image.")
+	managerCmd.Flags().StringVarP(&agentImage, "agent.image", "", "", "Agent's Docker image.")
 	envs["BIVAC_AGENT_IMAGE"] = "agent.image"
 
 	managerCmd.Flags().StringVarP(&whitelistVolumes, "whitelist", "", "", "Whitelist volumes.")
