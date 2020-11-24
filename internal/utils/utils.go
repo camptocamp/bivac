@@ -225,3 +225,12 @@ func copyFileContents(sourcePath string, targetPath string) error {
 	}
 	return nil
 }
+
+// ComputeDockerAgentImage detects which Docker image to choose for the Agent
+// based on the manager's version
+func ComputeDockerAgentImage(managerVersion string) string {
+	if strings.Contains(managerVersion, "-dirty") || managerVersion == "" {
+		return "latest"
+	}
+	return managerVersion
+}
