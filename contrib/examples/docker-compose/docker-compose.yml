@@ -1,14 +1,13 @@
 version: '3'
 services:
   bivac:
-    image: camptocamp/bivac:2.1
+    image: camptocamp/bivac:2.3
     command: "manager -v"
     ports:
       - "8182:8182"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     environment:
-      BIVAC_AGENT_IMAGE: camptocamp/bivac:2.1
       BIVAC_SERVER_PSK: super-secret-psk
       RESTIC_PASSWORD: not-so-good-password
       BIVAC_TARGET_URL: s3:my-bucket
