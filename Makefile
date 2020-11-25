@@ -46,6 +46,7 @@ docker-images: clean
 		$(IMAGE_NAME)-linux-386:$(IMAGE_VERSION) --os linux --arch 386
 	docker manifest annotate $(IMAGE_NAME):$(IMAGE_VERSION) \
 		$(IMAGE_NAME)-linux-arm:$(IMAGE_VERSION) --os linux --arch arm
+	docker manifest push $(IMAGE_NAME):$(IMAGE_VERSION)
 
 lint:
 	@go get -u -v golang.org/x/lint/golint

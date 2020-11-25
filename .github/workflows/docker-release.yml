@@ -5,7 +5,8 @@ on:
     types: [published]
 
 env:
-  IMAGE_NAME: camptocamp/bivac
+  IMAGE_NAME: ghcr.io/camptocamp/bivac
+  DOCKER_CLI_EXPERIMENTAL: enabled
 
 jobs:
   push_to_registry:
@@ -15,15 +16,15 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
 
-      - name: Login to DockerHub
+      - name: Login to Github Registry
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
 
       - name: Build and push docker images
         run: |
-          export DOCKER_CLI_EXPERIMENTAL=enabled
           IMAGE_NAME=${{ env.IMAGE_NAME }} IMAGE_VERSION=${{ github.event.release.tag_name }} KEEP_IMAGES=yes make docker-images
 
       - uses: actions-ecosystem/action-regex-match@v2
@@ -32,10 +33,9 @@ jobs:
           text: ${{ github.event.release.tag_name }}
           regex: '^([0-9]+).([0-9]+).[0-9]+$'
 
-      - name: Move tags and push to DockerHub
+      - name: Move tags and push to Github Registry
         if: ${{ steps.regex-match.outputs.match != '' }}
         run: |
-          export DOCKER_CLI_EXPERIMENTAL=enabled
           docker manifest create ${{ env.IMAGE_NAME }}:${{ steps.regex-match.outputs.group1 }}.${{ steps.regex-match.outputs.group2 }} \
             ${{ env.IMAGE_NAME }}-linux-amd64:${{ github.event.release.tag_name }} \
             ${{ env.IMAGE_NAME }}-linux-386:${{ github.event.release.tag_name }} \

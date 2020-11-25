@@ -1,7 +1,7 @@
 version: '3'
 services:
   bivac:
-    image: camptocamp/bivac:2.3
+    image: ghcr.io/camptocamp/bivac:2.3
     command: "manager -v"
     ports:
       - "8182:8182"

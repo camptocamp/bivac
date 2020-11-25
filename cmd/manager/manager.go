@@ -56,7 +56,7 @@ var managerCmd = &cobra.Command{
 
 		if agentImage == "" {
 			managerVersion := bivacCmd.BuildInfo.Version
-			agentImage = fmt.Sprintf("camptocamp/bivac:%s", utils.ComputeDockerAgentImage(managerVersion))
+			agentImage = fmt.Sprintf("ghcr.io/camptocamp/bivac:%s", utils.ComputeDockerAgentImage(managerVersion))
 		}
 
 		err = manager.Start(bivacCmd.BuildInfo, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount, parallelCount, refreshRate, backupInterval)
