@@ -1,3 +1,18 @@
+# [2.4.0](https://github.com/camptocamp/bivac/releases/tag/2.4.0) (2020-11-25)
+
+IMPROVEMENTS:
+
+- `core`: Automatically select Agent docker image based on manager's version
+
+BUG FIXES:
+
+- `providers-config`: Fix mysqldump options
+
+We moved the default docker registry from Docker Hub to Github. From this release, all the docker
+images will be published on Github.
+
+All the information regarding the new images are available on this page: [https://github.com/orgs/camptocamp/packages/container/package/bivac](https://github.com/orgs/camptocamp/packages/container/package/bivac)
+
 # [2.3.2](https://github.com/camptocamp/bivac/releases/tag/2.3.2) (2020-10-01)
 
 IMPROVEMENTS:
