@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 env:
-  IMAGE_NAME: ghcr.io/camptocamp/bivac
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/bivac
   DOCKER_CLI_EXPERIMENTAL: enabled
 
 jobs:
