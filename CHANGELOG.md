@@ -1,3 +1,13 @@
+# [2.4.1](https://github.com/camptocamp/bivac/releases/tag/2.4.1) (2020-11-30)
+
+IMPROVEMENTS:
+
+- `ci`: Add support of floating tags
+
+BUG FIXES:
+
+- `ci`: Fix Bivac version number on build
+
 # [2.4.0](https://github.com/camptocamp/bivac/releases/tag/2.4.0) (2020-11-25)
 
 IMPROVEMENTS:
