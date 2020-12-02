@@ -38,11 +38,18 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	}
 
 	if p.PreCmd != "" {
+		log.WithFields(log.Fields{
+			"volume":   v.Name,
+			"hostname": v.Hostname,
+			"provider": p.Name,
+		}).Debug("running pre-command...")
+
 		err = RunCmd(p, m.Orchestrator, v, p.PreCmd, "precmd")
 		if err != nil {
 			log.WithFields(log.Fields{
 				"volume":   v.Name,
 				"hostname": v.Hostname,
+				"provider": p.Name,
 			}).Warningf("failed to run pre-command: %s", err)
 		}
 	}
@@ -65,6 +72,12 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	if useLogReceiver {
 		cmd = append(cmd, []string{"--log.receiver", m.LogServer + "/backup/" + v.ID + "/logs"}...)
 	}
+
+	log.WithFields(log.Fields{
+		"volume":      v.Name,
+		"hostname":    v.Hostname,
+		"agent_image": m.AgentImage,
+	}).Debug("deploying agent...")
 
 	_, output, err := m.Orchestrator.DeployAgent(
 		m.AgentImage,
@@ -96,6 +109,12 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 	}
 
 	if p.PostCmd != "" {
+		log.WithFields(log.Fields{
+			"volume":   v.Name,
+			"hostname": v.Hostname,
+			"provider": p.Name,
+		}).Debug("running post-command...")
+
 		err = RunCmd(p, m.Orchestrator, v, p.PostCmd, "postcmd")
 		if err != nil {
 			log.WithFields(log.Fields{
@@ -104,6 +123,7 @@ func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 			}).Warningf("failed to run post-command: %s", err)
 		}
 	}
+
 	return
 }
 
@@ -147,6 +167,12 @@ func (m *Manager) attachOrphanAgent(containerID string, v *volume.Volume) {
 		}
 	}
 	if p.PostCmd != "" {
+		log.WithFields(log.Fields{
+			"volume":   v.Name,
+			"hostname": v.Hostname,
+			"provider": p.Name,
+		}).Debug("running post-command...")
+
 		err = RunCmd(p, m.Orchestrator, v, p.PostCmd, "postcmd")
 		if err != nil {
 			log.WithFields(log.Fields{
