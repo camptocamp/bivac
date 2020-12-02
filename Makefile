@@ -49,7 +49,7 @@ docker-images: clean
 	docker manifest push $(IMAGE_NAME):$(IMAGE_VERSION)
 
 lint:
-	@go get -u -v golang.org/x/lint/golint
+	@GO111MODULE=off go get -u -v golang.org/x/lint/golint
 	@for file in $$(go list ./... | grep -v '_workspace/' | grep -v 'vendor'); do \
 		export output="$$(golint $${file} | grep -v 'type name will be used as docker.DockerInfo')"; \
 		[ -n "$${output}" ] && echo "$${output}" && export status=1; \
