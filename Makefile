@@ -35,17 +35,25 @@ docker-images: clean
 		--build-arg GO_VERSION=${GO_VERSION} \
 		--build-arg GOOS=linux --build-arg GOARCH=arm --build-arg GOARM=7 .
 	docker push $(IMAGE_NAME)-linux-arm:$(IMAGE_VERSION)
+	# Linux/arm64
+	docker build --no-cache --pull -t $(IMAGE_NAME)-linux-arm64:$(IMAGE_VERSION) \
+		--build-arg GO_VERSION=${GO_VERSION} \
+		--build-arg GOOS=linux --build-arg GOARCH=arm64 --build-arg GOARM=7 .
+	docker push $(IMAGE_NAME)-linux-arm64:$(IMAGE_VERSION)
 	# Manifest
 	docker manifest create $(IMAGE_NAME):$(IMAGE_VERSION) \
 		$(IMAGE_NAME)-linux-amd64:$(IMAGE_VERSION) \
 		$(IMAGE_NAME)-linux-386:$(IMAGE_VERSION) \
-		$(IMAGE_NAME)-linux-arm:$(IMAGE_VERSION)
+		$(IMAGE_NAME)-linux-arm:$(IMAGE_VERSION) \
+		$(IMAGE_NAME)-linux-arm64:$(IMAGE_VERSION)
 	docker manifest annotate $(IMAGE_NAME):$(IMAGE_VERSION) \
 		$(IMAGE_NAME)-linux-amd64:$(IMAGE_VERSION) --os linux --arch amd64
 	docker manifest annotate $(IMAGE_NAME):$(IMAGE_VERSION) \
 		$(IMAGE_NAME)-linux-386:$(IMAGE_VERSION) --os linux --arch 386
 	docker manifest annotate $(IMAGE_NAME):$(IMAGE_VERSION) \
 		$(IMAGE_NAME)-linux-arm:$(IMAGE_VERSION) --os linux --arch arm
+	docker manifest annotate $(IMAGE_NAME):$(IMAGE_VERSION) \
+		$(IMAGE_NAME)-linux-arm64:$(IMAGE_VERSION) --os linux --arch arm64
 	docker manifest push $(IMAGE_NAME):$(IMAGE_VERSION)
 
 lint:
