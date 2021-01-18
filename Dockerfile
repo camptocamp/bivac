@@ -13,14 +13,14 @@ ENV GOARM ${GOARM}
 # RClone
 RUN git clone https://github.com/rclone/rclone /go/src/github.com/rclone/rclone
 WORKDIR /go/src/github.com/rclone/rclone
-RUN git checkout v1.52.3
+RUN git checkout v1.53.3
 RUN go get ./...
 RUN env ${BUILD_OPTS} go build
 
 # Restic
 RUN git clone https://github.com/restic/restic /go/src/github.com/restic/restic
 WORKDIR /go/src/github.com/restic/restic
-RUN git checkout v0.9.6
+RUN git checkout v0.11.0
 RUN go get ./...
 RUN GOOS= GOARCH= GOARM= go run -mod=vendor build.go || go run build.go
 
