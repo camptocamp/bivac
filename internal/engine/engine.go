@@ -138,7 +138,6 @@ func (r *Engine) initializeRepository() (err error) {
 		ExitCode: rc,
 	}
 	fmt.Printf("init: %s\n", output)
-	err = nil
 	return
 }
 
@@ -153,7 +152,6 @@ func (r *Engine) backupVolume(hostname, backupPath string) (err error) {
 		ExitCode: rc,
 	}
 	fmt.Printf("backup: %s\n", output)
-	err = nil
 	return
 }
 
@@ -171,7 +169,6 @@ func (r *Engine) forget() (err error) {
 		ExitCode: rc,
 	}
 	fmt.Printf("forget: %s\n", output)
-	err = nil
 	return
 }
 
