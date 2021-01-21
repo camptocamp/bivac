@@ -19,7 +19,10 @@ import (
 func backupVolume(m *Manager, v *volume.Volume, force bool) (err error) {
 
 	v.BackingUp = true
-	defer func() { v.BackingUp = false }()
+	defer func() {
+		v.BackingUp = false
+		v.LastBackupStartDate = ""
+	}()
 
 	v.Mux.Lock()
 	defer v.Mux.Unlock()
@@ -211,7 +214,7 @@ func (m *Manager) updateBackupLogs(v *volume.Volume, agentOutput utils.MsgFormat
 		}
 	}
 
-	v.LastBackupDate = time.Now().Format("2006-01-02 15:04:05")
+	v.LastBackupDate = time.Now().UTC().Format("2006-01-02 15:04:05")
 	return
 }
 
