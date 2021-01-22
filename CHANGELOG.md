@@ -1,3 +1,14 @@
+# [2.4.2](https://github.com/camptocamp/bivac/releases/tag/2.4.2) (2021-01-22)
+
+IMPROVEMENTS:
+
+- `core`: Add debug information in the backup process
+- `platform`: Add support of architecture `arm64`
+
+BUG FIXES:
+
+- `scheduler`: Fix a bug in the scheduler that leads to skipping backup for a day when the previous backup didn't end correctly.
+
 # [2.4.1](https://github.com/camptocamp/bivac/releases/tag/2.4.1) (2020-11-30)
 
 IMPROVEMENTS:
