@@ -1,3 +1,10 @@
+# [2.5.0](https://github.com/camptocamp/bivac/releases/tag/2.5.0) (2021-02-16)
+
+DEPENDENCIES:
+
+- `rclone`: Use version 1.24.0
+- `restic`: Use version 0.12.0
+
 # [2.4.2](https://github.com/camptocamp/bivac/releases/tag/2.4.2) (2021-01-22)
 
 IMPROVEMENTS:
