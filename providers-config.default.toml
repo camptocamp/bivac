@@ -2,8 +2,10 @@
 	[providers.mysql]
 	pre_cmd = """
 	mkdir -p $volume/backups && \
-	if [ -z \"$MYSQL_ROOT_PASSWORD\" ]; then \
-	  mysqldump --opt --max_allowed_packet=16M --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD > $volume/backups/all.sql; \
+	if [ "$MYSQL_ALLOW_EMPTY_PASSWORD" == "yes" ]; then \
+	  mysqldump --opt --max_allowed_packet=16M --all-databases --extended-insert > $volume/backups/all.sql; \
+	elif [ -z ${MYSQL_ROOT_PASSWORD+x} ]; then \
+	  mysqldump --opt --max_allowed_packet=16M --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD $MYSQL_DATABASE > $volume/backups/all.sql; \
 	else \
 	  mysqldump --opt --max_allowed_packet=16M --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD > $volume/backups/all.sql; \
 	fi"""
