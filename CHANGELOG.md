@@ -1,3 +1,9 @@
+# [2.5.1](https://github.com/camptocamp/bivac/releases/tag/2.5.1) (2021-03-25)
+
+IMPROVEMENTS:
+
+- `providers-config`: Allow running mysqldump with empty password
+
 # [2.5.0](https://github.com/camptocamp/bivac/releases/tag/2.5.0) (2021-02-16)
 
 DEPENDENCIES:
