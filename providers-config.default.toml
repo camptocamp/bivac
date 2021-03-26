@@ -3,32 +3,32 @@
 	pre_cmd = """
 	mkdir -p $volume/backups && \
 	if [ "$MYSQL_ALLOW_EMPTY_PASSWORD" == "yes" ]; then \
-	  mysqldump --opt --max_allowed_packet=16M --all-databases --extended-insert > $volume/backups/all.sql; \
+	  nice -10 mysqldump --opt --max_allowed_packet=16M --all-databases --extended-insert > $volume/backups/all.sql; \
 	elif [ -z ${MYSQL_ROOT_PASSWORD+x} ]; then \
-	  mysqldump --opt --max_allowed_packet=16M --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD $MYSQL_DATABASE > $volume/backups/all.sql; \
+	  nice -10 mysqldump --opt --max_allowed_packet=16M --all-databases --extended-insert --user=$MYSQL_USER --password=$MYSQL_PASSWORD $MYSQL_DATABASE > $volume/backups/all.sql; \
 	else \
-	  mysqldump --opt --max_allowed_packet=16M --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD > $volume/backups/all.sql; \
+	  nice -10 mysqldump --opt --max_allowed_packet=16M --all-databases --extended-insert --password=$MYSQL_ROOT_PASSWORD > $volume/backups/all.sql; \
 	fi"""
 	detect_cmd = "[[ -d $volume/mysql ]]"
 	post_cmd = "rm -rf $volume/backups"
 	backup_dir = "backups"
 
 	[providers.postgresql]
-	pre_cmd = "mkdir -p $volume/backups && pg_dumpall --clean -Upostgres > $volume/backups/all.sql"
+	pre_cmd = "mkdir -p $volume/backups && nice -10 pg_dumpall --clean -Upostgres > $volume/backups/all.sql"
 	post_cmd = "rm -rf $volume/backups"
 	detect_cmd = "[[ -f $volume/PG_VERSION ]]"
 	backup_dir = "backups"
 
 	[providers.openldap]
-	pre_cmd = "mkdir -p $volume/backups && slapcat > $volume/backups/all.ldif"
+	pre_cmd = "mkdir -p $volume/backups && nice -10 slapcat > $volume/backups/all.ldif"
 	detect_cmd = "[[ -f $volume/DB_CONFIG ]]"
 	backup_dir = "backups"
 	
 	[providers.mongo]
 	pre_cmd = """
 	if [ -z \"$MONGO_INITDB_ROOT_USERNAME\" ]; then \
-	  mongodump -o $volume/backups; else \
-	  mongodump -o $volume/backups --username=$MONGO_INITDB_ROOT_USERNAME --password=$MONGO_INITDB_ROOT_PASSWORD; \
+	  nice -10 mongodump -o $volume/backups; else \
+	  nice -10 mongodump -o $volume/backups --username=$MONGO_INITDB_ROOT_USERNAME --password=$MONGO_INITDB_ROOT_PASSWORD; \
 	fi"""
 	post_cmd = "rm -rf $volume/backups"
 	detect_cmd = "[[ -f $volume/mongod.lock ]]"
