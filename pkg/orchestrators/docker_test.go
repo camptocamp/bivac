@@ -52,6 +52,10 @@ func TestDockerGetVolumesSuccess(t *testing.T) {
 				Name:       "bar",
 				Mountpoint: "/bar",
 			},
+			&types.Volume{
+				Name:       "missing",
+				Mountpoint: "",
+			},
 		},
 	}
 
@@ -67,6 +71,10 @@ func TestDockerGetVolumesSuccess(t *testing.T) {
 		Name:       "bar",
 		Mountpoint: "/bar",
 	}, nil).Times(1)
+	mockDocker.EXPECT().VolumeInspect(context.Background(), "missing").Return(types.Volume{
+		Name:       "missing",
+		Mountpoint: "",
+	}, nil).Times(1)
 
 	expectedVolumes := []*volume.Volume{
 		&volume.Volume{
@@ -78,6 +86,17 @@ func TestDockerGetVolumesSuccess(t *testing.T) {
 			Logs:       make(map[string]string),
 			BackingUp:  false,
 			RepoName:   "bar",
+			SubPath:    "",
+		},
+		&volume.Volume{
+			ID:         "missing",
+			Name:       "missing",
+			Mountpoint: "/mnt/bivac/missing",
+			HostBind:   fakeHostname,
+			Hostname:   fakeHostname,
+			Logs:       make(map[string]string),
+			BackingUp:  false,
+			RepoName:   "missing",
 			SubPath:    "",
 		},
 	}

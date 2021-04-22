@@ -77,10 +77,17 @@ func (o *DockerOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes [
 			return
 		}
 
+		var mountpoint string
+		if voll.Mountpoint == "" {
+			mountpoint = fmt.Sprintf("/mnt/bivac/%s", voll.Name)
+		} else {
+			mountpoint = voll.Mountpoint
+		}
+
 		v := &volume.Volume{
 			ID:         voll.Name,
 			Name:       voll.Name,
-			Mountpoint: voll.Mountpoint,
+			Mountpoint: mountpoint,
 			HostBind:   info.Name,
 			Hostname:   info.Name,
 			Labels:     voll.Labels,
