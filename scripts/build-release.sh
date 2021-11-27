@@ -9,7 +9,7 @@ docker pull golang:$GO_VERSION
 VERSION=$(git describe --always --dirty)
 
 PLATFORMS=(darwin linux windows)
-ARCHITECTURES=(386 amd64)
+ARCHITECTURES=(386 amd64 arm arm64)
 
 mkdir -p release
 
