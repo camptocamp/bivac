@@ -42,6 +42,7 @@ jobs:
           docker manifest create ${{ env.IMAGE_NAME }}:${{ steps.regex-match.outputs.group1 }}.${{ steps.regex-match.outputs.group2 }} \
             ${{ env.IMAGE_NAME }}-linux-amd64:${{ github.event.release.tag_name }} \
             ${{ env.IMAGE_NAME }}-linux-386:${{ github.event.release.tag_name }} \
+            ${{ env.IMAGE_NAME }}-linux-arm64:${{ github.event.release.tag_name }} \
             ${{ env.IMAGE_NAME }}-linux-arm:${{ github.event.release.tag_name }}
           docker manifest annotate ${{ env.IMAGE_NAME }}:${{ steps.regex-match.outputs.group1 }}.${{ steps.regex-match.outputs.group2 }} \
             ${{ env.IMAGE_NAME }}-linux-amd64:${{ github.event.release.tag_name }} --os linux --arch amd64
@@ -56,7 +57,8 @@ jobs:
           docker manifest create ${{ env.IMAGE_NAME }}:${{ steps.regex-match.outputs.group1 }} \
             ${{ env.IMAGE_NAME }}-linux-amd64:${{ github.event.release.tag_name }} \
             ${{ env.IMAGE_NAME }}-linux-386:${{ github.event.release.tag_name }} \
-            ${{ env.IMAGE_NAME }}-linux-arm:${{ github.event.release.tag_name }}
+            ${{ env.IMAGE_NAME }}-linux-arm:${{ github.event.release.tag_name }} \
+            ${{ env.IMAGE_NAME }}-linux-arm64:${{ github.event.release.tag_name }}
           docker manifest annotate ${{ env.IMAGE_NAME }}:${{ steps.regex-match.outputs.group1 }} \
             ${{ env.IMAGE_NAME }}-linux-amd64:${{ github.event.release.tag_name }} --os linux --arch amd64
           docker manifest annotate ${{ env.IMAGE_NAME }}:${{ steps.regex-match.outputs.group1 }} \
