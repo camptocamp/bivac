@@ -26,6 +26,7 @@ type KubernetesConfig struct {
 	AllNamespaces       bool
 	KubeConfig          string
 	AgentServiceAccount string
+	AgentLabelsInline   string
 }
 
 // KubernetesOrchestrator implements a container orchestrator for Kubernetes
@@ -222,10 +223,8 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	pod, err := o.client.CoreV1().Pods(v.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "bivac-agent-",
-			Labels: map[string]string{
-				"generatedFromPod": os.Getenv("HOSTNAME"),
-			},
-			Annotations: managerPod.ObjectMeta.Annotations,
+			Labels:       o.getAgentLabels(),
+			Annotations:  managerPod.ObjectMeta.Annotations,
 		},
 		Spec: apiv1.PodSpec{
 			NodeName:           node,
@@ -600,4 +599,16 @@ func (o *KubernetesOrchestrator) getAdditionalVolumes() (mounts []*volume.Volume
 		})
 	}
 	return
+}
+
+func (o *KubernetesOrchestrator) getAgentLabels() map[string]string {
+	agentLabels := map[string]string{}
+	agentLabels["generatedFromPod"] = os.Getenv("HOSTNAME")
+
+	var splittedLabel []string
+	for _, rawLabel := range strings.Split(o.config.AgentLabelsInline, ",") {
+		splittedLabel = strings.Split(rawLabel, "=")
+		agentLabels[splittedLabel[0]] = splittedLabel[1]
+	}
+	return agentLabels
 }

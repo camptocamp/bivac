@@ -96,6 +96,8 @@ func init() {
 	envs["KUBERNETES_KUBECONFIG"] = "kubernetes.kubeconfig"
 	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.AgentServiceAccount, "kubernetes.agent-service-account", "", "", "Specify service account for agents.")
 	envs["KUBERNETES_AGENT_SERVICE_ACCOUNT"] = "kubernetes.agent-service-account"
+	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.AgentLabelsInline, "kubernetes.agent-labels", "", "app=bivac", "Additional labels for agents.")
+	envs["KUBERNETES_AGENT_LABELS"] = "kubernetes.agent-labels"
 
 	managerCmd.Flags().StringVarP(&resticForgetArgs, "restic.forget.args", "", "--group-by host --keep-daily 15 --prune", "Restic forget arguments.")
 	envs["RESTIC_FORGET_ARGS"] = "restic.forget.args"
