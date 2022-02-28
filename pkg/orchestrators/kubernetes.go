@@ -22,11 +22,12 @@ import (
 
 // KubernetesConfig stores Kubernetes configuration
 type KubernetesConfig struct {
-	Namespace           string
-	AllNamespaces       bool
-	KubeConfig          string
-	AgentServiceAccount string
-	AgentLabelsInline   string
+	Namespace              string
+	AllNamespaces          bool
+	KubeConfig             string
+	AgentServiceAccount    string
+	AgentLabelsInline      string
+	AgentAnnotationsInline string
 }
 
 // KubernetesOrchestrator implements a container orchestrator for Kubernetes
@@ -207,24 +208,11 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 		node = ""
 	}
 
-	// get manager pod's annotations and copy them to the agent pod
-	var namespace = o.config.Namespace
-	managerHostname, err := os.Hostname()
-	if err != nil {
-		err = fmt.Errorf("failed to retrieve manager's hostname: %s", err)
-		return
-	}
-	managerPod, err := o.client.CoreV1().Pods(namespace).Get(managerHostname, metav1.GetOptions{})
-	if err != nil {
-		err = fmt.Errorf("failed to retrieve manager's pod: %s", err)
-		return
-	}
-
 	pod, err := o.client.CoreV1().Pods(v.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "bivac-agent-",
 			Labels:       o.getAgentLabels(),
-			Annotations:  managerPod.ObjectMeta.Annotations,
+			Annotations:  o.getAgentAnnotations(),
 		},
 		Spec: apiv1.PodSpec{
 			NodeName:           node,
@@ -611,4 +599,15 @@ func (o *KubernetesOrchestrator) getAgentLabels() map[string]string {
 		agentLabels[splittedLabel[0]] = splittedLabel[1]
 	}
 	return agentLabels
+}
+
+func (o *KubernetesOrchestrator) getAgentAnnotations() map[string]string {
+	agentAnnotations := map[string]string{}
+
+	var splittedAnnotation []string
+	for _, rawAnnotation := range strings.Split(o.config.AgentAnnotationsInline, ",") {
+		splittedAnnotation = strings.Split(rawAnnotation, "=")
+		agentAnnotations[splittedAnnotation[0]] = splittedAnnotation[1]
+	}
+	return agentAnnotations
 }
