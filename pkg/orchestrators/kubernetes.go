@@ -596,7 +596,9 @@ func (o *KubernetesOrchestrator) getAgentLabels() map[string]string {
 	var splittedLabel []string
 	for _, rawLabel := range strings.Split(o.config.AgentLabelsInline, ",") {
 		splittedLabel = strings.Split(rawLabel, "=")
-		agentLabels[splittedLabel[0]] = splittedLabel[1]
+		if len(splittedLabel) > 1 {
+			agentLabels[splittedLabel[0]] = splittedLabel[1]
+		}
 	}
 	return agentLabels
 }
@@ -607,7 +609,9 @@ func (o *KubernetesOrchestrator) getAgentAnnotations() map[string]string {
 	var splittedAnnotation []string
 	for _, rawAnnotation := range strings.Split(o.config.AgentAnnotationsInline, ",") {
 		splittedAnnotation = strings.Split(rawAnnotation, "=")
-		agentAnnotations[splittedAnnotation[0]] = splittedAnnotation[1]
+		if len(splittedAnnotation) > 1 {
+			agentAnnotations[splittedAnnotation[0]] = splittedAnnotation[1]
+		}
 	}
 	return agentAnnotations
 }
