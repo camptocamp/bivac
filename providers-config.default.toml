@@ -14,7 +14,7 @@
 	backup_dir = "backups"
 
 	[providers.postgresql]
-	pre_cmd = "mkdir -p $volume/backups && pg_dumpall --clean -Upostgres > $volume/backups/all.sql"
+	pre_cmd = "mkdir -p $volume/backups && pg_dumpall --clean -U $POSTGRES_USER > $volume/backups/all.sql"
 	post_cmd = "rm -rf $volume/backups"
 	detect_cmd = "[[ -f $volume/PG_VERSION ]]"
 	backup_dir = "backups"
