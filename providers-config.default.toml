@@ -18,12 +18,22 @@
 	post_cmd = "rm -rf $volume/backups"
 	detect_cmd = "[[ -f $volume/PG_VERSION ]]"
 	backup_dir = "backups"
+	restore_pre_cmd = "mkdir -p $volume/backups"
+	restore_post_cmd = "psql -U $POSTGRES_USER -f $volume/backups/all.sql && rm -rf $volume/backups"
 
 	[providers.openldap]
 	pre_cmd = "mkdir -p $volume/backups && slapcat > $volume/backups/all.ldif"
 	detect_cmd = "[[ -f $volume/DB_CONFIG ]]"
 	backup_dir = "backups"
-	
+
+	[providers.openldapbitnami]
+	detect_cmd = "[[ -d /bitnami/openldap/slapd.d/ ]]"
+	pre_cmd = "mkdir -p $volume/data/backups && slapcat -n 0 -F $volume/slapd.d/ -l $volume/data/backups/config.ldif && slapcat -n 2 -F $volume/slapd.d/ -l $volume/data/backups/data.ldif"
+	post_cmd = "rm -rf $volume/data/backups"
+	backup_dir = "data/backups"
+	restore_pre_cmd = "mkdir -p $volume/data/backups"
+	restore_post_cmd = "slapadd -n 2 -F $volume/slapd.d/ -l $volume/data/backups/data.ldif && slapadd -n 0 -F $volume/slapd.d/ -l $volume/data/backups/config.ldif ; rm -rf $volume/data/backups"
+
 	[providers.mongo]
 	pre_cmd = """
 	if [ -z \"$MONGO_INITDB_ROOT_USERNAME\" ]; then \
@@ -33,3 +43,7 @@
 	post_cmd = "rm -rf $volume/backups"
 	detect_cmd = "[[ -f $volume/mongod.lock ]]"
 	backup_dir = "backups"
+
+	[providers.nextcloud]
+	detect_cmd = "[[ -f $volume/occ ]]"
+	restore_post_cmd = "chown -R www-data $volume"
