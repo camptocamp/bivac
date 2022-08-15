@@ -26,8 +26,23 @@ RUN GOOS= GOARCH= GOARM= go run -mod=vendor build.go || go run build.go
 
 # Bivac
 WORKDIR /go/src/github.com/camptocamp/bivac
-COPY . .
+COPY ./cmd ./cmd
+COPY ./internal ./internal
+COPY ./pkg ./pkg
+COPY ./main.go .
+COPY ./go.mod .
+COPY ./go.sum .
+COPY ./Makefile .
 RUN env ${BUILD_OPTS} make bivac
+
+FROM node:lts-alpine as ui-builder
+# Bivac-UI
+WORKDIR /vite/src/github.com/camptocamp/bivac/bivac-ui
+COPY ./bivac-ui/package*.json ./
+RUN npm install
+COPY ./bivac-ui .
+RUN npm run build
+RUN ls
 
 FROM debian
 RUN apt-get update && \
@@ -35,8 +50,9 @@ RUN apt-get update && \
 	rm -rf /var/lib/apt/lists/*
 COPY --from=builder /etc/ssl /etc/ssl
 COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /bin/bivac
-COPY --from=builder /go/src/github.com/camptocamp/bivac/providers-config.default.toml /
+COPY ./providers-config.default.toml /
 COPY --from=builder /go/src/github.com/restic/restic/restic /bin/restic
 COPY --from=builder /go/src/github.com/rclone/rclone/rclone /bin/rclone
+COPY --from=ui-builder /vite/src/github.com/camptocamp/bivac/bivac-ui/dist/index.html /bivac-ui.html
 ENTRYPOINT ["/bin/bivac"]
 CMD [""]

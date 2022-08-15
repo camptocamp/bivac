@@ -3,7 +3,7 @@ VERSION = $(shell git describe --always --dirty)
 COMMIT_SHA1 = $(shell git rev-parse HEAD)
 BUILD_DATE = $(shell date +%Y-%m-%d)
 
-GO_VERSION = 1.14
+GO_VERSION = 1.19
 
 all: lint vet test bivac
 
@@ -19,6 +19,8 @@ release: clean
 
 docker-images: clean
 	@if [ -z "$(IMAGE_NAME)" ]; then echo "IMAGE_NAME cannot be empty."; exit 1; fi
+	@if [ -z "$(IMAGE_VERSION)" ]; then echo "IMAGE_VERSION cannot be empty."; exit 1; fi
+	export IMAGE_VERSION=$(IMAGE_VERSION)
 	export IMAGE_NAME=$(IMAGE_NAME)
 	# Linux/amd64
 	docker build --no-cache --pull -t $(IMAGE_NAME)-linux-amd64:$(IMAGE_VERSION) \
@@ -55,6 +57,16 @@ docker-images: clean
 	docker manifest annotate $(IMAGE_NAME):$(IMAGE_VERSION) \
 		$(IMAGE_NAME)-linux-arm64:$(IMAGE_VERSION) --os linux --arch arm64
 	docker manifest push $(IMAGE_NAME):$(IMAGE_VERSION)
+
+docker-dev:
+	@if [ -z "$(IMAGE_NAME)" ]; then echo "IMAGE_NAME cannot be empty."; exit 1; fi
+	@if [ -z "$(IMAGE_VERSION)" ]; then echo "IMAGE_VERSION cannot be empty."; exit 1; fi
+	export IMAGE_VERSION=$(IMAGE_VERSION)
+	export IMAGE_NAME=$(IMAGE_NAME)
+	# Linux/amd64
+	docker build -t $(IMAGE_NAME)-linux-amd64:$(IMAGE_VERSION) \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg GOOS=linux --build-arg GOARCH=amd64 .
 
 lint:
 	@GO111MODULE=off go get -u -v golang.org/x/lint/golint
