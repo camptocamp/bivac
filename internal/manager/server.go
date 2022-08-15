@@ -36,6 +36,11 @@ func (m *Manager) StartServer() (err error) {
 	router.Handle("/restic/{volumeID}", m.handleAPIRequest(http.HandlerFunc(m.runRawCommand)))
 	router.Handle("/info", m.handleAPIRequest(http.HandlerFunc(m.info)))
 
+	//returns web-ui
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "/bivac-ui.html")
+	})
+
 	log.Infof("Listening on %s", m.Server.Address)
 	log.Fatal(http.ListenAndServe(m.Server.Address, router))
 	return
