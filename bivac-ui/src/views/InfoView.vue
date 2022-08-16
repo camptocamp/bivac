@@ -7,7 +7,7 @@ import MenuBar from '../components/MenuBar.vue'
 const info = ref({})
 
 async function load() {
-    info.value = await bivac.get('/info').then(res => res.data)
+    info.value = await bivac.info()
 }
 const autoreload = bivac.autoreload(load)
 onUnmounted(() => {autoreload.cancel();})

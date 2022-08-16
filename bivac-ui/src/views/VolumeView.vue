@@ -4,13 +4,11 @@ import bivac from '../bivac'
 import { ref, onUnmounted } from 'vue';
 import MenuBar from '../components/MenuBar.vue'
 
-const volumes = ref({})
+const volumes = bivac.volumes
 
 async function load() {
-    volumes.value = await bivac.get('/volumes')
+    bivac.loadVolumes();
 }
-const autoreload = bivac.autoreload(load)
-onUnmounted(() => {autoreload.cancel();})
 
 
 
@@ -37,7 +35,7 @@ const menuItems = [
             <div class="cell" v-for="(header, key) in cols">{{header}}</div>
             <div class="cell">Backup Running</div>
         </div>
-        <template v-for="vol of volumes">
+        <template v-for="vol in volumes">
             <RouterLink class="row" :to="'/volume/' + vol.ID">
             <div class="cell" v-for="(header, key) in cols">{{vol[key]}}</div>
             <div class="cell">{{vol.BackingUp}}</div>

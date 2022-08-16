@@ -16,31 +16,26 @@ async function authenticate() {
 }
 
 async function ping() {
-    let response: Response = await bivac.api('/ping')
-    if (response.status === 401) {
-        authenticated.value = false
-        if (!dirty) {
-            forgetSessionKey()
-        }
-    }
+    const status: number = await bivac.ping()
 
-    if (response.status === 200) {
+    switch (status) {
+        case 401:
+            authenticated.value = false
+            if (!dirty) {
+                forgetSessionKey()
+            }
+            break;
 
-        //enable for dev:
-        //authenticated.value = true; return;
-
-        let parsed = await response.json()
-
-        if (typeof parsed === 'object' && typeof parsed.type === 'string' && parsed.type === 'pong') {
-            //correct key set
+        case 200:
             authenticated.value = true
             saveSessionKey()
-            return
-        }
-    }
+            break;
 
-    //unknown error
-    authenticated.value = false
+        //unknown error
+        default:
+            authenticated.value = false
+            break;
+    }
 }
 
 const sessionIndex = 'bivac-api-key';
@@ -76,13 +71,13 @@ ping()
     <template v-else>
         <div class="overlay">
             <div class="wrapper">
-                    <div class="dialog">
-                        <div>
-                            <input v-model="apiKey">
-                        </div>
-                        <div>
-                            <button @click="authenticate">Authenticate</button>
-                        </div>
+                <div class="dialog">
+                    <div>
+                        <input v-model="apiKey">
+                    </div>
+                    <div>
+                        <button @click="authenticate">Authenticate</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -105,7 +100,7 @@ ping()
 .wrapper {
     display: table-cell;
     vertical-align: middle;
-    
+
 }
 
 .dialog {
@@ -118,18 +113,18 @@ ping()
     box-shadow: 14px 28px 84px 6px rgba(97, 103, 109, 0.4);
 }
 
-.dialog > div {
+.dialog>div {
     padding: 10px 0;
 }
 
 input {
-  font-size: 1em;
-  padding: 0.5em;
-  width: 500px;
+    font-size: 1em;
+    padding: 0.5em;
+    width: 500px;
 }
 
 button {
-  font-size: 1.5em;
-  padding: 0.5em;
+    font-size: 1.5em;
+    padding: 0.5em;
 }
 </style>

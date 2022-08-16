@@ -5,56 +5,22 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import MenuBar from '../components/MenuBar.vue'
 import { useRoute } from 'vue-router'
 import InfoTable from '../components/InfoTable.vue'
+import VolumeInfo from '../components/VolumeInfo.vue'
 const route = useRoute()
 
+const id: string = route.params.id
 
-
-const found = ref(true)
-
-async function load() {
-    let all = await bivac.get('/volumes')
-    for (const vol of all) {
-        if (vol.ID == route.params.id) {
-            found.value = true
-
-            rows.value = {
-                ID: vol.ID,
-                Name: vol.Name,
-                'Backup Running': vol.BackingUp ? 'Yes' : 'No',
-                'Last Status': vol.LastBackupStatus,
-                'Last Backup': vol.LastBackupDate,
-                'Backup Directory': vol.BackupDir ? vol.BackupDir : '/',
-                Mountpoint: vol.Mountpoint,
-                'Read Only': vol.ReadOnly ? 'Yes' : 'No',
-                'Hostname': vol.Hostname
-            }
-
-            if (typeof vol.Logs.backup !== 'undefined') {
-                logRows.value.backup = vol.Logs.backup.substr(4).split("\n").filter((abc: string) => abc.length).map((abc: string) => { return JSON.parse(abc); })
-                console.log(logRows.value.backup)
-            } else {
-                logRows.value.backup = undefined
-            }
-
-
-            return
-        }
-    }
-    found.value = false
-}
-const autoreload = bivac.autoreload(load)
-onUnmounted(() => { autoreload.cancel(); })
 
 async function backup() {
     if (typeof route.params.id === 'string') {
-        bivac.post('/backup/' + encodeURIComponent(route.params.id) + '?force=false')
+        bivac.backup(route.params.id)
     }
 }
 
 const menuItems = [
     {
         name: 'Refresh',
-        handler: load
+        handler: () => { bivac.loadVolumes(); }
     },
     {
         name: 'Backup',
@@ -71,14 +37,12 @@ const logRows = ref({})
 
     <MenuBar :items="menuItems"></MenuBar>
 
-    <div class="table">
-        <InfoTable :object="rows">
-
-        </InfoTable>
-        <InfoTable :object="logRows">
-
-        </InfoTable>
+    <div v-if="typeof bivac.volumes.value[id] === 'undefined'">
+        ERROR 404
     </div>
+    <template v-else>
+        <VolumeInfo :id="id"></VolumeInfo>
+    </template>
 </template>
 
 <style scoped>
