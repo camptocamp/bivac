@@ -5,6 +5,7 @@
   max-width: 1440px;
   margin: 0 auto;
   font-weight: normal;
+  font-size: 1.2em;
   display: grid;
   grid-template-columns: 1fr 5fr;
   padding: 0 2rem;

@@ -6,6 +6,7 @@ import MenuBar from '../components/MenuBar.vue'
 import { useRoute } from 'vue-router'
 import InfoTable from '../components/InfoTable.vue'
 import VolumeInfo from '../components/VolumeInfo.vue'
+import VolumeBackup from '../components/VolumeBackup.vue'
 const route = useRoute()
 
 const id: string = route.params.id
@@ -40,10 +41,20 @@ const logRows = ref({})
     <div v-if="typeof bivac.volumes.value[id] === 'undefined'">
         ERROR 404
     </div>
-    <template v-else>
+    <div class="sections" v-else>
         <VolumeInfo :id="id"></VolumeInfo>
-    </template>
+        <div class="spacer"></div>
+        <VolumeBackup :id="id"></VolumeBackup>
+    </div>
 </template>
 
 <style scoped>
+.sections {
+    width: 100%;
+}
+
+.spacer {
+    width: 100%;
+    height: 20px;
+}
 </style>
