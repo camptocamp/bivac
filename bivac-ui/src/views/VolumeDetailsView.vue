@@ -9,23 +9,12 @@ import VolumeInfo from '../components/VolumeInfo.vue'
 import VolumeBackup from '../components/VolumeBackup.vue'
 const route = useRoute()
 
-const id: string = route.params.id
-
-
-async function backup() {
-    if (typeof route.params.id === 'string') {
-        bivac.backup(route.params.id)
-    }
-}
+const id: string = route.params.id as string
 
 const menuItems = [
     {
         name: 'Refresh',
         handler: () => { bivac.loadVolumes(); }
-    },
-    {
-        name: 'Backup',
-        handler: backup
     }
 ]
 

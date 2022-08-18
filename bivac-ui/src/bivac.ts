@@ -78,10 +78,21 @@ class bivac {
             })
             const volumes: { [key: string]: { [key: string]: any } } = {}
             for (const vol of volumesArray) {
+                this.formatVolume(vol)
                 volumes[vol.ID] = vol;
             }
             this.volumes.value = volumes
         }
+    }
+
+    private formatVolume(volume: { [key: string]: any }): void {
+        volume.lastBackupDate = this.dateToLocal(volume.lastBackupDate)
+    }
+
+    private dateToLocal(dateString: string): string {
+        const date = new Date(dateString)
+        date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
+        return date.toLocaleString()
     }
 
     public async backup(id: string, force: boolean = false) {

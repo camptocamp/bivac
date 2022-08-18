@@ -16,7 +16,7 @@ const age = ref('')
 function loadAge() {
 
   const last = new Date(vol.value.LastBackupDate + "Z")
-  const seconds = Math.floor((Date.now() - last.valueOf())/1000)
+  const seconds = Math.floor((Date.now().valueOf() - last.valueOf())/1000)
   const minutes = Math.floor(seconds/60)
   const hours = Math.floor(minutes/60)
   const days = Math.floor(hours/24)
@@ -60,7 +60,7 @@ onUnmounted(() => {reload.cancel();})
       </Cell>
     </Row>
     <Row>
-      <Cell>Last Backup</Cell><Cell>{{vol.LastBackupDate}} ({{age}} old)</Cell>
+      <Cell>Last Backup</Cell><Cell>{{ vol.LastBackupDate }} ({{age}} old)</Cell>
     </Row>
     <Row>
       <Cell>Backup Directory</Cell><Cell>{{vol.BackupDir ? vol.BackupDir : '/'}}</Cell>
