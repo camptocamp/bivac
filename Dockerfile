@@ -26,12 +26,14 @@ RUN GOOS= GOARCH= GOARM= go run -mod=vendor build.go || go run build.go
 
 # Bivac
 WORKDIR /go/src/github.com/camptocamp/bivac
+COPY ./go.mod .
+COPY ./go.sum .
+RUN go mod download
+COPY ./.git ./.git
 COPY ./cmd ./cmd
 COPY ./internal ./internal
 COPY ./pkg ./pkg
 COPY ./main.go .
-COPY ./go.mod .
-COPY ./go.sum .
 COPY ./Makefile .
 RUN env ${BUILD_OPTS} make bivac
 

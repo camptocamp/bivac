@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/camptocamp/bivac/internal/utils"
 	"github.com/camptocamp/bivac/pkg/orchestrators"
