@@ -4,6 +4,7 @@ COMMIT_SHA1 = $(shell git rev-parse HEAD)
 BUILD_DATE = $(shell date +%Y-%m-%d)
 
 GO_VERSION = 1.14
+RESTIC_VERSION = v0.12.0
 
 all: lint vet test bivac
 
@@ -23,22 +24,36 @@ docker-images: clean
 	# Linux/amd64
 	docker build --no-cache --pull -t $(IMAGE_NAME)-linux-amd64:$(IMAGE_VERSION) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
-		--build-arg GOOS=linux --build-arg GOARCH=amd64 .
+		--build-arg GOOS=linux \
+		--build-arg GOARCH=amd64 \
+		--build-arg RESTIC_VERSION=$(RESTIC_VERSION)  \
+		.
 	docker push $(IMAGE_NAME)-linux-amd64:$(IMAGE_VERSION)
 	# Linux/386
 	docker build --no-cache --pull -t $(IMAGE_NAME)-linux-386:$(IMAGE_VERSION) \
 		--build-arg GO_VERSION=${GO_VERSION} \
-		--build-arg GOOS=linux --build-arg GOARCH=386 .
+		--build-arg GOOS=linux \
+		--build-arg GOARCH=386 \
+		--build-arg RESTIC_VERSION=$(RESTIC_VERSION) \
+		.
 	docker push $(IMAGE_NAME)-linux-386:$(IMAGE_VERSION)
 	# Linux/arm
 	docker build --no-cache --pull -t $(IMAGE_NAME)-linux-arm:$(IMAGE_VERSION) \
 		--build-arg GO_VERSION=${GO_VERSION} \
-		--build-arg GOOS=linux --build-arg GOARCH=arm --build-arg GOARM=7 .
+		--build-arg GOOS=linux \
+		--build-arg GOARCH=arm \
+		--build-arg GOARM=7 \
+		--build-arg RESTIC_VERSION=$(RESTIC_VERSION) \
+		.
 	docker push $(IMAGE_NAME)-linux-arm:$(IMAGE_VERSION)
 	# Linux/arm64
 	docker build --no-cache --pull -t $(IMAGE_NAME)-linux-arm64:$(IMAGE_VERSION) \
 		--build-arg GO_VERSION=${GO_VERSION} \
-		--build-arg GOOS=linux --build-arg GOARCH=arm64 --build-arg GOARM=7 .
+		--build-arg GOOS=linux \
+		--build-arg GOARCH=arm64 \
+		--build-arg GOARM=7 \
+		--build-arg RESTIC_VERSION=$(RESTIC_VERSION) \
+		.
 	docker push $(IMAGE_NAME)-linux-arm64:$(IMAGE_VERSION)
 	# Manifest
 	docker manifest create $(IMAGE_NAME):$(IMAGE_VERSION) \

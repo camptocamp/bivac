@@ -20,7 +20,8 @@ RUN env ${BUILD_OPTS} go build
 # Restic
 RUN git clone https://github.com/restic/restic /go/src/github.com/restic/restic
 WORKDIR /go/src/github.com/restic/restic
-RUN git checkout v0.12.0
+ARG RESTIC_VERSION
+RUN git checkout ${RESTIC_VERSION}
 RUN go get ./...
 RUN GOOS= GOARCH= GOARM= go run -mod=vendor build.go || go run build.go
 
@@ -32,7 +33,7 @@ RUN env ${BUILD_OPTS} make bivac
 FROM debian
 RUN apt-get update && \
     apt-get install -y openssh-client procps && \
-	rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*
 COPY --from=builder /etc/ssl /etc/ssl
 COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /bin/bivac
 COPY --from=builder /go/src/github.com/camptocamp/bivac/providers-config.default.toml /
