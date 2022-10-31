@@ -3,8 +3,8 @@ VERSION = $(shell git describe --always --dirty)
 COMMIT_SHA1 = $(shell git rev-parse HEAD)
 BUILD_DATE = $(shell date +%Y-%m-%d)
 
-GO_VERSION = 1.14
-RESTIC_VERSION = v0.12.0
+GO_VERSION = 1.19
+RESTIC_VERSION = v0.14.0
 
 all: lint vet test bivac
 
