@@ -140,7 +140,7 @@ func (o *DockerOrchestrator) DeployAgent(image string, cmd []string, envs []stri
 		&containertypes.HostConfig{
 			Mounts:      mounts,
 			NetworkMode: containertypes.NetworkMode(o.config.Network),
-		}, nil, "")
+		}, nil, nil, "")
 
 	if err != nil {
 		err = fmt.Errorf("failed to create container: %s", err)
