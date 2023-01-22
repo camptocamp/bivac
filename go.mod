@@ -3,7 +3,7 @@ module github.com/camptocamp/bivac
 go 1.19
 
 require (
-	github.com/BurntSushi/toml v1.2.0
+	github.com/BurntSushi/toml v1.2.1
 	github.com/docker/docker v20.10.20+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.0
