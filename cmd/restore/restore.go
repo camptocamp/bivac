@@ -2,7 +2,7 @@ package restore
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/camptocamp/bivac/cmd"
 	"github.com/camptocamp/bivac/pkg/client"
 	"github.com/spf13/cobra"
