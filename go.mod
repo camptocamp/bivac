@@ -39,11 +39,9 @@ require (
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.5.1
 	github.com/tatsushid/go-prettytable v0.0.0-20141013043238-ed2d14c29939
-	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
-	golang.org/x/tools v0.0.0-20200828161849-5deb26317202 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/genproto v0.0.0-20200225123651-fc8f55426688 // indirect
 	google.golang.org/grpc v1.27.1 // indirect
@@ -54,11 +52,9 @@ require (
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
 	k8s.io/api v0.0.0-20190126160303-ccdd560a045f
-	k8s.io/apimachinery v0.0.0-20190126155707-0e6dcdd1b5ce
+	k8s.io/apimachinery v0.15.7
 	k8s.io/client-go v0.0.0-20190126161006-6134db91200e
-	k8s.io/klog v0.1.0 // indirect
 	k8s.io/utils v0.0.0-20190131231213-4ae6e769426e // indirect
-	sigs.k8s.io/yaml v1.1.0 // indirect
 )
 
 replace github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190217132422-c093c1e08b60
