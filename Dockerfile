@@ -20,7 +20,7 @@ RUN env ${BUILD_OPTS} go build
 # Restic
 RUN git clone https://github.com/restic/restic /go/src/github.com/restic/restic
 WORKDIR /go/src/github.com/restic/restic
-RUN git checkout v0.15.0
+RUN git checkout v0.15.1
 RUN go get ./...
 RUN GOOS= GOARCH= GOARM= go run -mod=vendor build.go || go run build.go
 
