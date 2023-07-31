@@ -208,6 +208,11 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 		node = ""
 	}
 
+	managerPod, err := o.getManagerPod()
+	if err != nil {
+		err = fmt.Errorf("failed to create agent: %s", err)
+	}
+
 	pod, err := o.client.CoreV1().Pods(v.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "bivac-agent-",
@@ -219,6 +224,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 			RestartPolicy:      "Never",
 			Volumes:            kvs,
 			ServiceAccountName: o.config.AgentServiceAccount,
+			SecurityContext:    managerPod.Spec.SecurityContext,
 			Containers: []apiv1.Container{
 				{
 					Name:            "bivac-agent",
@@ -614,4 +620,25 @@ func (o *KubernetesOrchestrator) getAgentAnnotations() map[string]string {
 		}
 	}
 	return agentAnnotations
+}
+
+func (o *KubernetesOrchestrator) getManagerPod() (pod *apiv1.Pod, err error) {
+	podName := os.Getenv("HOSTNAME")
+
+	// get the namespace
+	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{},
+	)
+	namespace, _, err := kubeconfig.Namespace()
+	if err != nil {
+		err = fmt.Errorf("failed to get namespace: %v", err)
+		return
+	}
+
+	pod, err = o.client.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to get manager pod: %s", err)
+	}
+	return
 }
