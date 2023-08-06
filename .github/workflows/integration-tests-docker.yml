@@ -12,12 +12,12 @@ jobs:
     name: Backup raw data
     runs-on: ubuntu-latest
     steps:
-      - name: Install Latest Docker
-        run: |
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
-          sudo apt-get update
-          sudo apt-get install docker-ce
+      #- name: Install Latest Docker
+      #  run: |
+      #    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      #    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+      #    sudo apt-get update
+      #    sudo apt-get install docker-ce
 
       - name: Set up Go 1.x
         uses: actions/setup-go@v3
@@ -38,12 +38,12 @@ jobs:
     name: Backup MySQL database
     runs-on: ubuntu-latest
     steps:
-      - name: Install Latest Docker
-        run: |
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
-          sudo apt-get update
-          sudo apt-get install docker-ce
+      #- name: Install Latest Docker
+      #  run: |
+      #    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      #    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+      #    sudo apt-get update
+      #    sudo apt-get install docker-ce
 
       - name: Set up Go 1.x
         uses: actions/setup-go@v3
@@ -64,12 +64,12 @@ jobs:
     name: Backup PostgreSQL database
     runs-on: ubuntu-latest
     steps:
-      - name: Install Latest Docker
-        run: |
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
-          sudo apt-get update
-          sudo apt-get install docker-ce
+      #- name: Install Latest Docker
+      #  run: |
+      #    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      #    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+      #    sudo apt-get update
+      #    sudo apt-get install docker-ce
 
       - name: Set up Go 1.x
         uses: actions/setup-go@v3
