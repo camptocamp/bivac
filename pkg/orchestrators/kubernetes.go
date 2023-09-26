@@ -224,7 +224,10 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 			RestartPolicy:      "Never",
 			Volumes:            kvs,
 			ServiceAccountName: o.config.AgentServiceAccount,
-			SecurityContext:    managerPod.Spec.SecurityContext,
+			SecurityContext:    &apiv1.PodSecurityContext{
+				SupplementalGroups:        managerPod.Spec.SecurityContext.SupplementalGroups,
+			},
+
 			Containers: []apiv1.Container{
 				{
 					Name:            "bivac-agent",
