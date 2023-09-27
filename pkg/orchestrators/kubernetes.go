@@ -433,7 +433,7 @@ func (o *KubernetesOrchestrator) RetrieveOrphanAgents() (containers map[string]s
 	return
 }
 
-// AttachOrphanAgent connects to a running agent and wait for the end of the backup proccess
+// AttachOrphanAgent connects to a running agent and wait for the end of the backup process
 func (o *KubernetesOrchestrator) AttachOrphanAgent(containerID, namespace string) (success bool, output string, err error) {
 	_, err = o.client.CoreV1().Pods(namespace).Get(containerID, metav1.GetOptions{})
 	if err != nil {

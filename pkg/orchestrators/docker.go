@@ -329,7 +329,7 @@ func (o *DockerOrchestrator) RetrieveOrphanAgents() (containers map[string]strin
 	return
 }
 
-// AttachOrphanAgent connects to a running agent and wait for the end of the backup proccess
+// AttachOrphanAgent connects to a running agent and wait for the end of the backup process
 func (o *DockerOrchestrator) AttachOrphanAgent(containerID, namespace string) (success bool, output string, err error) {
 	container, err := o.client.ContainerInspect(context.Background(), containerID)
 	if err != nil {
