@@ -612,14 +612,33 @@ func (o *KubernetesOrchestrator) getAgentLabels() map[string]string {
 	return agentLabels
 }
 
+func contains(keys []string, key string) bool {
+	for _, k := range keys {
+		if k == key {
+			return true
+		}
+	}
+	return false
+}
+
 func (o *KubernetesOrchestrator) getAgentAnnotations() map[string]string {
 	agentAnnotations := map[string]string{}
 
 	var splittedAnnotation []string
+
+	// List of annotations to not forward to agent
+	excludedAnnotations := []string{"k8s.ovn.org/pod-networks", "k8s.v1.cni.cncf.io/network-status"}
+
 	for _, rawAnnotation := range strings.Split(o.config.AgentAnnotationsInline, ",") {
 		splittedAnnotation = strings.Split(rawAnnotation, "=")
 		if len(splittedAnnotation) > 1 {
-			agentAnnotations[splittedAnnotation[0]] = splittedAnnotation[1]
+			key := splittedAnnotation[0]
+			value := splittedAnnotation[1]
+
+			// Check if this annotations is excluded
+			if !contains(excludedAnnotations, key) {
+				agentAnnotations[key] = value
+			}
 		}
 	}
 	return agentAnnotations
