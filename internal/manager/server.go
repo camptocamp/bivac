@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+        "net/http/pprof"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
@@ -25,6 +26,8 @@ func (m *Manager) StartServer() (err error) {
 	router := mux.NewRouter().StrictSlash(true)
 
 	setupMetrics(m.BuildInfo)
+
+        router.HandleFunc("/debug/pprof/", pprof.Index)
 
 	router.Handle("/volumes", m.handleAPIRequest(http.HandlerFunc(m.getVolumes)))
 	router.Handle("/ping", m.handleAPIRequest(http.HandlerFunc(m.ping)))

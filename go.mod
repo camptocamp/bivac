@@ -15,6 +15,7 @@ require (
 	github.com/elazarl/goproxy v0.0.0-20190421051319-9d40249d3c2f // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20190421051319-9d40249d3c2f // indirect
 	github.com/golang/mock v1.4.0
+	github.com/google/pprof v0.0.0-20231229205709-960ae82b1e42 // indirect
 	github.com/googleapis/gnostic v0.2.0 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.6.2
