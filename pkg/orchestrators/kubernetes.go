@@ -209,7 +209,12 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 		node = ""
 	}
 
-	pod, err := o.client.CoreV1().Pods(v.Namespace).Create(context.TODO(), &apiv1.Pod{
+	managerPod, err := o.getManagerPod()
+	if err != nil {
+		err = fmt.Errorf("failed to create agent: %s", err)
+	}
+
+	pod, err := o.client.CoreV1().Pods(v.Namespace).Create(&apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "bivac-agent-",
 			Labels:       o.getAgentLabels(),
@@ -220,6 +225,10 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 			RestartPolicy:      "Never",
 			Volumes:            kvs,
 			ServiceAccountName: o.config.AgentServiceAccount,
+			SecurityContext:    &apiv1.PodSecurityContext{
+				SupplementalGroups:        managerPod.Spec.SecurityContext.SupplementalGroups,
+			},
+
 			Containers: []apiv1.Container{
 				{
 					Name:            "bivac-agent",
@@ -606,15 +615,55 @@ func (o *KubernetesOrchestrator) getAgentLabels() map[string]string {
 	return agentLabels
 }
 
+func contains(keys []string, key string) bool {
+	for _, k := range keys {
+		if k == key {
+			return true
+		}
+	}
+	return false
+}
+
 func (o *KubernetesOrchestrator) getAgentAnnotations() map[string]string {
 	agentAnnotations := map[string]string{}
 
 	var splittedAnnotation []string
+
+	// List of annotations to not forward to agent
+	excludedAnnotations := []string{"k8s.ovn.org/pod-networks", "k8s.v1.cni.cncf.io/network-status"}
+
 	for _, rawAnnotation := range strings.Split(o.config.AgentAnnotationsInline, ",") {
 		splittedAnnotation = strings.Split(rawAnnotation, "=")
 		if len(splittedAnnotation) > 1 {
-			agentAnnotations[splittedAnnotation[0]] = splittedAnnotation[1]
+			key := splittedAnnotation[0]
+			value := splittedAnnotation[1]
+
+			// Check if this annotations is excluded
+			if !contains(excludedAnnotations, key) {
+				agentAnnotations[key] = value
+			}
 		}
 	}
 	return agentAnnotations
+}
+
+func (o *KubernetesOrchestrator) getManagerPod() (pod *apiv1.Pod, err error) {
+	podName := os.Getenv("HOSTNAME")
+
+	// get the namespace
+	kubeconfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{},
+	)
+	namespace, _, err := kubeconfig.Namespace()
+	if err != nil {
+		err = fmt.Errorf("failed to get namespace: %v", err)
+		return
+	}
+
+	pod, err = o.client.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
+	if err != nil {
+		err = fmt.Errorf("failed to get manager pod: %s", err)
+	}
+	return
 }
