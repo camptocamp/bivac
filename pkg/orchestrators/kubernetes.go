@@ -2,6 +2,7 @@ package orchestrators
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"sort"
@@ -67,11 +68,12 @@ func (*KubernetesOrchestrator) GetPath(v *volume.Volume) string {
 
 // GetVolumes returns the Kubernetes persistent volume claims, inspected and filtered
 func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volumes []*volume.Volume, err error) {
+	ctx := context.Background()
 	// Get namespaces
 	namespaces, err := o.getNamespaces()
 
 	for _, namespace := range namespaces {
-		pvcs, err := o.client.CoreV1().PersistentVolumeClaims(namespace).List(metav1.ListOptions{})
+		pvcs, err := o.client.CoreV1().PersistentVolumeClaims(namespace).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return nil, err
 		}
@@ -128,6 +130,7 @@ func (o *KubernetesOrchestrator) GetVolumes(volumeFilters volume.Filters) (volum
 
 // DeployAgent creates a `bivac agent` container
 func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v *volume.Volume) (success bool, output string, err error) {
+	ctx := context.Background()
 	success = false
 	kvs := []apiv1.Volume{}
 	kvms := []apiv1.VolumeMount{}
@@ -152,7 +155,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 		}
 	*/
 
-	pvc, err := o.client.CoreV1().PersistentVolumeClaims(v.Namespace).Get(v.Name, metav1.GetOptions{})
+	pvc, err := o.client.CoreV1().PersistentVolumeClaims(v.Namespace).Get(ctx, v.Name, metav1.GetOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to retrieve PersistentVolumeClaim `%s': %s", v.Name, err)
 		return
@@ -213,7 +216,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 		err = fmt.Errorf("failed to create agent: %s", err)
 	}
 
-	pod, err := o.client.CoreV1().Pods(v.Namespace).Create(&apiv1.Pod{
+	pod, err := o.client.CoreV1().Pods(v.Namespace).Create(ctx, &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "bivac-agent-",
 			Labels:       o.getAgentLabels(),
@@ -239,7 +242,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 				},
 			},
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to create agent: %s", err)
 		return
@@ -251,7 +254,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 	timeout := time.After(60 * 5 * time.Second)
 	terminated := false
 	for !terminated {
-		pod, err := o.client.CoreV1().Pods(v.Namespace).Get(agentName, metav1.GetOptions{})
+		pod, err := o.client.CoreV1().Pods(v.Namespace).Get(ctx, agentName, metav1.GetOptions{})
 		if err != nil {
 			err = fmt.Errorf("failed to get pod: %s", err)
 			return false, "", err
@@ -276,7 +279,7 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 
 	req := o.client.CoreV1().Pods(v.Namespace).GetLogs(agentName, &apiv1.PodLogOptions{})
 
-	readCloser, err := req.Stream()
+	readCloser, err := req.Stream(ctx)
 	if err != nil {
 		err = fmt.Errorf("failed to read logs: %s", err)
 		return
@@ -294,7 +297,8 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 
 // DeletePod removes pod based on its name
 func (o *KubernetesOrchestrator) DeletePod(name, namespace string) {
-	err := o.client.CoreV1().Pods(namespace).Delete(name, &metav1.DeleteOptions{})
+	ctx := context.Background()
+	err := o.client.CoreV1().Pods(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to delete agent: %s", err)
 	}
@@ -303,7 +307,8 @@ func (o *KubernetesOrchestrator) DeletePod(name, namespace string) {
 
 // GetContainersMountingVolume returns containers mounting a volume
 func (o *KubernetesOrchestrator) GetContainersMountingVolume(v *volume.Volume) (containers []*volume.MountedVolume, er error) {
-	pods, err := o.client.CoreV1().Pods(v.Namespace).List(metav1.ListOptions{})
+	ctx := context.Background()
+	pods, err := o.client.CoreV1().Pods(v.Namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to get pods: %s", err)
 		return
@@ -386,9 +391,10 @@ func (o *KubernetesOrchestrator) ContainerExec(mountedVolumes *volume.MountedVol
 
 // IsNodeAvailable checks if the node is available to run backups on it
 func (o *KubernetesOrchestrator) IsNodeAvailable(hostID string) (ok bool, err error) {
+	ctx := context.Background()
 	ok = false
 
-	node, err := o.client.CoreV1().Nodes().Get(hostID, metav1.GetOptions{})
+	node, err := o.client.CoreV1().Nodes().Get(ctx, hostID, metav1.GetOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to retrieve node from the ID `%s': %s", hostID, err)
 		return
@@ -404,6 +410,7 @@ func (o *KubernetesOrchestrator) IsNodeAvailable(hostID string) (ok bool, err er
 
 // RetrieveOrphanAgents returns the list of orphan Bivac agents
 func (o *KubernetesOrchestrator) RetrieveOrphanAgents() (containers map[string]string, err error) {
+	ctx := context.Background()
 	containers = make(map[string]string)
 	namespaces, err := o.getNamespaces()
 	if err != nil {
@@ -412,7 +419,7 @@ func (o *KubernetesOrchestrator) RetrieveOrphanAgents() (containers map[string]s
 	}
 
 	for _, namespace := range namespaces {
-		pods, err := o.client.CoreV1().Pods(namespace).List(metav1.ListOptions{})
+		pods, err := o.client.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			err = fmt.Errorf("failed to get pods: %s", err)
 			return containers, err
@@ -435,7 +442,8 @@ func (o *KubernetesOrchestrator) RetrieveOrphanAgents() (containers map[string]s
 
 // AttachOrphanAgent connects to a running agent and wait for the end of the backup proccess
 func (o *KubernetesOrchestrator) AttachOrphanAgent(containerID, namespace string) (success bool, output string, err error) {
-	_, err = o.client.CoreV1().Pods(namespace).Get(containerID, metav1.GetOptions{})
+	ctx := context.Background()
+	_, err = o.client.CoreV1().Pods(namespace).Get(ctx, containerID, metav1.GetOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to get pod: %s", err)
 		return false, "", err
@@ -445,7 +453,7 @@ func (o *KubernetesOrchestrator) AttachOrphanAgent(containerID, namespace string
 	timeout := time.After(60 * time.Second)
 	terminated := false
 	for !terminated {
-		pod, err := o.client.CoreV1().Pods(namespace).Get(containerID, metav1.GetOptions{})
+		pod, err := o.client.CoreV1().Pods(namespace).Get(ctx, containerID, metav1.GetOptions{})
 		if err != nil {
 			err = fmt.Errorf("failed to get pod: %s", err)
 			return false, "", err
@@ -470,7 +478,7 @@ func (o *KubernetesOrchestrator) AttachOrphanAgent(containerID, namespace string
 
 	req := o.client.CoreV1().Pods(namespace).GetLogs(containerID, &apiv1.PodLogOptions{})
 
-	readCloser, err := req.Stream()
+	readCloser, err := req.Stream(ctx)
 	if err != nil {
 		err = fmt.Errorf("failed to read logs: %s", err)
 		return
@@ -547,8 +555,9 @@ func (o *KubernetesOrchestrator) getConfig() (config *rest.Config, err error) {
 }
 
 func (o *KubernetesOrchestrator) getNamespaces() (namespaces []string, err error) {
+	ctx := context.Background()
 	if o.config.AllNamespaces == true {
-		nms, err := o.client.CoreV1().Namespaces().List(metav1.ListOptions{})
+		nms, err := o.client.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 		if err != nil {
 			err = fmt.Errorf("failed to retrieve the list of namespaces: %s", err)
 			return []string{}, err
@@ -563,6 +572,7 @@ func (o *KubernetesOrchestrator) getNamespaces() (namespaces []string, err error
 }
 
 func (o *KubernetesOrchestrator) getAdditionalVolumes() (mounts []*volume.Volume, err error) {
+	ctx := context.Background()
 	mounts = []*volume.Volume{}
 
 	managerHostname, err := os.Hostname()
@@ -582,7 +592,7 @@ func (o *KubernetesOrchestrator) getAdditionalVolumes() (mounts []*volume.Volume
 		return
 	}
 
-	managerPod, err := o.client.CoreV1().Pods(namespace).Get(managerHostname, metav1.GetOptions{})
+	managerPod, err := o.client.CoreV1().Pods(namespace).Get(ctx, managerHostname, metav1.GetOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to retrieve manager's pod: %s", err)
 		return
@@ -645,6 +655,7 @@ func (o *KubernetesOrchestrator) getAgentAnnotations() map[string]string {
 }
 
 func (o *KubernetesOrchestrator) getManagerPod() (pod *apiv1.Pod, err error) {
+	ctx := context.Background()
 	podName := os.Getenv("HOSTNAME")
 
 	// get the namespace
@@ -658,7 +669,7 @@ func (o *KubernetesOrchestrator) getManagerPod() (pod *apiv1.Pod, err error) {
 		return
 	}
 
-	pod, err = o.client.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
+	pod, err = o.client.CoreV1().Pods(namespace).Get(ctx, podName, metav1.GetOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to get manager pod: %s", err)
 	}

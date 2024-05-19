@@ -11,27 +11,28 @@ ENV GOARCH ${GOARCH}
 ENV GOARM ${GOARM}
 
 # RClone
-RUN git clone https://github.com/rclone/rclone /go/src/github.com/rclone/rclone
+RUN git clone -b v1.66.0 https://github.com/rclone/rclone /go/src/github.com/rclone/rclone
 WORKDIR /go/src/github.com/rclone/rclone
-RUN git checkout v1.54.0
 RUN go get ./...
 RUN env ${BUILD_OPTS} go build
 
 # Restic
-RUN git clone https://github.com/restic/restic /go/src/github.com/restic/restic
+RUN git clone -b v0.16.4 https://github.com/restic/restic /go/src/github.com/restic/restic
 WORKDIR /go/src/github.com/restic/restic
-RUN git checkout v0.12.0
 RUN go get ./...
+RUN go mod vendor
 RUN GOOS= GOARCH= GOARM= go run -mod=vendor build.go || go run build.go
 
 # Bivac
 WORKDIR /go/src/github.com/camptocamp/bivac
 COPY . .
+RUN go mod vendor
 RUN env ${BUILD_OPTS} make bivac
 
-FROM debian
+FROM debian:bookworm-slim
 RUN apt-get update && \
     apt-get install -y openssh-client procps && \
+    apt-get dist-upgrade -y && \
 	rm -rf /var/lib/apt/lists/*
 COPY --from=builder /etc/ssl /etc/ssl
 COPY --from=builder /go/src/github.com/camptocamp/bivac/bivac /bin/bivac
