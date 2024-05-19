@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/camptocamp/bivac/internal/engine"
 	"github.com/camptocamp/bivac/internal/utils"

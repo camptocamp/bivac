@@ -3,7 +3,7 @@ package restic
 import (
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/camptocamp/bivac/cmd"
