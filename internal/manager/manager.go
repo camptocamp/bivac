@@ -221,12 +221,20 @@ func isBackupNeeded(v *volume.Volume, backupInt time.Duration,backupTime time.Du
 		return true
 	}
 
-  // Convertir targetBackupTime en une date avec le jour courant
-  now := time.Now()
+  // convert targetBackupTime in date with today time
+  now := time.Now().UTC()
   targetBackupTime := time.Date(now.Year(), now.Month(), now.Day(),0,0,0,0,now.Location()).Add(backupTime)
 
-  // check backup interval and backup prefered time
-	if lbd.Add(backupInt).Before(time.Now().UTC()) && targetBackupTime.Before(now) {
+  // set backup interval to 23h if backupTime is not set to default value
+  if backupTime.Seconds() > 0 && targetBackupTime.Before(now) {
+    fixInterval, _ := time.ParseDuration("23h")
+	  if lbd.Add(fixInterval).Before(now) {
+      return true
+    }
+  }
+
+  // if backupTime is set to default value
+	if lbd.Add(backupInt).Before(now) && backupTime.Seconds() == 0 {
 		return true
 	}
 	return false
