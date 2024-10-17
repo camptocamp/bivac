@@ -35,6 +35,7 @@ var (
 	parallelCount       int
 	refreshRate         string
 	backupInterval      string
+  backupTimeSpec      string
 )
 var envs = make(map[string]string)
 
@@ -59,7 +60,7 @@ var managerCmd = &cobra.Command{
 			agentImage = fmt.Sprintf("ghcr.io/camptocamp/bivac:%s", utils.ComputeDockerAgentImage(managerVersion))
 		}
 
-		err = manager.Start(bivacCmd.BuildInfo, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount, parallelCount, refreshRate, backupInterval)
+		err = manager.Start(bivacCmd.BuildInfo, o, server, volumesFilters, providersFile, targetURL, logServer, agentImage, retryCount, parallelCount, refreshRate, backupInterval, backupTimeSpec)
 		if err != nil {
 			log.Errorf("failed to start manager: %s", err)
 			return
@@ -92,6 +93,8 @@ func init() {
 	envs["KUBERNETES_NAMESPACE"] = "kubernetes.namespace"
 	managerCmd.Flags().BoolVarP(&Orchestrators.Kubernetes.AllNamespaces, "kubernetes.all-namespaces", "", false, "Backup volumes of all namespaces.")
 	envs["KUBERNETES_ALL_NAMESPACES"] = "kubernetes.all-namespaces"
+	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.CustomNamespaces, "kubernetes.custom-namespaces", "", "", "Backup volumes from a custom namespaces list.")
+	envs["KUBERNETES_CUSTOM_NAMESPACES"] = "kubernetes.custom-namespaces"
 	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.KubeConfig, "kubernetes.kubeconfig", "", "", "Path to your kuberconfig file.")
 	envs["KUBERNETES_KUBECONFIG"] = "kubernetes.kubeconfig"
 	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.AgentServiceAccount, "kubernetes.agent-service-account", "", "", "Specify service account for agents.")
@@ -138,6 +141,9 @@ func init() {
 
 	managerCmd.Flags().StringVarP(&backupInterval, "backup.interval", "", "23h", "Interval between two backups of a volume.")
 	envs["BIVAC_BACKUP_INTERVAL"] = "backup.interval"
+
+	managerCmd.Flags().StringVarP(&backupTimeSpec, "backup.time", "", "00h", "Prefer time to do the backup.")
+	envs["BIVAC_BACKUP_TIME"] = "backup.time"
 
 	bivacCmd.SetValuesFromEnv(envs, managerCmd.Flags())
 	bivacCmd.RootCmd.AddCommand(managerCmd)

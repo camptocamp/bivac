@@ -20,9 +20,10 @@ func TestIsBackupNeededBackupIntervalStatusSuccess(t *testing.T) {
 	}
 
 	h, _ := time.ParseDuration("30m")
-	assert.Equal(t, isBackupNeeded(givenVolume, h), true)
+  d, _ := time.ParseDuration("0s") // default prefered time
+	assert.Equal(t, isBackupNeeded(givenVolume, h,d), true)
 	h, _ = time.ParseDuration("12h")
-	assert.Equal(t, isBackupNeeded(givenVolume, h), false)
+	assert.Equal(t, isBackupNeeded(givenVolume, h,d), false)
 }
 
 func TestIsBackupNeededBackupIntervalStatusFailed(t *testing.T) {
@@ -35,7 +36,8 @@ func TestIsBackupNeededBackupIntervalStatusFailed(t *testing.T) {
 	}
 
 	h, _ := time.ParseDuration("30m")
-	assert.Equal(t, isBackupNeeded(givenVolume, h), true)
+  d, _ := time.ParseDuration("0s") // default prefered time
+	assert.Equal(t, isBackupNeeded(givenVolume, h,d), true)
 	h, _ = time.ParseDuration("12h")
-	assert.Equal(t, isBackupNeeded(givenVolume, h), true)
+	assert.Equal(t, isBackupNeeded(givenVolume, h,d), true)
 }

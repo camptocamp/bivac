@@ -24,6 +24,7 @@ import (
 type KubernetesConfig struct {
 	Namespace              string
 	AllNamespaces          bool
+	CustomNamespaces       string
 	KubeConfig             string
 	AgentServiceAccount    string
 	AgentLabelsInline      string
@@ -555,6 +556,20 @@ func (o *KubernetesOrchestrator) getNamespaces() (namespaces []string, err error
 		}
 		for _, namespace := range nms.Items {
 			namespaces = append(namespaces, namespace.Name)
+		}
+	} else if o.config.CustomNamespaces != "" {
+		nms, err := o.client.CoreV1().Namespaces().List(metav1.ListOptions{})
+		if err != nil {
+			err = fmt.Errorf("failed to retrieve the list of namespaces: %s", err)
+			return []string{}, err
+		}
+		customNamespaces := strings.Split(o.config.CustomNamespaces, ",")
+		for _, namespace := range nms.Items {
+			for _, ns := range customNamespaces {
+				if ns == namespace.Name {
+					namespaces = append(namespaces, namespace.Name)
+				}
+			}
 		}
 	} else {
 		namespaces = append(namespaces, o.config.Namespace)

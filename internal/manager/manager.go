@@ -34,7 +34,7 @@ type Manager struct {
 }
 
 // Start starts a Bivac manager which handle backups management
-func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount, parallelCount int, refreshRate, backupInterval string) (err error) {
+func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, volumeFilters volume.Filters, providersFile, targetURL, logServer, agentImage string, retryCount, parallelCount int, refreshRate, backupInterval string, backupTimeSpec string) (err error) {
 	p, err := LoadProviders(providersFile)
 	if err != nil {
 		err = fmt.Errorf("failed to read providers file: %s", err)
@@ -44,6 +44,18 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 	refreshInterval, err := time.ParseDuration(refreshRate)
 	if err != nil {
 		err = fmt.Errorf("failed to parse refresh time: %s", err)
+		return
+	}
+
+  //check backupTimeSpec format and constraint 00h < xxh < 23h e.g: 23h59m does not respect constraint
+  backupTime, err := time.ParseDuration(backupTimeSpec)
+	if err != nil {
+		err = fmt.Errorf("failed to parse backup prefered time: %s", err)
+		return
+	}
+
+  if backupTime.Hours() >= 23 && backupTime.Hours() >= 0 {
+		err = fmt.Errorf("backup prefered time does not respect constraint (00h < x < 23h): %s", err)
 		return
 	}
 
@@ -90,7 +102,7 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 					delete(orphanAgents, val)
 				}
 
-				if !isBackupNeeded(v, backupInt) {
+				if !isBackupNeeded(v, backupInt, backupTime) {
 					continue
 				}
 
@@ -179,7 +191,7 @@ func Start(buildInfo utils.BuildInfo, o orchestrators.Orchestrator, s Server, vo
 	return
 }
 
-func isBackupNeeded(v *volume.Volume, backupInt time.Duration) bool {
+func isBackupNeeded(v *volume.Volume, backupInt time.Duration,backupTime time.Duration) bool {
 	if v.BackingUp {
 		return false
 	}
@@ -204,11 +216,25 @@ func isBackupNeeded(v *volume.Volume, backupInt time.Duration) bool {
 		return false
 	}
 
+  // retry if last backup status is Failed
 	if lbd.Add(time.Hour).Before(time.Now().UTC()) && v.LastBackupStatus == "Failed" {
 		return true
 	}
 
-	if lbd.Add(backupInt).Before(time.Now().UTC()) {
+  // convert targetBackupTime in date with today time
+  now := time.Now().UTC()
+  targetBackupTime := time.Date(now.Year(), now.Month(), now.Day(),0,0,0,0,now.Location()).Add(backupTime)
+
+  // set backup interval to 23h if backupTime is not set to default value
+  if backupTime.Seconds() > 0 && targetBackupTime.Before(now) {
+    fixInterval, _ := time.ParseDuration("23h")
+	  if lbd.Add(fixInterval).Before(now) {
+      return true
+    }
+  }
+
+  // if backupTime is set to default value
+	if lbd.Add(backupInt).Before(now) && backupTime.Seconds() == 0 {
 		return true
 	}
 	return false
