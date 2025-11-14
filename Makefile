@@ -3,7 +3,7 @@ VERSION = $(shell git describe --always --dirty)
 COMMIT_SHA1 = $(shell git rev-parse HEAD)
 BUILD_DATE = $(shell date +%Y-%m-%d)
 
-GO_VERSION = 1.14
+GO_VERSION = 1.24
 
 all: lint vet test bivac
 
@@ -57,7 +57,7 @@ docker-images: clean
 	docker manifest push $(IMAGE_NAME):$(IMAGE_VERSION)
 
 lint:
-	@GO111MODULE=off go get -u -v golang.org/x/lint/golint
+	go install golang.org/x/lint/golint@latest
 	@for file in $$(go list ./... | grep -v '_workspace/' | grep -v 'vendor'); do \
 		export output="$$(golint $${file} | grep -v 'type name will be used as docker.DockerInfo')"; \
 		[ -n "$${output}" ] && echo "$${output}" && export status=1; \
