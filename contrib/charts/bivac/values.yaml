@@ -22,14 +22,24 @@ watchAllNamespaces: true
 targetURL: ""
 
 ## Password used by Restic to encrypt the backups
-# If left empty, a generated one will be used
-#
+# Use `resticPassword` to set password as a raw string.
+# Use `resticPasswordFromSecret` to use a password stored in a Secret.
+# If those values are null/empty, a random password will be generated.
 resticPassword: ""
+resticPasswordFromSecret: ""
+#resticPasswordFromSecret: 
+#  name: secret_name
+#  key: key_name
 
 ## Pre-shared key which protect the Bivac server
-# If left empty, a generated one will be used
-#
+# Use `resticPassword` to set password as a raw string.
+# Use `resticPasswordFromSecret` to use a password stored in a Secret.
+# If those values are null/empty, a random password will be generated.
 serverPSK: ""
+serverPSKFromSecret: ""
+#serverPSKFromSecret: 
+#  name: secret_name
+#  key: key_name
 
 ## Additional environment variables
 #
