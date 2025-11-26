@@ -53,12 +53,22 @@ spec:
             - name: RESTIC_PASSWORD
               {{- if .Values.resticPassword }}
               value: {{ .Values.resticPassword }}
+              {{- else if .Values.resticPasswordFromSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.resticPasswordFromSecret.name }}
+                  key: {{ .Values.resticPasswordFromSecret.key }}
               {{- else }}
               value: {{ randAlphaNum 15 }}
               {{- end }}
             - name: BIVAC_SERVER_PSK
               {{- if .Values.serverPSK }}
               value: {{ .Values.serverPSK }}
+              {{- else if .Values.serverPSKFromSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.serverPSKFromSecret.name }}
+                  key: {{ .Values.serverPSKFromSecret.key }}
               {{- else }}
               value: {{ randAlphaNum 15 }}
               {{- end }}
