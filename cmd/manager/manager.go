@@ -92,6 +92,8 @@ func init() {
 	envs["KUBERNETES_NAMESPACE"] = "kubernetes.namespace"
 	managerCmd.Flags().BoolVarP(&Orchestrators.Kubernetes.AllNamespaces, "kubernetes.all-namespaces", "", false, "Backup volumes of all namespaces.")
 	envs["KUBERNETES_ALL_NAMESPACES"] = "kubernetes.all-namespaces"
+	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.WatchNamespaces, "kubernetes.watch-namespaces", "", "", "List of namespaces to watch for volumes to backup.")
+	envs["KUBERNETES_WATCH_NAMESPACES"] = "kubernetes.watch-namespaces"
 	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.KubeConfig, "kubernetes.kubeconfig", "", "", "Path to your kuberconfig file.")
 	envs["KUBERNETES_KUBECONFIG"] = "kubernetes.kubeconfig"
 	managerCmd.Flags().StringVarP(&Orchestrators.Kubernetes.AgentServiceAccount, "kubernetes.agent-service-account", "", "", "Specify service account for agents.")
