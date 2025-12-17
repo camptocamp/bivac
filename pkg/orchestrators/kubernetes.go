@@ -24,6 +24,7 @@ import (
 type KubernetesConfig struct {
 	Namespace              string
 	AllNamespaces          bool
+	WatchNamespaces        string
 	KubeConfig             string
 	AgentServiceAccount    string
 	AgentLabelsInline      string
@@ -224,8 +225,8 @@ func (o *KubernetesOrchestrator) DeployAgent(image string, cmd, envs []string, v
 			RestartPolicy:      "Never",
 			Volumes:            kvs,
 			ServiceAccountName: o.config.AgentServiceAccount,
-			SecurityContext:    &apiv1.PodSecurityContext{
-				SupplementalGroups:        managerPod.Spec.SecurityContext.SupplementalGroups,
+			SecurityContext: &apiv1.PodSecurityContext{
+				SupplementalGroups: managerPod.Spec.SecurityContext.SupplementalGroups,
 			},
 
 			Containers: []apiv1.Container{
@@ -555,6 +556,20 @@ func (o *KubernetesOrchestrator) getNamespaces() (namespaces []string, err error
 		}
 		for _, namespace := range nms.Items {
 			namespaces = append(namespaces, namespace.Name)
+		}
+	} else if o.config.WatchNamespaces != "" {
+		nms, err := o.client.CoreV1().Namespaces().List(metav1.ListOptions{})
+		if err != nil {
+			err = fmt.Errorf("failed to retrieve the list of namespaces: %s", err)
+			return []string{}, err
+		}
+		watchNamespaces := strings.Split(o.config.WatchNamespaces, ",")
+		for _, namespace := range nms.Items {
+			for _, ns := range watchNamespaces {
+				if ns == namespace.Name {
+					namespaces = append(namespaces, namespace.Name)
+				}
+			}
 		}
 	} else {
 		namespaces = append(namespaces, o.config.Namespace)
